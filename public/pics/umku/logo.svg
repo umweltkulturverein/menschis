@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   version="1.1"
+   id="svg613"
+   width="262.39999"
+   height="262.39999"
+   viewBox="0 0 262.4 262.4"
+   sodipodi:docname="umweltkulturverein_Logo-grau.svg"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs617" />
+  <sodipodi:namedview
+     id="namedview615"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="0.99669147"
+     inkscape:cx="194.64399"
+     inkscape:cy="129.92988"
+     inkscape:window-width="2560"
+     inkscape:window-height="1385"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g619" />
+  <g
+     inkscape:groupmode="layer"
+     inkscape:label="Image"
+     id="g619"
+     transform="translate(-384.11091,-35.804918)">
+    <g
+       id="g1419">
+      <path
+         style="fill:#333333;stroke-width:1"
+         d="M 384.11091,167.00491 V 35.804918 h 131.19999 131.2 v 131.199992 131.2 h -131.2 -131.19999 z M 633.3909,48.924918 H 515.3109 397.23091 L 397.0667,166.36492 c -0.0903,64.59199 -0.0274,117.79999 0.13991,118.23999 0.24179,0.63601 24.51335,0.8 118.40591,0.8 H 633.71429 C 633.6065,206.57825 633.4987,127.75158 633.3909,48.924918 Z"
+         id="path740"
+         sodipodi:nodetypes="ccccccccccccssscc" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:1.5;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:4px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#333333;fill-opacity:1;stroke:none"
+         x="412.42029"
+         y="169.2542"
+         id="text946"><tspan
+           sodipodi:role="line"
+           id="tspan944"
+           x="412.42029"
+           y="169.2542"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:32px;font-family:'Open Sans';-inkscape-font-specification:'Open Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#333333">umwelt</tspan><tspan
+           sodipodi:role="line"
+           x="412.42029"
+           y="217.29527"
+           id="tspan1000"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:32px;font-family:'Open Sans';-inkscape-font-specification:'Open Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#333333">kultur</tspan><tspan
+           sodipodi:role="line"
+           x="412.42029"
+           y="265.33633"
+           id="tspan1002"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:32px;font-family:'Open Sans';-inkscape-font-specification:'Open Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#333333">verein e.V.</tspan></text>
+    </g>
+  </g>
+</svg>
