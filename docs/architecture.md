@@ -9,22 +9,22 @@ The Helper Shifts are structured into several key components that work together 
   - EndDate: DateTime
   - Location: GeoPoint
   - Entry: Relation to ShiftEntry
-  - *ID*: String
+  - **ID**: String
 - ShiftKind
-  - *Title*: String
+  - **Title**: String
   - Description: String
   - Icon: NextIcon
   - Color: String
   - DefaultLocation: GeoPoint
 - ShiftEntry
-  - *Shift*: Relation to Shift
-  - *Helper*: Relation to User
+  - **Shift**: Relation to Shift
+  - **Helper**: Relation to User
   - Notes: String
   - CreatedAt: DateTime
   - UpdatedAt: DateTime
 - AnonymousUser
   - Name: String
-  - *Email*: String
+  - **Email**: String
   - Phone: String
   - EmailAuthTokens: []String
   - Entries: Relation to ShiftEntry
