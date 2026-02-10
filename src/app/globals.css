@@ -19,6 +19,7 @@
     --color-ci-blue-500: oklch(0.3076 0.10625000000000004 285);
     --color-ci-blue-600: oklch(0.1924 0.06718750000000001 285);
     --color-ci-blue-700: oklch(0.1035 0.03593750000000001 285);
+    --color-ci-blue-800: oklch(0.0618 0.03593750000000001 285);
 }
 
 @media (prefers-color-scheme: dark) {

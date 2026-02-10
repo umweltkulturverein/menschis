@@ -9,8 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "drizzle-orm": "^0.45.1",
+    "drizzle-orm": "1.0.0-beta.15-859cf75",
     "next": "16.1.4",
+    "pg": "^8.18.0",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
