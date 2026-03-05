@@ -1,8 +1,14 @@
-import { drizzle } from "drizzle-orm/node-postgres";
+import { CamelCasePlugin, Kysely, PostgresDialect } from "kysely";
+import { Pool } from "pg";
+import { Database } from "@/types/event";
 
 if (!process.env.DATABASE_URL) {
-    throw new Error("env DATABASE_URL is requried and missing");
+    throw new Error("env DATABASE_URL is required and missing");
 }
 
-export const db = drizzle(process.env.DATABASE_URL);
-export const pool = db.$client;
+export const db = new Kysely<Database>({
+    dialect: new PostgresDialect({
+        pool: new Pool({ connectionString: process.env.DATABASE_URL }),
+    }),
+    plugins: [new CamelCasePlugin()],
+});

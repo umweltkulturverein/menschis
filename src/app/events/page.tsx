@@ -1,12 +1,29 @@
-import Image from "next/image";
-import NavBar from "@/components/Navigation/NavBar";
-import EventPanel from "@/components/Events/EventPanel";
+import { Suspense } from "react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import EventSummary from "@/components/Events/EventSummary";
+import CreateEventForm from "@/components/Events/CreateEventForm";
 
-export default function Home() {
+export default async function EventsPage() {
+    const session = await getServerSession(authOptions);
+
     return (
-        <div className="flex min-h-screen bg-zinc-50 p-8 font-sans dark:bg-ci-blue-800">
-            <EventSummary />
+        <div className="min-h-screen bg-zinc-50 dark:bg-ci-blue-800 p-8">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">
+                Events
+            </h1>
+
+            {session && <CreateEventForm />}
+
+            <Suspense
+                fallback={
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">
+                        Loading events…
+                    </p>
+                }
+            >
+                <EventSummary />
+            </Suspense>
         </div>
     );
 }

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Righteous } from "next/font/google";
+import Providers from "@/components/Providers";
+import NavBar from "@/components/Navigation/NavBar";
 import "./globals.css";
 
 const righteous = Righteous({
@@ -18,7 +20,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${righteous.className} antialiased`}>{children}</body>
+      <body className={`${righteous.className} antialiased`}>
+        <Providers>
+          <NavBar />
+          {children}
+        </Providers>
+      </body>
     </html>
   );
 }
