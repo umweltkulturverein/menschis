@@ -1,10 +1,6 @@
 import { Generated, Insertable, Selectable, Updateable } from "kysely";
 
-export interface Database {
-    event: EventTable;
-}
-
-export interface EventTable {
+export interface EventItemTable {
     id: Generated<number>;
     title: string;
     description: string | null;
@@ -13,7 +9,8 @@ export interface EventTable {
     startBookingDateTime: Date;
     public: boolean;
     location: string;
+    days: string[] | null; // YYYY-MM-DD date strings
 }
-export type Event = Selectable<EventTable>;
-export type NewEvent = Insertable<EventTable>;
-export type UpdateEvent = Updateable<EventTable>;
+export type EventItem = Selectable<EventItemTable>;
+export type NewEventItem = Insertable<EventItemTable>;
+export type UpdateEventItem = Updateable<EventItemTable>;

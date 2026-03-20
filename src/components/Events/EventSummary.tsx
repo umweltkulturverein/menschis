@@ -1,14 +1,10 @@
-import { db } from "@/db";
+import { EventItem } from "@/types/event";
 import EventPanel from "./EventPanel";
+import { GetEvents } from "@/lib/db/events";
 
 export default async function EventSummary() {
-    const events = await db
-        .selectFrom("event")
-        .selectAll()
-        .orderBy("startDate", "asc")
-        .execute();
-
-    if (events.length === 0) {
+    const events = await GetEvents();
+    if (events === undefined || events.length === 0) {
         return (
             <p className="text-gray-500 dark:text-gray-400 text-sm">
                 No events yet.

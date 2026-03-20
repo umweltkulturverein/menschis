@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/db";
-import { NewEvent } from "@/types/event";
+import type { EventItem, NewEventItem } from "@/types/event";
+import { CreateEvent } from "@/lib/db/events";
 
 export async function GET() {
     const events = await db
         .selectFrom("event")
         .selectAll()
+        .where("public", "=", true)
         .orderBy("startDate", "asc")
         .execute();
     return NextResponse.json(events);
@@ -21,7 +23,7 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    const newEvent: NewEvent = {
+    const newEvent: NewEventItem = {
         title: body.title,
         description: body.description ?? null,
         startDate: new Date(body.startDate),
@@ -30,12 +32,7 @@ export async function POST(req: Request) {
         public: body.public ?? false,
         location: body.location,
     };
-
-    const event = await db
-        .insertInto("event")
-        .values(newEvent)
-        .returningAll()
-        .executeTakeFirstOrThrow();
+    const event = await CreateEvent(newEvent);
 
     return NextResponse.json(event, { status: 201 });
 }

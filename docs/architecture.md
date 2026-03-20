@@ -18,18 +18,21 @@ Internal Users are Helpers that have an Account in the Nextcloud Instance. They 
   - Shifts: Relation to Shift
 - Shift
   - Kind: Relation to ShiftKind
-  - StartDate: DateTime
-  - EndDate: DateTime
+  - StartDateTime: DateTime
+  - EndDateTime: DateTime
   - Location: GeoPoint
   - Entry: Relation to ShiftEntry
+  - Internal: Boolean
   - **ID**: String
 - ShiftKind
-  - **Title**: String
+  - **ID**: String
+  - Title: String
+  - UnauthorizedMessage: String
+  - AuthorizationRole: String
   - Description: String
   - Icon: NextIcon
   - Color: String
   - DefaultLocation: GeoPoint
-  - Internal: Boolean
 - ShiftEntry
   - **Shift**: Relation to Shift
   - **Helper**: Relation to User

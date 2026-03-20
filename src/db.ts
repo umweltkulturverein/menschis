@@ -1,6 +1,6 @@
 import { CamelCasePlugin, Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
-import { Database } from "@/types/event";
+import { Database } from "@/types/database";
 
 if (!process.env.DATABASE_URL) {
     throw new Error("env DATABASE_URL is required and missing");

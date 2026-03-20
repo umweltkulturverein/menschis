@@ -1,12 +1,13 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import SignInButton from "./SignInButton";
+import Link from "next/link";
 
 export default async function NavBar() {
     const session = await getServerSession(authOptions);
 
     return (
-        <nav className="w-full bg-white dark:bg-black p-4 shadow-md">
+        <nav className="w-full sticky top-0 z-50 bg-white/70 dark:bg-black/60 backdrop-blur-md p-4 shadow-md">
             <div className="max-w-screen mx-auto flex items-center justify-between">
                 <div className="flex items-center">
                     <img
@@ -25,12 +26,12 @@ export default async function NavBar() {
                             <span className="text-sm text-gray-600 dark:text-gray-300">
                                 {session.user?.name ?? session.user?.email}
                             </span>
-                            <a
+                            <Link
                                 href="/api/auth/signout"
                                 className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                             >
                                 Sign out
-                            </a>
+                            </Link>
                         </>
                     ) : (
                         <SignInButton />
