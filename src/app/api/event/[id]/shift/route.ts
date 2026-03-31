@@ -27,6 +27,7 @@ export async function POST(
 
     const shift: NewShift = {
         startDatetime: new Date(body.startDatetime),
+        slots: Number(body.slots),
         endDatetime: new Date(body.endDatetime),
         internal: body.internal ?? false,
         shiftKind: Number(body.shiftKindId),

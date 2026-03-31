@@ -1,4 +1,3 @@
-import { EventItem } from "@/types/event";
 import EventPanel from "./EventPanel";
 import { GetEvents } from "@/lib/db/events";
 

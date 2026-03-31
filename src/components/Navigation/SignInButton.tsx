@@ -6,7 +6,7 @@ export default function SignInButton() {
     return (
         <button
             onClick={() => signIn("oidc")}
-            className="px-3 py-1.5 text-sm bg-ci-blue-500 hover:bg-ci-blue-600 text-white rounded-md transition-colors"
+            className="px-3 py-1.5 text-sm bg-ci-blue-500 hover:bg-ci-blue-600 text-white rounded-md transition-colors cursor-pointer"
         >
             Sign in
         </button>

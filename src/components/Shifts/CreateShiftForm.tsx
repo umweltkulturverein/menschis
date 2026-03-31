@@ -26,6 +26,7 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
             shiftKindId: fd.get("shiftKindId") as string,
             startDatetime: fd.get("startDatetime") as string,
             endDatetime: fd.get("endDatetime") as string,
+            slots: fd.get("slots") as string,
             internal: fd.get("internal") === "on",
         };
 
@@ -47,13 +48,22 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
         router.refresh();
     }
 
+    const inputClass =
+        "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500";
+    const labelClass =
+        "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
+
     return (
         <>
             <button
                 onClick={() => setOpen(true)}
                 disabled={shiftKinds.length === 0}
-                title={shiftKinds.length === 0 ? "Create a shift kind first" : undefined}
-                className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                title={
+                    shiftKinds.length === 0
+                        ? "Create a shift kind first"
+                        : undefined
+                }
+                className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
             >
                 + New Shift
             </button>
@@ -73,7 +83,8 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
                             </h2>
                             <button
                                 onClick={() => setOpen(false)}
-                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+                                aria-label="Close"
                             >
                                 ✕
                             </button>
@@ -81,18 +92,21 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label className={labelClass}>
                                     Shift Kind *
                                 </label>
                                 <select
                                     name="shiftKindId"
                                     required
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500"
+                                    className={inputClass}
                                 >
-                                    <option value="">Select a shift kind…</option>
+                                    <option value="">
+                                        Select a shift kind…
+                                    </option>
                                     {shiftKinds.map((kind) => (
                                         <option key={kind.id} value={kind.id}>
-                                            {kind.icon ? `${kind.icon} ` : ""}{kind.title}
+                                            {kind.icon ? `${kind.icon} ` : ""}
+                                            {kind.title}
                                         </option>
                                     ))}
                                 </select>
@@ -100,13 +114,8 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
 
                             {days.length > 0 && (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Day
-                                    </label>
-                                    <select
-                                        name="day"
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500"
-                                    >
+                                    <label className={labelClass}>Day</label>
+                                    <select name="day" className={inputClass}>
                                         {days.map((d) => (
                                             <option key={d} value={d}>
                                                 {d}
@@ -116,28 +125,39 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
                                 </div>
                             )}
 
+                            <div>
+                                <label className={labelClass}>
+                                    Number of Slots
+                                </label>
+                                <input
+                                    name="slots"
+                                    type="number"
+                                    min="1"
+                                    defaultValue="2"
+                                    required
+                                    className={inputClass}
+                                ></input>
+                            </div>
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <label className={labelClass}>
                                         Start *
                                     </label>
                                     <input
                                         name="startDatetime"
                                         type="datetime-local"
                                         required
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500"
+                                        className={inputClass}
                                     />
                                 </div>
-
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        End *
-                                    </label>
+                                    <label className={labelClass}>End *</label>
                                     <input
                                         name="endDatetime"
                                         type="datetime-local"
                                         required
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500"
+                                        className={inputClass}
                                     />
                                 </div>
                             </div>
@@ -158,21 +178,26 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
                             </div>
 
                             {error && (
-                                <p className="text-red-500 text-sm">{error}</p>
+                                <p
+                                    className="text-red-500 text-sm"
+                                    role="alert"
+                                >
+                                    {error}
+                                </p>
                             )}
 
                             <div className="flex gap-3 justify-end">
                                 <button
                                     type="button"
                                     onClick={() => setOpen(false)}
-                                    className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors"
+                                    className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors"
+                                    className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
                                 >
                                     {submitting ? "Creating…" : "Create Shift"}
                                 </button>

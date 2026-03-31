@@ -45,11 +45,15 @@ export default function CreateShiftKindForm({ eventId }: Props) {
         router.refresh();
     }
 
+    const inputClass =
+        "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500";
+    const labelClass = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
+
     return (
         <>
             <button
                 onClick={() => setOpen(true)}
-                className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+                className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
             >
                 + New Shift Kind
             </button>
@@ -69,7 +73,8 @@ export default function CreateShiftKindForm({ eventId }: Props) {
                             </h2>
                             <button
                                 onClick={() => setOpen(false)}
-                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+                                aria-label="Close"
                             >
                                 ✕
                             </button>
@@ -78,45 +83,22 @@ export default function CreateShiftKindForm({ eventId }: Props) {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Title *
-                                    </label>
-                                    <input
-                                        name="title"
-                                        type="text"
-                                        required
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500"
-                                    />
+                                    <label className={labelClass}>Title *</label>
+                                    <input name="title" type="text" required className={inputClass} />
                                 </div>
-
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Icon (emoji)
-                                    </label>
-                                    <input
-                                        name="icon"
-                                        type="text"
-                                        placeholder="📋"
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500"
-                                    />
+                                    <label className={labelClass}>Icon (emoji)</label>
+                                    <input name="icon" type="text" placeholder="📋" className={inputClass} />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Description
-                                </label>
-                                <textarea
-                                    name="description"
-                                    rows={2}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500"
-                                />
+                                <label className={labelClass}>Description</label>
+                                <textarea name="description" rows={2} className={inputClass} />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Color *
-                                </label>
+                                <label className={labelClass}>Color *</label>
                                 <input
                                     name="color"
                                     type="color"
@@ -127,32 +109,26 @@ export default function CreateShiftKindForm({ eventId }: Props) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Authorization message
-                                </label>
-                                <input
-                                    name="authorizationMessage"
-                                    type="text"
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500"
-                                />
+                                <label className={labelClass}>Authorization message</label>
+                                <input name="authorizationMessage" type="text" className={inputClass} />
                             </div>
 
                             {error && (
-                                <p className="text-red-500 text-sm">{error}</p>
+                                <p className="text-red-500 text-sm" role="alert">{error}</p>
                             )}
 
                             <div className="flex gap-3 justify-end">
                                 <button
                                     type="button"
                                     onClick={() => setOpen(false)}
-                                    className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors"
+                                    className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors"
+                                    className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
                                 >
                                     {submitting ? "Creating…" : "Create Shift Kind"}
                                 </button>

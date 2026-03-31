@@ -20,9 +20,21 @@ export interface ShiftTable {
     startDatetime: Date;
     endDatetime: Date;
     internal: boolean;
+    slots: number;
     shiftKind: number;
 }
 
 export type Shift = Selectable<ShiftTable>;
 export type NewShift = Insertable<ShiftTable>;
 export type UpdateShift = Updateable<ShiftTable>;
+
+export interface ShiftEntryTable {
+    id: Generated<number>;
+    createdAt: Date;
+    updatedAt: Date;
+    notes: string;
+    shift: number;
+}
+export type ShiftEntry = Selectable<ShiftTable>;
+export type NewShiftEntry = Insertable<ShiftTable>;
+export type UpdateShiftEntry = Updateable<ShiftTable>;

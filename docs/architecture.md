@@ -27,8 +27,8 @@ Internal Users are Helpers that have an Account in the Nextcloud Instance. They 
 - ShiftKind
   - **ID**: String
   - Title: String
-  - UnauthorizedMessage: String
-  - AuthorizationRole: String
+  - UnauthorizedMessage: String // Can be different. Awareness may Contain "Contact Awareness Team", Internal Shifts may Contain "Team-Only or Login with SSO Account"
+  - AuthorizationMagicLinkToken // The Shift-Planner can Create a Link and send it to anyone who wants to register for a shift after getting some introduction
   - Description: String
   - Icon: NextIcon
   - Color: String
@@ -39,13 +39,14 @@ Internal Users are Helpers that have an Account in the Nextcloud Instance. They 
   - Notes: String
   - CreatedAt: DateTime
   - UpdatedAt: DateTime
-- AnonymousUser
+- User
+  - ID: Serial
+  - Sub: (Imported from SUB when SSO)
   - Name: String
-  - **Email**: String
+  - Email: String
   - Phone: String
   - EmailAuthTokens: []String
   - Entries: Relation to ShiftEntry
-- User (Not in DB will be extracted from Auth Token by Nextcloud)
 
 
 ### User Roles

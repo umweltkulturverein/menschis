@@ -8,7 +8,6 @@ interface Props {
     days: string[] | null | undefined;
 }
 
-
 export default function EventDaysEditor({ eventId, days: initial }: Props) {
     const router = useRouter();
     const [days, setDays] = useState(initial ?? []);
@@ -58,7 +57,7 @@ export default function EventDaysEditor({ eventId, days: initial }: Props) {
                         {d}
                         <button
                             onClick={() => removeDay(d)}
-                            className="text-gray-400 hover:text-red-500 transition-colors leading-none"
+                            className="text-gray-400 hover:text-red-500 transition-colors leading-none cursor-pointer"
                             aria-label={`Remove ${d}`}
                         >
                             ×
@@ -79,7 +78,7 @@ export default function EventDaysEditor({ eventId, days: initial }: Props) {
                 <button
                     type="submit"
                     disabled={saving}
-                    className="px-3 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors"
+                    className="px-3 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
                 >
                     {saving ? "Saving…" : "+ Add"}
                 </button>
