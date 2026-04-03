@@ -1,7 +1,10 @@
-// - User
-//   - ID: Number (Imported from SUB when SSO)
-//   - Name: String
-//   - Email: String
-//   - Phone: String
-//   - EmailAuthTokens: []String
-//   - Entries: Relation to ShiftEntry
+import { ColumnType, Generated } from "kysely";
+
+export interface PersonTable {
+    id: Generated<number>;
+    sub: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    roles: ColumnType<string[] | null, string[] | null, string[] | null>;
+}

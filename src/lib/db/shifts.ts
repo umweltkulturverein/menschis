@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import type { ShiftKind, NewShiftKind, Shift, NewShift } from "@/types/shift";
+import type { ShiftKind, NewShiftKind, Shift, NewShift, ShiftEntry } from "@/types/shift";
 
 export async function GetShiftKindsByEvent(eventId: number): Promise<ShiftKind[]> {
     return await db
@@ -30,6 +30,19 @@ export async function CreateShift(shift: NewShift): Promise<Shift> {
     return await db
         .insertInto("shift")
         .values(shift)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+}
+
+export async function CreateShiftEntry(
+    shiftId: number,
+    personId: number,
+    notes: string,
+): Promise<ShiftEntry> {
+    const now = new Date();
+    return await db
+        .insertInto("shiftEntry")
+        .values({ shift: shiftId, person: personId, notes, createdAt: now, updatedAt: now })
         .returningAll()
         .executeTakeFirstOrThrow();
 }

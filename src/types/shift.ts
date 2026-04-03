@@ -34,7 +34,8 @@ export interface ShiftEntryTable {
     updatedAt: Date;
     notes: string;
     shift: number;
+    person: number | null;
 }
-export type ShiftEntry = Selectable<ShiftTable>;
-export type NewShiftEntry = Insertable<ShiftTable>;
-export type UpdateShiftEntry = Updateable<ShiftTable>;
+export type ShiftEntry = Selectable<ShiftEntryTable>;
+export type NewShiftEntry = Insertable<ShiftEntryTable>;
+export type UpdateShiftEntry = Updateable<ShiftEntryTable>;

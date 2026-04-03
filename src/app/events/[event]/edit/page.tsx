@@ -7,6 +7,7 @@ import EventBanner from "@/components/Events/EventBanner";
 import CreateShiftKindForm from "@/components/Shifts/CreateShiftKindForm";
 import CreateShiftForm from "@/components/Shifts/CreateShiftForm";
 import EventDaysEditor from "@/components/Events/EventDaysEditor";
+import { NaturalDateTime } from "@/lib/misc/contextAwareDates";
 
 export default async function EventEditPage({
     params,
@@ -66,7 +67,9 @@ export default async function EventEditPage({
                                         className="w-full h-16 flex items-center justify-center"
                                         style={{ backgroundColor: kind.color }}
                                     >
-                                        <span className="text-2xl">{kind.icon ?? "📋"}</span>
+                                        <span className="text-2xl">
+                                            {kind.icon ?? "📋"}
+                                        </span>
                                     </div>
                                     <div className="p-3">
                                         <h3 className="text-sm font-bold text-gray-800 dark:text-white">
@@ -104,7 +107,9 @@ export default async function EventEditPage({
                     ) : (
                         <div className="space-y-2">
                             {shifts.map((shift) => {
-                                const kind = shiftKinds.find((k) => k.id === shift.shiftKind);
+                                const kind = shiftKinds.find(
+                                    (k) => k.id === shift.shiftKind,
+                                );
                                 return (
                                     <div
                                         key={shift.id}
@@ -113,23 +118,22 @@ export default async function EventEditPage({
                                         {kind && (
                                             <div
                                                 className="w-2 self-stretch rounded-full shrink-0"
-                                                style={{ backgroundColor: kind.color }}
+                                                style={{
+                                                    backgroundColor: kind.color,
+                                                }}
                                             />
                                         )}
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-medium text-gray-800 dark:text-white">
-                                                {kind?.icon ? `${kind.icon} ` : ""}
+                                                {kind?.icon
+                                                    ? `${kind.icon} `
+                                                    : ""}
                                                 {kind?.title ?? "Unknown kind"}
                                             </p>
                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                                {new Date(shift.startDatetime).toLocaleString("de-DE", {
-                                                    dateStyle: "short",
-                                                    timeStyle: "short",
-                                                })}{" – "}
-                                                {new Date(shift.endDatetime).toLocaleString("de-DE", {
-                                                    dateStyle: "short",
-                                                    timeStyle: "short",
-                                                })}
+                                                {NaturalDateTime(
+                                                    shift?.startDatetime,
+                                                )}
                                             </p>
                                         </div>
                                         {shift.internal && (
