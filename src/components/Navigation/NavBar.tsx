@@ -1,6 +1,5 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import SignInButton from "./SignInButton";
 import Link from "next/link";
 
 export default async function NavBar() {
@@ -21,7 +20,7 @@ export default async function NavBar() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {session ? (
+                    {session && (
                         <>
                             <span className="text-sm text-gray-600 dark:text-gray-300">
                                 {session.user?.name ?? session.user?.email}
@@ -33,8 +32,6 @@ export default async function NavBar() {
                                 Sign out
                             </Link>
                         </>
-                    ) : (
-                        <SignInButton />
                     )}
                 </div>
             </div>

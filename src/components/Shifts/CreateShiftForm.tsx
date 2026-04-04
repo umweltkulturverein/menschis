@@ -27,6 +27,7 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
             startDatetime: fd.get("startDatetime") as string,
             endDatetime: fd.get("endDatetime") as string,
             slots: fd.get("slots") as string,
+            day: fd.get("day") as string,
             internal: fd.get("internal") === "on",
         };
 

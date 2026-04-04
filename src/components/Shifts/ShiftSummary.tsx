@@ -1,9 +1,23 @@
-import { GetShiftsByEvent, GetShiftKindsByEvent } from "@/lib/db/shifts";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import {
+    GetShiftsByEvent,
+    GetShiftKindsByEvent,
+    GetEntriesByShifts,
+} from "@/lib/db/shifts";
+import { GetPersonBySub } from "@/lib/db/persons";
 import ShiftPanel from "./ShiftPanel";
 
-export default async function ShiftSummary({ eventId }: { eventId: number }) {
+export default async function ShiftSummary({
+    eventId,
+    eventDay,
+}: {
+    eventId: number;
+    eventDay: string;
+}) {
+    const session = await getServerSession(authOptions);
     const [shifts, kinds] = await Promise.all([
-        GetShiftsByEvent(eventId),
+        GetShiftsByEvent(eventId, eventDay),
         GetShiftKindsByEvent(eventId),
     ]);
 
@@ -15,6 +29,14 @@ export default async function ShiftSummary({ eventId }: { eventId: number }) {
         );
     }
 
+    const shiftIds = shifts.map((s) => s.id);
+    const [allEntries, currentPerson] = await Promise.all([
+        GetEntriesByShifts(shiftIds),
+        session?.user?.id
+            ? GetPersonBySub(session.user.id)
+            : Promise.resolve(undefined),
+    ]);
+
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {shifts.map((shift) => (
@@ -22,6 +44,15 @@ export default async function ShiftSummary({ eventId }: { eventId: number }) {
                     key={shift.id}
                     shift={shift}
                     kind={kinds.find((k) => k.id === shift.shiftKind)}
+                    initialEntries={allEntries.filter(
+                        (e) => e.shift === shift.id,
+                    )}
+                    currentPersonId={currentPerson?.id ?? null}
+                    prefill={{
+                        name: currentPerson?.name ?? "",
+                        email: currentPerson?.email ?? "",
+                        phone: currentPerson?.phone ?? "",
+                    }}
                 />
             ))}
         </div>

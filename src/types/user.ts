@@ -6,5 +6,6 @@ export interface PersonTable {
     name: string;
     email: string | null;
     phone: string | null;
+    loginToken: string | null;
     roles: ColumnType<string[] | null, string[] | null, string[] | null>;
 }

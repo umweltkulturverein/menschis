@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { isInternalUser } from "@/lib/permissions";
 import { redirect, RedirectType } from "next/navigation";
 import { GetEventAdmin } from "@/lib/db/events";
 import { GetShiftKindsByEvent, GetShiftsByEvent } from "@/lib/db/shifts";
@@ -7,7 +8,9 @@ import EventBanner from "@/components/Events/EventBanner";
 import CreateShiftKindForm from "@/components/Shifts/CreateShiftKindForm";
 import CreateShiftForm from "@/components/Shifts/CreateShiftForm";
 import EventDaysEditor from "@/components/Events/EventDaysEditor";
+import CopyButton from "@/components/Misc/CopyButton";
 import { NaturalDateTime } from "@/lib/misc/contextAwareDates";
+import { StringToColour } from "@/lib/misc/color";
 
 export default async function EventEditPage({
     params,
@@ -16,8 +19,8 @@ export default async function EventEditPage({
 }) {
     const { event: eventId } = await params;
     const session = await getServerSession(authOptions);
-    if (!session) {
-        redirect("/api/auth/signin", RedirectType.replace);
+    if (!isInternalUser(session)) {
+        redirect(`/events/${eventId}`, RedirectType.replace);
     }
 
     const event = await GetEventAdmin(Number(eventId));
@@ -30,11 +33,31 @@ export default async function EventEditPage({
         GetShiftsByEvent(Number(eventId)),
     ]);
 
+    const base = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+    const loginUrl = `${base}/api/auth/signin/oidc?callbackUrl=${encodeURIComponent(`/events/${eventId}`)}`;
+
     return (
         <div className="min-h-screen bg-zinc-50 dark:bg-ci-blue-800">
             <EventBanner event={event} />
 
             <div className="max-w-4xl mx-auto px-6 py-8 space-y-10">
+                {/* Internal login link */}
+                <section>
+                    <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                        Internal Shift Entry Link
+                    </h2>
+                    <div className="flex items-center gap-2 rounded-lg bg-white dark:bg-ci-blue-700 border border-gray-200 dark:border-gray-600 px-3 py-2 shadow-sm">
+                        <span className="flex-1 text-xs text-gray-500 dark:text-gray-400 font-mono truncate">
+                            {loginUrl}
+                        </span>
+                        <CopyButton value={loginUrl} />
+                    </div>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                        Share with internal members — signs in via SSO and lands
+                        on this event.
+                    </p>
+                </section>
+
                 {/* Event Days */}
                 <section>
                     <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
@@ -140,6 +163,21 @@ export default async function EventEditPage({
                                             <span className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
                                                 Internal
                                             </span>
+                                        )}
+                                        {shift.eventDay ? (
+                                            <span
+                                                style={{
+                                                    backgroundColor:
+                                                        StringToColour(
+                                                            shift.eventDay,
+                                                        ),
+                                                }}
+                                                className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full text-white  dark:text-white"
+                                            >
+                                                {shift.eventDay}
+                                            </span>
+                                        ) : (
+                                            <></>
                                         )}
                                     </div>
                                 );

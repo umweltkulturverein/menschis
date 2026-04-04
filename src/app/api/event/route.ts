@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { requireInternalUser } from "@/lib/permissions";
 import { db } from "@/db";
 import type { EventItem, NewEventItem } from "@/types/event";
 import { CreateEvent } from "@/lib/db/events";
@@ -17,9 +18,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
-    if (!session) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireInternalUser(session);
+    if (authError) return authError;
 
     const body = await req.json();
 

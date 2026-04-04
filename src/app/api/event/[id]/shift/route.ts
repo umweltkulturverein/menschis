@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { requireInternalUser } from "@/lib/permissions";
 import { GetShiftsByEvent, CreateShift } from "@/lib/db/shifts";
 import type { NewShift } from "@/types/shift";
 
@@ -18,15 +19,15 @@ export async function POST(
     { params }: { params: Promise<{ id: string }> },
 ) {
     const session = await getServerSession(authOptions);
-    if (!session) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authError = requireInternalUser(session);
+    if (authError) return authError;
 
     const { id } = await params;
     const body = await req.json();
 
     const shift: NewShift = {
         startDatetime: new Date(body.startDatetime),
+        eventDay: body.day ?? undefined,
         slots: Number(body.slots),
         endDatetime: new Date(body.endDatetime),
         internal: body.internal ?? false,

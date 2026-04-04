@@ -51,6 +51,7 @@ export const authOptions: NextAuthOptions = {
             const name = user.name ?? sub;
             const email = user.email ?? null;
             const phone = rawProfile.phone_number ?? null;
+            const loginToken = crypto.randomUUID();
 
             await db
                 .insertInto("person")
@@ -59,14 +60,19 @@ export const authOptions: NextAuthOptions = {
                     name,
                     email,
                     phone,
+                    loginToken,
                     roles: null,
                 })
                 .onConflict((oc) =>
-                    oc.column("sub").doUpdateSet({
+                    oc.column("sub").doUpdateSet((eb) => ({
                         name,
                         email,
                         phone,
-                    }),
+                        loginToken: eb.fn.coalesce(
+                            eb.ref("person.loginToken"),
+                            eb.val(loginToken),
+                        ),
+                    })),
                 )
                 .execute();
 

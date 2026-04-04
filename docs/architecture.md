@@ -6,6 +6,12 @@ The Helper Shifts are structured into several key components that work together 
 External Users are Public Users. They do not have an Option to Register an Account but only to Register for Shifts. To Edit a Shift they are tied to a Token that is send via Email after Verification of their Email Address.
 Internal Users are Helpers that have an Account in the Nextcloud Instance. They can Login via Nextcloud Auth and Book Shifts. There are Exclusive Internal Shifts aswell as the Option to Register before all others can.
 
+Magic Link Shift Registration Validation:
+- Cloudflare Captcha to Register
+- After applying for a shift show no confirmation and rather a yellow warning saying confirm your email first to keep the shift entry
+- Shift entrys will expire after 30m if the email is not verified
+-> Reason: Without Registration Shift Planning Teams need a verified communication endpoint for sending important informations out
+
 ## Data Structure
 - Event
   - **Title**: String
