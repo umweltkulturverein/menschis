@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { requireInternalUser } from "@/lib/permissions";
 import { db } from "@/db";
 import { sql } from "kysely";
-import { GetEntriesByShifts } from "@/lib/db/shifts";
+import { GetEntriesByShifts, GetShiftsByEvent } from "@/lib/db/shifts";
 import { GetEntriesByEvent } from "@/lib/db/shiftEntries";
 
 export async function PATCH(
@@ -25,16 +25,21 @@ export async function PATCH(
             .where("id", "=", Number(id))
             .execute();
         const entries = await GetEntriesByEvent(Number(id));
-        for (const e of entries) {
-            if (JSON.stringify(body.days).includes(e)) {
-                NextResponse.json(
-                    {
-                        error: "There are still shiftentries related to this Day",
-                    },
-                    { status: 400 },
-                );
-            }
+        const shifts = await GetShiftsByEvent(Number(id));
+
+        const shiftIds = shifts.map((s) => s.id);
+        const conflictingEntries = entries.filter((entry) =>
+            shiftIds.includes(entry.shift),
+        );
+        if (conflictingEntries.length > 0) {
+            return NextResponse.json(
+                {
+                    error: "There are still shiftentries related to this Day",
+                },
+                { status: 400 },
+            );
         }
+
         await deleteShiftsNotInDays(Number(id), body.days);
     }
 
