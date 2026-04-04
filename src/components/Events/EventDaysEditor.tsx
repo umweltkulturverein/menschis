@@ -37,7 +37,7 @@ export default function EventDaysEditor({ eventId, days: initial }: Props) {
 
     async function removeDay(date: string) {
         const confirmed = window.confirm(
-            `Are you sure you want to delete "${date}" and all shifts assigned to it?`,
+            `Are you sure you want to delete ${date}? all shifts will stay intact and have to be deleted manually.`,
         );
         if (!confirmed) return;
         const next = days.filter((d) => d !== date);

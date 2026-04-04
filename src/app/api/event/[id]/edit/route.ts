@@ -39,32 +39,7 @@ export async function PATCH(
                 { status: 400 },
             );
         }
-
-        await deleteShiftsNotInDays(Number(id), body.days);
     }
 
     return NextResponse.json({ ok: true });
-}
-
-async function deleteShiftsNotInDays(
-    eventId: number,
-    remainingDays: string[],
-): Promise<void> {
-    let query = db
-        .deleteFrom("shift")
-        .where(
-            "shift.id",
-            "in",
-            db
-                .selectFrom("shift as s")
-                .innerJoin("shiftKind", "shiftKind.id", "s.shiftKind")
-                .where("shiftKind.eventId", "=", eventId)
-                .select("s.id"),
-        );
-
-    if (remainingDays.length > 0) {
-        query = query.where("shift.eventDay", "not in", remainingDays);
-    }
-
-    await query.execute();
 }
