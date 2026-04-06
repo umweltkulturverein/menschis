@@ -6,6 +6,7 @@ import EventBanner from "@/components/Events/EventBanner";
 import { Suspense } from "react";
 import ShiftSummary from "@/components/Shifts/ShiftSummary";
 import Link from "next/link";
+import { requireInternalUser } from "@/lib/permissions";
 
 export default async function EventPage({
     params,
@@ -14,6 +15,7 @@ export default async function EventPage({
 }) {
     const { event: eventId } = await params;
     const session = await getServerSession(authOptions);
+    const authError = await requireInternalUser(session);
     const event = await GetEvent(Number(eventId));
     if (event === undefined) {
         redirect("/404", RedirectType.replace);
@@ -60,12 +62,17 @@ export default async function EventPage({
                                     <ShiftSummary
                                         eventId={event.id}
                                         eventDay={day}
+                                        authError={authError}
                                     />
                                 </div>
                             ))
                         ) : (
                             <div className="pt-8">
-                                <ShiftSummary eventId={event.id} eventDay="" />
+                                <ShiftSummary
+                                    authError={authError}
+                                    eventId={event.id}
+                                    eventDay=""
+                                />
                             </div>
                         )}
                     </div>

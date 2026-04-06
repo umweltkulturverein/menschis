@@ -7,17 +7,20 @@ import {
 } from "@/lib/db/shifts";
 import { GetPersonBySub } from "@/lib/db/persons";
 import ShiftPanel from "./ShiftPanel";
+import { NextResponse } from "next/server";
 
 export default async function ShiftSummary({
     eventId,
     eventDay,
+    authError,
 }: {
     eventId: number;
     eventDay: string;
+    authError: NextResponse<unknown> | null;
 }) {
     const session = await getServerSession(authOptions);
     const [shifts, kinds] = await Promise.all([
-        GetShiftsByEvent(eventId, eventDay),
+        GetShiftsByEvent(eventId, eventDay, authError),
         GetShiftKindsByEvent(eventId),
     ]);
 

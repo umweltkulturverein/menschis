@@ -6,6 +6,11 @@ import type {
     NewShift,
     ShiftEntry,
 } from "@/types/shift";
+import { NextResponse } from "next/server";
+
+export async function DeleteShiftById(id: number) {
+    await db.deleteFrom("shift").where("id", "=", id).execute();
+}
 
 export async function GetShiftKindsByEvent(
     eventId: number,
@@ -20,6 +25,7 @@ export async function GetShiftKindsByEvent(
 export async function GetShiftsByEvent(
     eventId: number,
     eventDay?: string,
+    authError?: NextResponse<unknown> | null,
 ): Promise<Shift[]> {
     let query = db
         .selectFrom("shift")
@@ -33,6 +39,7 @@ export async function GetShiftsByEvent(
         query = query.where("shift.eventDay", "=", eventDay);
         console.log("eventDay " + eventDay);
     }
+    if (authError) query = query.where("shift.internal", "=", false);
 
     return await query.execute();
 }
@@ -58,8 +65,21 @@ export async function CreateShiftEntry(
     personId: number,
     name: string,
     notes: string,
-): Promise<ShiftEntry> {
+    authError: NextResponse<unknown> | null,
+): Promise<ShiftEntry | null> {
     const now = new Date();
+
+    // non-internal users cannot entry in internal shifts
+    if (authError) {
+        const internal = await db
+            .selectFrom("shift")
+            .select("internal")
+            .where("id", "=", shiftId)
+            .execute();
+        if (internal) {
+            return null;
+        }
+    }
     return await db
         .insertInto("shiftEntry")
         .values({

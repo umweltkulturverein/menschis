@@ -5,6 +5,7 @@ import { CreateShiftEntry } from "@/lib/db/shifts";
 import { FindOrCreatePersonByEmail, GetPersonBySub } from "@/lib/db/persons";
 import { sendMagicLink } from "@/lib/email";
 import { NextResponse } from "next/server";
+import { requireInternalUser } from "@/lib/permissions";
 
 export async function POST(
     req: Request,
@@ -37,18 +38,35 @@ export async function POST(
     if (session?.user?.id) {
         const p = await GetPersonBySub(session.user.id);
         if (!p) {
-            return NextResponse.json({ error: "Person not found" }, { status: 404 });
+            return NextResponse.json(
+                { error: "Person not found" },
+                { status: 404 },
+            );
         }
         person = p;
     } else {
-        const p = await FindOrCreatePersonByEmail(email, name ?? "", phone ?? null);
+        const p = await FindOrCreatePersonByEmail(
+            email,
+            name ?? "",
+            phone ?? null,
+        );
         const referer = req.headers.get("referer");
         const redirectPath = referer ? new URL(referer).pathname : undefined;
         await sendMagicLink(email, p.loginToken!, redirectPath);
         person = p;
     }
-
-    const entry = await CreateShiftEntry(shiftId, person.id, name ?? "", notes ?? "");
+    const authError = requireInternalUser(session);
+    const entry = await CreateShiftEntry(
+        shiftId,
+        person.id,
+        name ?? "",
+        notes ?? "",
+        authError,
+    );
+    if (entry == undefined)
+        return NextResponse.json("You cannot Register for this shift", {
+            status: 401,
+        });
     return NextResponse.json(entry, { status: 201 });
 }
 

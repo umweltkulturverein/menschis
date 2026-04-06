@@ -46,12 +46,4 @@ The `EventDaysEditor` component (`src/components/Events/EventDaysEditor.tsx`) le
 
 - **Add:** text input → appended and sorted → saved via `PATCH /api/event/[id]/edit`.
 - **Remove:** clicking `×` on a day chip shows a confirmation dialog:
-  > "Are you sure you want to delete '[day]' and all shifts assigned to it?"
-  
-  On confirm, the day is removed and [Cascade Delete](#cascade-delete) is triggered.
-
-### Cascade Delete
-
-When days are deleted, `DeleteShiftsNotInDays(eventId, remainingDays)` in `src/lib/db/shifts.ts` deletes all shifts for the event whose `eventDay` is not in the new days array. This runs inside `PATCH /api/event/[id]/edit` immediately after updating `event.days`.
-
-When `remainingDays` is empty, all shifts for the event are deleted.
+  > "Are you sure you want to delete '[day]'?"
