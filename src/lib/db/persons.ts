@@ -12,7 +12,9 @@ export async function GetPersonBySub(sub: string): Promise<Person | undefined> {
         .executeTakeFirst();
 }
 
-export async function GetPersonByLoginToken(token: string): Promise<Person | undefined> {
+export async function GetPersonByLoginToken(
+    token: string,
+): Promise<Person | undefined> {
     return await db
         .selectFrom("person")
         .selectAll()

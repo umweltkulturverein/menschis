@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/db";
-import { CreateShiftEntry } from "@/lib/db/shifts";
+import { CreateShiftEntry } from "@/lib/db/shiftEntries";
 import { FindOrCreatePersonByEmail, GetPersonBySub } from "@/lib/db/persons";
 import { sendMagicLink } from "@/lib/email";
 import { NextResponse } from "next/server";
@@ -63,6 +63,7 @@ export async function POST(
         notes ?? "",
         authError,
     );
+    console.log(entry);
     if (entry == undefined)
         return NextResponse.json("You cannot Register for this shift", {
             status: 401,

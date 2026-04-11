@@ -1,10 +1,8 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import {
-    GetShiftsByEvent,
-    GetShiftKindsByEvent,
-    GetEntriesByShifts,
-} from "@/lib/db/shifts";
+import { GetShiftsByEvent } from "@/lib/db/shifts";
+import { GetShiftKindsByEvent } from "@/lib/db/shiftKinds";
+import { GetEntriesByShifts } from "@/lib/db/shiftEntries";
 import { GetPersonBySub } from "@/lib/db/persons";
 import ShiftPanel from "./ShiftPanel";
 import { NextResponse } from "next/server";

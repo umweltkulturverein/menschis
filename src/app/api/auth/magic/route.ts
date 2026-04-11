@@ -7,7 +7,6 @@ export async function GET(req: NextRequest) {
     if (!token) {
         return NextResponse.json({ error: "Missing token" }, { status: 400 });
     }
-
     const person = await GetPersonByLoginToken(token);
     if (!person) {
         return NextResponse.json({ error: "Invalid token" }, { status: 401 });
@@ -24,10 +23,12 @@ export async function GET(req: NextRequest) {
             name: person.name,
             email: person.email,
             sub: person.sub,
+            shiftAccess: {},
         },
         secret: process.env.NEXTAUTH_SECRET!,
         maxAge: 30 * 24 * 60 * 60, // 30 Days
     });
+    console.log(sessionToken)
 
     const redirectParam = req.nextUrl.searchParams.get("redirect");
     const redirectPath =

@@ -7,6 +7,8 @@ declare module "next-auth" {
             name?: string | null;
             email?: string | null;
             image?: string | null;
+            sub?: string | null;
+            shiftAccess?: Record<number, string>; // shiftKindID + Token
         };
     }
 }

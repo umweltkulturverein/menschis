@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { requireInternalUser } from "@/lib/permissions";
 import { db } from "@/db";
 import { sql } from "kysely";
-import { GetEntriesByShifts, GetShiftsByEvent } from "@/lib/db/shifts";
+import { GetShiftsByEvent } from "@/lib/db/shifts";
 import { GetEntriesByEvent } from "@/lib/db/shiftEntries";
 
 export async function PATCH(
