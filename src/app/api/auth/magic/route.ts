@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
     }
     const person = await GetPersonByLoginToken(token);
     if (!person) {
+
         return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 

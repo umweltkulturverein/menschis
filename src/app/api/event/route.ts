@@ -31,6 +31,8 @@ export async function POST(req: Request) {
         startBookingDateTime: new Date(body.startBookingDateTime),
         public: body.public ?? false,
         location: body.location,
+        backstageAccess: body.backstageAccess ?? false,
+        tokenCount: body.tokenCount ?? 0,
     };
     const event = await CreateEvent(newEvent);
 
