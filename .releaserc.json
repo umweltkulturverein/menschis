@@ -1,0 +1,31 @@
+{
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits",
+        "releaseRules": [
+          { "type": "content", "release": "patch" },
+          { "type": "ci", "release": "patch" }
+        ]
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits",
+        "presetConfig": {
+          "types": [
+            { "type": "feat", "section": "Features", "hidden": false },
+            { "type": "fix", "section": "Bug Fixes", "hidden": false },
+            { "type": "content", "section": "Content", "hidden": false },
+            { "type": "ci", "section": "Pipeline", "hidden": false }
+          ]
+        }
+      }
+    ],
+    "@semantic-release/changelog",
+    "@semantic-release/github",
+    "@semantic-release/git"
+  ]
+}
