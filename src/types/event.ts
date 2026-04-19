@@ -9,6 +9,8 @@ export interface EventItemTable {
     startBookingDateTime: Date;
     public: boolean;
     location: string;
+    backstageAccess: boolean;
+    tokenCount: number;
     days: string[] | null; // YYYY-MM-DD date strings
 }
 export type EventItem = Selectable<EventItemTable>;

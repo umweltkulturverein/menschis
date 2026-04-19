@@ -19,7 +19,7 @@ COPY . .
 # Learn more here: https://nextjs.org/telemetry
 # Disable telemetry during the build
 ENV NEXT_TELEMETRY_DISABLED=1
-
+ENV DATABASE_URL=postgresql://db
 RUN bun run build
 
 # Production image, copy all the files and run next
