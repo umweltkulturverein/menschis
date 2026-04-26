@@ -53,4 +53,6 @@ ENV PORT=3000
 # Set hostname to localhost
 ENV HOSTNAME="0.0.0.0"
 
+RUN bun add kysely
+
 CMD ["bun", "server.js"]
