@@ -2,15 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { ShiftKind } from "@/types/shift";
+import type { Shift, ShiftKind } from "@/types/shift";
 
 interface Props {
     eventId: number;
     shiftKinds: ShiftKind[];
     days: string[];
+    shift?: Shift;
+    edit?: boolean;
 }
 
-export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
+export default function ShiftForm({
+    eventId,
+    shiftKinds,
+    days,
+    shift,
+    edit,
+}: Props) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -31,8 +39,13 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
             internal: fd.get("internal") === "on",
         };
 
+        let method = "POST";
+        if (shift) {
+            method = "PATCH";
+        }
+
         const res = await fetch(`/api/event/${eventId}/shift`, {
-            method: "POST",
+            method: method,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
@@ -53,21 +66,31 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
         "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500";
     const labelClass =
         "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
-
     return (
         <>
-            <button
-                onClick={() => setOpen(true)}
-                disabled={shiftKinds.length === 0}
-                title={
-                    shiftKinds.length === 0
-                        ? "Create a shift kind first"
-                        : undefined
-                }
-                className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
-            >
-                + New Shift
-            </button>
+            {edit ? (
+                <button
+                    onClick={() => setOpen(true)}
+                    disabled={shiftKinds.length === 0}
+                    title=""
+                    className="hidden group-hover:flex pointer-events-auto cursor-pointer"
+                >
+                    ✎
+                </button>
+            ) : (
+                <button
+                    onClick={() => setOpen(true)}
+                    disabled={shiftKinds.length === 0}
+                    title={
+                        shiftKinds.length === 0
+                            ? "Create a shift kind first"
+                            : undefined
+                    }
+                    className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                >
+                    + New Shift
+                </button>
+            )}
 
             {open && (
                 <div
@@ -80,7 +103,7 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
                     >
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-                                New Shift
+                                {edit ? "Edit Shift" : "New Shift"}
                             </h2>
                             <button
                                 onClick={() => setOpen(false)}
@@ -100,6 +123,7 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
                                     name="shiftKindId"
                                     required
                                     className={inputClass}
+                                    defaultValue={shift?.shiftKind}
                                 >
                                     <option value="">
                                         Select a shift kind…
@@ -116,7 +140,11 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
                             {days.length > 0 && (
                                 <div>
                                     <label className={labelClass}>Day</label>
-                                    <select name="day" className={inputClass}>
+                                    <select
+                                        name="day"
+                                        className={inputClass}
+                                        defaultValue={shift?.eventDay}
+                                    >
                                         {days.map((d) => (
                                             <option key={d} value={d}>
                                                 {d}
@@ -134,7 +162,7 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
                                     name="slots"
                                     type="number"
                                     min="1"
-                                    defaultValue="2"
+                                    defaultValue={shift?.slots ?? "2"}
                                     required
                                     className={inputClass}
                                 ></input>
@@ -148,6 +176,13 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
                                     <input
                                         name="startDatetime"
                                         type="datetime-local"
+                                        defaultValue={
+                                            shift?.startDatetime
+                                                ? new Date(shift.startDatetime)
+                                                      .toISOString()
+                                                      .slice(0, 16)
+                                                : undefined
+                                        }
                                         required
                                         className={inputClass}
                                     />
@@ -157,6 +192,13 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
                                     <input
                                         name="endDatetime"
                                         type="datetime-local"
+                                        defaultValue={
+                                            shift?.endDatetime
+                                                ? new Date(shift.endDatetime)
+                                                      .toISOString()
+                                                      .slice(0, 16)
+                                                : undefined
+                                        }
                                         required
                                         className={inputClass}
                                     />
@@ -168,6 +210,7 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
                                     name="internal"
                                     type="checkbox"
                                     id="internal"
+                                    defaultChecked={shift?.internal}
                                     className="rounded border-gray-300 dark:border-gray-600"
                                 />
                                 <label
@@ -200,7 +243,11 @@ export default function CreateShiftForm({ eventId, shiftKinds, days }: Props) {
                                     disabled={submitting}
                                     className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
                                 >
-                                    {submitting ? "Creating…" : "Create Shift"}
+                                    {submitting
+                                        ? "Creating…"
+                                        : edit
+                                          ? "Save"
+                                          : "Create Shift"}
                                 </button>
                             </div>
                         </form>

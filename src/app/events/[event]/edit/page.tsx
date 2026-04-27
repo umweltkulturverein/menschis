@@ -5,9 +5,11 @@ import { redirect, RedirectType } from "next/navigation";
 import { GetEventAdmin } from "@/lib/db/events";
 import { GetShiftKindsByEvent } from "@/lib/db/shiftKinds";
 import { GetShiftsByEvent } from "@/lib/db/shifts";
+import { Shift } from "@/types/shift";
+import { EventItem } from "@/types/event";
 import EventBanner from "@/components/Events/EventBanner";
-import CreateShiftKindForm from "@/components/Shifts/CreateShiftKindForm";
-import CreateShiftForm from "@/components/Shifts/CreateShiftForm";
+import ShiftKindForm from "@/components/Shifts/Admin/ShiftKindForm";
+import ShiftForm from "@/components/Shifts/Admin/ShiftForm";
 import EventDaysEditor from "@/components/Events/EventDaysEditor";
 import CopyButton from "@/components/Misc/CopyButton";
 import { NaturalDateTime } from "@/lib/misc/contextAwareDates";
@@ -23,6 +25,17 @@ export default async function EventEditPage({
     if (!isInternalUser(session)) {
         redirect(`/events/${eventId}`, RedirectType.replace);
     }
+
+    const handleEditShift = (event: EventItem, shift: Shift) => {
+        return (
+            <ShiftForm
+                eventId={event.id}
+                shiftKinds={shiftKinds}
+                days={event.days ?? []}
+                shift={shift}
+            />
+        );
+    };
 
     const event = await GetEventAdmin(Number(eventId));
     if (event === undefined) {
@@ -73,7 +86,7 @@ export default async function EventEditPage({
                         <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
                             Shift Kinds
                         </h2>
-                        <CreateShiftKindForm eventId={event.id} />
+                        <ShiftKindForm eventId={event.id} />
                     </div>
 
                     {shiftKinds.length === 0 ? (
@@ -117,7 +130,7 @@ export default async function EventEditPage({
                         <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
                             Shifts
                         </h2>
-                        <CreateShiftForm
+                        <ShiftForm
                             eventId={event.id}
                             shiftKinds={shiftKinds}
                             days={event.days ?? []}
@@ -137,49 +150,62 @@ export default async function EventEditPage({
                                 return (
                                     <div
                                         key={shift.id}
-                                        className="flex items-center gap-4 p-4 rounded-lg bg-white dark:bg-ci-blue-700 shadow-sm"
+                                        className="relative min-h-full min-w-full group"
                                     >
-                                        {kind && (
-                                            <div
-                                                className="w-2 self-stretch rounded-full shrink-0"
-                                                style={{
-                                                    backgroundColor: kind.color,
-                                                }}
+                                        <div className="z-10 absolute inset-0 flex items-center justify-center">
+                                            <ShiftForm
+                                                eventId={event.id}
+                                                shiftKinds={shiftKinds}
+                                                days={event.days ?? []}
+                                                shift={shift}
+                                                edit
                                             />
-                                        )}
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-gray-800 dark:text-white">
-                                                {kind?.icon
-                                                    ? `${kind.icon} `
-                                                    : ""}
-                                                {kind?.title ?? "Unknown kind"}
-                                            </p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                                {NaturalDateTime(
-                                                    shift?.startDatetime,
-                                                )}
-                                            </p>
                                         </div>
-                                        {shift.internal && (
-                                            <span className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
-                                                Internal
-                                            </span>
-                                        )}
-                                        {shift.eventDay ? (
-                                            <span
-                                                style={{
-                                                    backgroundColor:
-                                                        StringToColour(
-                                                            shift.eventDay,
-                                                        ),
-                                                }}
-                                                className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full text-white  dark:text-white"
-                                            >
-                                                {shift.eventDay}
-                                            </span>
-                                        ) : (
-                                            <></>
-                                        )}
+                                        <div className="flex group-hover:brightness-75  items-center gap-4 p-4 rounded-lg bg-white dark:bg-ci-blue-700 shadow-sm">
+                                            {kind && (
+                                                <div
+                                                    className="w-2 self-stretch rounded-full shrink-0"
+                                                    style={{
+                                                        backgroundColor:
+                                                            kind.color,
+                                                    }}
+                                                />
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-gray-800 dark:text-white">
+                                                    {kind?.icon
+                                                        ? `${kind.icon} `
+                                                        : ""}
+                                                    {kind?.title ??
+                                                        "Unknown kind"}
+                                                </p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                                    {NaturalDateTime(
+                                                        shift?.startDatetime,
+                                                    )}
+                                                </p>
+                                            </div>
+                                            {shift.internal && (
+                                                <span className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+                                                    Internal
+                                                </span>
+                                            )}
+                                            {shift.eventDay ? (
+                                                <span
+                                                    style={{
+                                                        backgroundColor:
+                                                            StringToColour(
+                                                                shift.eventDay,
+                                                            ),
+                                                    }}
+                                                    className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full text-white  dark:text-white"
+                                                >
+                                                    {shift.eventDay}
+                                                </span>
+                                            ) : (
+                                                <></>
+                                            )}
+                                        </div>
                                     </div>
                                 );
                             })}

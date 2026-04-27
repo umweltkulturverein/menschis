@@ -7,7 +7,7 @@ interface Props {
     eventId: number;
 }
 
-export default function CreateShiftKindForm({ eventId }: Props) {
+export default function ShiftKindForm({ eventId }: Props) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -24,7 +24,8 @@ export default function CreateShiftKindForm({ eventId }: Props) {
             description: (fd.get("description") as string) || null,
             icon: (fd.get("icon") as string) || null,
             color: fd.get("color") as string,
-            authorizationMessage: (fd.get("authorizationMessage") as string) || null,
+            authorizationMessage:
+                (fd.get("authorizationMessage") as string) || null,
         };
 
         const res = await fetch(`/api/event/${eventId}/shiftkind`, {
@@ -47,7 +48,8 @@ export default function CreateShiftKindForm({ eventId }: Props) {
 
     const inputClass =
         "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500";
-    const labelClass = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
+    const labelClass =
+        "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
 
     return (
         <>
@@ -83,18 +85,38 @@ export default function CreateShiftKindForm({ eventId }: Props) {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className={labelClass}>Title *</label>
-                                    <input name="title" type="text" required className={inputClass} />
+                                    <label className={labelClass}>
+                                        Title *
+                                    </label>
+                                    <input
+                                        name="title"
+                                        type="text"
+                                        required
+                                        className={inputClass}
+                                    />
                                 </div>
                                 <div>
-                                    <label className={labelClass}>Icon (emoji)</label>
-                                    <input name="icon" type="text" placeholder="📋" className={inputClass} />
+                                    <label className={labelClass}>
+                                        Icon (emoji)
+                                    </label>
+                                    <input
+                                        name="icon"
+                                        type="text"
+                                        placeholder="📋"
+                                        className={inputClass}
+                                    />
                                 </div>
                             </div>
 
                             <div>
-                                <label className={labelClass}>Description</label>
-                                <textarea name="description" rows={2} className={inputClass} />
+                                <label className={labelClass}>
+                                    Description
+                                </label>
+                                <textarea
+                                    name="description"
+                                    rows={2}
+                                    className={inputClass}
+                                />
                             </div>
 
                             <div>
@@ -109,12 +131,23 @@ export default function CreateShiftKindForm({ eventId }: Props) {
                             </div>
 
                             <div>
-                                <label className={labelClass}>Authorization message</label>
-                                <input name="authorizationMessage" type="text" className={inputClass} />
+                                <label className={labelClass}>
+                                    Authorization message
+                                </label>
+                                <input
+                                    name="authorizationMessage"
+                                    type="text"
+                                    className={inputClass}
+                                />
                             </div>
 
                             {error && (
-                                <p className="text-red-500 text-sm" role="alert">{error}</p>
+                                <p
+                                    className="text-red-500 text-sm"
+                                    role="alert"
+                                >
+                                    {error}
+                                </p>
                             )}
 
                             <div className="flex gap-3 justify-end">
@@ -130,7 +163,9 @@ export default function CreateShiftKindForm({ eventId }: Props) {
                                     disabled={submitting}
                                     className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
                                 >
-                                    {submitting ? "Creating…" : "Create Shift Kind"}
+                                    {submitting
+                                        ? "Creating…"
+                                        : "Create Shift Kind"}
                                 </button>
                             </div>
                         </form>
