@@ -26,17 +26,6 @@ export default async function EventEditPage({
         redirect(`/events/${eventId}`, RedirectType.replace);
     }
 
-    const handleEditShift = (event: EventItem, shift: Shift) => {
-        return (
-            <ShiftForm
-                eventId={event.id}
-                shiftKinds={shiftKinds}
-                days={event.days ?? []}
-                shift={shift}
-            />
-        );
-    };
-
     const event = await GetEventAdmin(Number(eventId));
     if (event === undefined) {
         redirect("/404", RedirectType.replace);
