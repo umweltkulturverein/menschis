@@ -47,3 +47,7 @@ The `EventDaysEditor` component (`src/components/Events/EventDaysEditor.tsx`) le
 - **Add:** text input → appended and sorted → saved via `PATCH /api/event/[id]/edit`.
 - **Remove:** clicking `×` on a day chip shows a confirmation dialog:
   > "Are you sure you want to delete '[day]'?"
+
+
+## Ticketshop
+For Connecting with a Ticketshop, Eventdays are required as they are the Resource attached to the Ticket that is ordered when a shiftentry is made. The Ticket Item ID cannot be attached to an Event.
