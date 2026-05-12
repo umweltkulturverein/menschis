@@ -1,16 +1,20 @@
 "use client";
-
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { Shift, ShiftKind, ShiftEntry } from "@/types/shift";
+import {
+    Shift,
+    ShiftKind,
+    ClientShiftEntry,
+    OwnShiftEntry,
+    isOwnEntry,
+} from "@/types/shift";
 import ShiftEntryRow from "./ShiftEntryRow";
 import ShiftSignUpForm from "./ShiftSignUpForm";
 
 interface Props {
     shift: Shift;
     kind: ShiftKind | undefined;
-    initialEntries: ShiftEntry[];
-    currentPersonId: number | null;
+    initialEntries: ClientShiftEntry[];
     prefill: { name: string; email: string; phone: string };
 }
 
@@ -21,20 +25,16 @@ export default function ShiftEntries({
     shift,
     kind,
     initialEntries,
-    currentPersonId,
     prefill,
 }: Props) {
     const { data: session } = useSession();
-    const [entries, setEntries] = useState<ShiftEntry[]>(initialEntries);
+    const [entries, setEntries] = useState<ClientShiftEntry[]>(initialEntries);
     const [signUpForm, setSignUpForm] = useState<EntryForm | null>(null);
     const [editing, setEditing] = useState<EditState | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [guestSubmitted, setGuestSubmitted] = useState(false);
 
-    const myEntries =
-        currentPersonId != null
-            ? entries.filter((e) => e.person === currentPersonId)
-            : [];
+    const myEntries = entries.filter(isOwnEntry);
     const isFull = entries.length >= shift.slots;
     const isGuest = !session;
 
@@ -47,7 +47,13 @@ export default function ShiftEntries({
                 body: JSON.stringify(form),
             });
             if (res.ok) {
-                const newEntry: ShiftEntry = await res.json();
+                const data = await res.json();
+                const newEntry: OwnShiftEntry = {
+                    id: data.id,
+                    name: data.name,
+                    notes: data.notes,
+                    person: data.person,
+                };
                 setEntries((prev) => [...prev, newEntry]);
                 setSignUpForm(null);
                 if (isGuest) setGuestSubmitted(true);
@@ -86,7 +92,13 @@ export default function ShiftEntries({
                 },
             );
             if (res.ok) {
-                const updated: ShiftEntry = await res.json();
+                const data = await res.json();
+                const updated: OwnShiftEntry = {
+                    id: data.id,
+                    name: data.name,
+                    notes: data.notes,
+                    person: data.person,
+                };
                 setEntries((prev) =>
                     prev.map((e) => (e.id === updated.id ? updated : e)),
                 );
@@ -96,7 +108,6 @@ export default function ShiftEntries({
             setSubmitting(false);
         }
     }
-
     return (
         <>
             {/* Entry list */}
@@ -115,7 +126,6 @@ export default function ShiftEntries({
                         <ShiftEntryRow
                             key={entry.id}
                             entry={entry}
-                            isOwn={entry.person === currentPersonId}
                             editing={editing}
                             submitting={submitting}
                             onEdit={setEditing}

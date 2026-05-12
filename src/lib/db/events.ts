@@ -28,6 +28,19 @@ export async function GetEvents(): Promise<EventItem[] | undefined> {
         .execute();
 }
 
+export async function GetEventByShiftEntryId(
+    shiftEntryId: number,
+): Promise<EventItem | undefined> {
+    return await db
+        .selectFrom("event")
+        .innerJoin("shiftKind", "shiftKind.eventId", "event.id")
+        .innerJoin("shift", "shift.shiftKind", "shiftKind.id")
+        .innerJoin("shiftEntry", "shiftEntry.shift", "shift.id")
+        .selectAll("event")
+        .where("shiftEntry.id", "=", shiftEntryId)
+        .executeTakeFirst();
+}
+
 export async function CreateEvent(
     e: NewEventItem,
 ): Promise<EventItem | undefined> {

@@ -1,10 +1,9 @@
 "use client";
 
-import { ShiftEntry } from "@/types/shift";
+import { ClientShiftEntry, isOwnEntry } from "@/types/shift";
 
 interface Props {
-    entry: ShiftEntry;
-    isOwn: boolean;
+    entry: ClientShiftEntry;
     editing: { id: number; name: string; notes: string } | null;
     submitting: boolean;
     onEdit: (patch: { id: number; name: string; notes: string }) => void;
@@ -16,7 +15,6 @@ interface Props {
 
 export default function ShiftEntryRow({
     entry,
-    isOwn,
     editing,
     submitting,
     onEdit,
@@ -25,6 +23,7 @@ export default function ShiftEntryRow({
     onEditConfirm,
     onDelete,
 }: Props) {
+    const ownEntry = isOwnEntry(entry) ? entry : null;
     const isEditing = editing?.id === entry.id;
 
     return (
@@ -86,22 +85,22 @@ export default function ShiftEntryRow({
                 <>
                     <div className="flex-1 min-w-0">
                         <span className="text-xs text-gray-600 dark:text-gray-300 truncate block">
-                            {isOwn ? entry.name || "Angemeldet" : "Angemeldet"}
+                            {ownEntry ? ownEntry.name || "Angemeldet" : "Angemeldet"}
                         </span>
-                        {isOwn && entry.notes && (
+                        {ownEntry?.notes && (
                             <span className="text-xs text-gray-400 dark:text-gray-500 truncate block">
-                                {entry.notes}
+                                {ownEntry.notes}
                             </span>
                         )}
                     </div>
-                    {isOwn && (
+                    {ownEntry && (
                         <div className="flex items-center gap-1 shrink-0">
                             <button
                                 onClick={() =>
                                     onEdit({
-                                        id: entry.id,
-                                        name: entry.name,
-                                        notes: entry.notes,
+                                        id: ownEntry.id,
+                                        name: ownEntry.name,
+                                        notes: ownEntry.notes,
                                     })
                                 }
                                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
@@ -122,7 +121,7 @@ export default function ShiftEntryRow({
                                 </svg>
                             </button>
                             <button
-                                onClick={() => onDelete(entry.id, entry.name)}
+                                onClick={() => onDelete(ownEntry.id, ownEntry.name)}
                                 className="text-gray-400 hover:text-red-500 dark:hover:text-red-400"
                                 title="Abmelden"
                             >

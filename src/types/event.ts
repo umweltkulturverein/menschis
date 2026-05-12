@@ -8,6 +8,7 @@ export interface EventItemTable {
     endDate: Date;
     startBookingDateTime: Date;
     public: boolean;
+    shopEventId?: string;
     location: string;
     backstageAccess: boolean;
     tokenCount: number;

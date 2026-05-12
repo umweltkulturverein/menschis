@@ -19,7 +19,7 @@ interface PretixAttendeeNameParts {
 }
 
 
-export async function createOrder(eventId: string, shiftAttendeeName: string, email: string, shopItem: string, subeventId: string): Promise<string> {
+export async function CreateOrder(eventId: string, shiftAttendeeName: string, email: string, shopItem: string, subeventId?: string): Promise<string> {
     const pretixConf = getConfig()
     const order: PretixOrder = {
         email: email,
@@ -66,11 +66,11 @@ function getConfig(): PretixConfig {
     return config;
 }
 
-export async function cancelOrder(eventName: string, code: string): Promise<boolean> {
-    const pretix = getConfig()
-    const res = await fetch(`https://pretix.eu/api/v1/organizers/${pretix.org}/events/${eventName}/orders/${code}`, {
-        method: "DELETE",
-        headers: {"Content-Type": "application/json"},
+export async function CancelOrder(eventName: string, code: string): Promise<boolean> {
+    const pretixConf = getConfig()
+    const res = await fetch(`https://pretix.eu/api/v1/organizers/${pretixConf.org}/events/${eventName}/orders/${code}/mark_canceled/`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "Authorization": `Token ${pretixConf.apiToken}`},
     })
     return res.status === 204;
 

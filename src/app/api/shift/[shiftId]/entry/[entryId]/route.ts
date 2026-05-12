@@ -1,16 +1,19 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/db";
-import { DeleteShiftEntry, UpdateShiftEntry } from "@/lib/db/shiftEntries";
+import {DeleteShiftEntry, GetShiftEntry, UpdateShiftEntry} from "@/lib/db/shiftEntries";
 import { NextResponse } from "next/server";
+import {Person} from "@/lib/db/persons";
+import {CancelOrder} from "@/lib/ticket/pretix";
+import {GetEventByShiftEntryId, GetEventByShiftId} from "@/lib/db/events";
 
-async function resolvePersonId(sub: string): Promise<number | null> {
+async function resolvePerson(sub: string): Promise<Person | null> {
     const person = await db
         .selectFrom("person")
-        .select("id")
+        .selectAll()
         .where("sub", "=", sub)
         .executeTakeFirst();
-    return person?.id ?? null;
+    return person ?? null;
 }
 
 export async function DELETE(
@@ -31,15 +34,23 @@ export async function DELETE(
         );
     }
 
-    const personId = await resolvePersonId(session.user.id);
-    if (!personId) {
+    const person = await resolvePerson(session.user.id);
+    if (!person?.id) {
         return NextResponse.json(
             { error: "Person not found" },
             { status: 404 },
         );
     }
+    const shiftentry = await GetShiftEntry(entryId, person.id);
+    const event = await GetEventByShiftEntryId(entryId);
 
-    await DeleteShiftEntry(entryId, personId);
+    if (shiftentry?.order) {
+        const ok = await CancelOrder(event?.shopEventId, shiftentry?.order ?? "");
+        if (!ok) {
+            return new NextResponse("Error cancelling the Order", { status: 500 });
+        }
+    }
+    await DeleteShiftEntry(entryId, person.id);
     return new NextResponse(null, { status: 204 });
 }
 
@@ -61,8 +72,8 @@ export async function PATCH(
         );
     }
 
-    const personId = await resolvePersonId(session.user.id);
-    if (!personId) {
+    const person = await resolvePerson(session.user.id);
+    if (!person?.id) {
         return NextResponse.json(
             { error: "Person not found" },
             { status: 404 },
@@ -72,7 +83,7 @@ export async function PATCH(
     const { name, notes } = await req.json();
     const updated = await UpdateShiftEntry(
         entryId,
-        personId,
+        person.id,
         name ?? "",
         notes ?? "",
     );

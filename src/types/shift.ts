@@ -34,10 +34,22 @@ export interface ShiftEntryTable {
     createdAt: Date;
     updatedAt: Date;
     name: string;
+    order: string;
+    verified?: boolean;
     notes: string;
     shift: number;
-    person: number | null;
+    person: number;
 }
 export type ShiftEntry = Selectable<ShiftEntryTable>;
 export type NewShiftEntry = Insertable<ShiftEntryTable>;
 export type UpdateShiftEntry = Updateable<ShiftEntryTable>;
+
+// Only the fields the owner may see on the client
+export type OwnShiftEntry = Pick<ShiftEntry, "id" | "name" | "notes" | "person">;
+// What other users' entries expose to the client: just that a slot is taken
+export type PublicShiftEntry = { id: number };
+export type ClientShiftEntry = OwnShiftEntry | PublicShiftEntry;
+
+export function isOwnEntry(entry: ClientShiftEntry): entry is OwnShiftEntry {
+    return "name" in entry;
+}
