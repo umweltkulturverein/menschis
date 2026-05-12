@@ -37,7 +37,6 @@ export async function POST(
     const authError = requireInternalUser(session);
 
     const order = await createOrder("T24", name, email, "1036653", "4944231")
-    console.log("Order: " + order);
 
     const entry = await CreateShiftEntry(
         shiftId,
@@ -47,7 +46,6 @@ export async function POST(
         order,
         authError,
     );
-    console.log(entry);
 
     if (entry == undefined)
         return NextResponse.json("You cannot Register for this shift", {

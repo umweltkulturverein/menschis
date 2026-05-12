@@ -21,7 +21,6 @@ export async function GetShiftsByEvent(
 
     if (eventDay !== undefined && eventDay !== "") {
         query = query.where("shift.eventDay", "=", eventDay);
-        console.log("eventDay " + eventDay);
     }
     if (authError) query = query.where("shift.internal", "=", false);
 

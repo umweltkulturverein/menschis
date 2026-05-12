@@ -18,7 +18,6 @@ export default function ShiftPanel({
 }: Props) {
 
     const clientEntries: ClientShiftEntry[] = initialEntries.map((e) => {
-        console.log("entry.person:", e.person, `(${typeof e.person})`, "currentPersonId:", currentPersonId, `(${typeof currentPersonId})`);
         return e.person === currentPersonId
             ? { id: e.id, name: e.name, notes: e.notes, person: e.person }
             : { id: e.id };

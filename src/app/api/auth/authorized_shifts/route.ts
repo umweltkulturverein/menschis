@@ -58,7 +58,6 @@ export async function GET(req: NextRequest) {
         secret: process.env.NEXTAUTH_SECRET!,
         maxAge: 30 * 24 * 60 * 60, // 30 Days
     });
-    console.log(Permissions)
 
     const redirectParam = req.nextUrl.searchParams.get("redirect");
     const redirectPath =
