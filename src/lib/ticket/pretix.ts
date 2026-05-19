@@ -66,13 +66,44 @@ function getConfig(): PretixConfig {
     return config;
 }
 
-export async function CancelOrder(eventName: string, code: string): Promise<boolean> {
+export async function CancelOrder(eventId: string, code: string): Promise<boolean> {
     const pretixConf = getConfig()
-    const res = await fetch(`https://pretix.eu/api/v1/organizers/${pretixConf.org}/events/${eventName}/orders/${code}/mark_canceled/`, {
+    const res = await fetch(`https://pretix.eu/api/v1/organizers/${pretixConf.org}/events/${eventId}/orders/${code}/mark_canceled/`, {
         method: "POST",
         headers: {"Content-Type": "application/json", "Authorization": `Token ${pretixConf.apiToken}`},
     })
-    return res.status === 204;
+    // catch already cancelled orders
+    if (res.status === 400) {
+        const status = await GetOrderStatus(eventId, code)
+        if (status === orderStatus.c) return true;
+    }
+    if (!res.ok) {
+        const resp = await res.text();
+        throw new Error(`HTTP ${res.status}: ${resp}`);
+    }
+    return res.ok;
+}
 
+const orderStatus = {
+    n: "pending",
+    p: "paid",
+    e: "expired",
+    c: "canceled",
+} as const;
 
+export type OrderStatusCode = keyof typeof orderStatus;        // "n" | "p" | "e" | "c"
+export type OrderStatus = (typeof orderStatus)[OrderStatusCode]; // "pending" | "paid" | "expired" | "canceled"
+
+async function GetOrderStatus(eventId: string, code: string): Promise<OrderStatus> {
+    const pretixConf = getConfig()
+    const res = await fetch(`https://pretix.eu/api/v1/organizers/${pretixConf.org}/events/${eventId}/orders/${code}/`, {
+        method: "GET",
+        headers: {"Content-Type": "application/json", "Authorization": `Token ${pretixConf.apiToken}`},
+    })
+    if (!res.ok) {
+        const err = await res.text();
+        throw new Error(`HTTP ${res.status}: ${err}`);
+    }
+    const body: { status: OrderStatusCode } = await res.json();
+    return orderStatus[body.status];
 }

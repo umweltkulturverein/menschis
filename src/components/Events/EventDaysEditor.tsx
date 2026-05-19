@@ -77,12 +77,12 @@ export default function EventDaysEditor({ eventId, days: initial }: Props) {
                     required
                     placeholder="e.g. Friday, Day 1…"
                     disabled={saving}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500"
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-green-500"
                 />
                 <button
                     type="submit"
                     disabled={saving}
-                    className="px-3 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
+                    className="px-3 py-2 bg-ci-green-500 hover:bg-ci-green-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
                 >
                     {saving ? "Saving…" : "+ Add"}
                 </button>

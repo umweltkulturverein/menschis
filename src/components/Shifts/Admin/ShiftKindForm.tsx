@@ -47,7 +47,7 @@ export default function ShiftKindForm({ eventId }: Props) {
     }
 
     const inputClass =
-        "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500";
+        "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-green-500";
     const labelClass =
         "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
 
@@ -55,7 +55,7 @@ export default function ShiftKindForm({ eventId }: Props) {
         <>
             <button
                 onClick={() => setOpen(true)}
-                className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                className="px-4 py-2 bg-ci-green-500 hover:bg-ci-green-600 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
             >
                 + New Shift Kind
             </button>
@@ -161,7 +161,7 @@ export default function ShiftKindForm({ eventId }: Props) {
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
+                                    className="px-4 py-2 bg-ci-green-500 hover:bg-ci-green-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
                                 >
                                     {submitting
                                         ? "Creating…"

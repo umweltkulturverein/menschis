@@ -26,6 +26,7 @@ export async function POST(req: Request) {
     const newEvent: NewEventItem = {
         title: body.title,
         description: body.description ?? null,
+        shopEventId: body.shopEventId ?? null,
         startDate: new Date(body.startDate),
         endDate: new Date(body.endDate),
         startBookingDateTime: new Date(body.startBookingDateTime),

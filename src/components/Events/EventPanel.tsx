@@ -13,9 +13,9 @@ export default function EventPanel({ event }: Props) {
     return (
         <Link href={`/events/${event.id}`} className="block">
             <div className="rounded-lg p-4 shadow-md bg-white dark:bg-ci-blue-700 hover:shadow-lg transition-shadow duration-200">
-                <div className="w-full h-32 mb-3 rounded-md overflow-hidden bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-ci-blue-400 dark:to-ci-blue-500 flex items-center justify-center">
+                <div className="w-full h-32 mb-3 rounded-md overflow-hidden bg-gradient-to-r from-ci-green-100 to-ci-green-200 dark:from-ci-green-500 dark:to-ci-green-600 flex items-center justify-center">
                     <svg
-                        className="w-12 h-12 text-ci-blue-500 dark:text-ci-blue-400"
+                        className="w-12 h-12 text-ci-green-500 dark:text-ci-green-200"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"

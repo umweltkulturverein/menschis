@@ -3,10 +3,10 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/db";
 import { CreateShiftEntry } from "@/lib/db/shiftEntries";
 import { FindOrCreatePersonByEmail, GetPersonBySub } from "@/lib/db/persons";
-import { sendMagicLink } from "@/lib/email";
+import { sendMagicLink } from "@/lib/email/email";
 import { NextResponse } from "next/server";
 import { requireInternalUser } from "@/lib/permissions";
-import {createOrder} from "@/lib/ticket/pretix";
+import {CreateOrder} from "@/lib/ticket/pretix";
 
 export async function POST(
     req: Request,
@@ -36,14 +36,14 @@ export async function POST(
 
     const authError = requireInternalUser(session);
 
-    const order = await createOrder("T24", name, email, "1036653", "4944231")
+    const order = await CreateOrder("T24", name, email, "1036653", "4944231")
 
     const entry = await CreateShiftEntry(
         shiftId,
         person.id,
         name,
-        notes ?? "",
         order,
+        notes ?? "",
         authError,
     );
 

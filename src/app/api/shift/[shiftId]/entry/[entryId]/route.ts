@@ -5,7 +5,7 @@ import {DeleteShiftEntry, GetShiftEntry, UpdateShiftEntry} from "@/lib/db/shiftE
 import { NextResponse } from "next/server";
 import {Person} from "@/lib/db/persons";
 import {CancelOrder} from "@/lib/ticket/pretix";
-import {GetEventByShiftEntryId, GetEventByShiftId} from "@/lib/db/events";
+import {GetEventByShiftEntryId} from "@/lib/db/events";
 
 async function resolvePerson(sub: string): Promise<Person | null> {
     const person = await db
@@ -44,11 +44,16 @@ export async function DELETE(
     const shiftentry = await GetShiftEntry(entryId, person.id);
     const event = await GetEventByShiftEntryId(entryId);
 
-    if (shiftentry?.order) {
-        const ok = await CancelOrder(event?.shopEventId, shiftentry?.order ?? "");
-        if (!ok) {
+    if (shiftentry?.order && event?.shopEventId !== undefined) {
+        try{
+            await CancelOrder(event.shopEventId, shiftentry?.order ?? "");
+        }
+        catch(e){
+            console.error("Cancelling the Ticket Order Failed: " + (e as Error).message);
             return new NextResponse("Error cancelling the Order", { status: 500 });
         }
+    } else {
+        console.log("No Order found for this Entry");
     }
     await DeleteShiftEntry(entryId, person.id);
     return new NextResponse(null, { status: 204 });

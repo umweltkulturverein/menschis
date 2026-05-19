@@ -18,6 +18,7 @@ export default function CreateEventForm() {
         const body = {
             title: fd.get("title") as string,
             description: (fd.get("description") as string) || null,
+            shopEventId: (fd.get("shopEventId") as string) || null,
             startDate: fd.get("startDate") as string,
             endDate: fd.get("endDate") as string,
             startBookingDateTime: fd.get("startBookingDateTime") as string,
@@ -44,14 +45,14 @@ export default function CreateEventForm() {
     }
 
     const inputClass =
-        "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-blue-500";
+        "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-green-500";
     const labelClass = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
 
     return (
         <>
             <button
                 onClick={() => setOpen(true)}
-                className="mb-6 px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                className="mb-6 px-4 py-2 bg-ci-green-500 hover:bg-ci-green-600 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
             >
                 + New Event
             </button>
@@ -89,6 +90,13 @@ export default function CreateEventForm() {
                                     <input name="location" type="text" required className={inputClass} />
                                 </div>
                             </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                                <div>
+                                    <label className={labelClass}>Event ID in Ticketshop (Optional)</label>
+                                    <input name="shopEventId" type="text" className={inputClass} />
+                                </div>
+                    </div>
 
                             <div>
                                 <label className={labelClass}>Description</label>
@@ -137,7 +145,7 @@ export default function CreateEventForm() {
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="px-4 py-2 bg-ci-blue-500 hover:bg-ci-blue-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
+                                    className="px-4 py-2 bg-ci-green-500 hover:bg-ci-green-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
                                 >
                                     {submitting ? "Creating…" : "Create Event"}
                                 </button>
