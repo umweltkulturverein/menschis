@@ -44,7 +44,7 @@ export async function POST(
 
     const shift: NewShift = {
         startDatetime: new Date(body.startDatetime),
-        eventDay: body.day ?? undefined,
+        eventDayId: body.eventDayId ? Number(body.eventDayId) : null,
         slots: Number(body.slots),
         endDatetime: new Date(body.endDatetime),
         internal: body.internal ?? false,

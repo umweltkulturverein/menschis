@@ -8,19 +8,19 @@ export async function DeleteShiftById(id: number) {
 
 export async function GetShiftsByEvent(
     eventId: number,
-    eventDay?: string,
+    eventDayId?: number,
     authError?: NextResponse<unknown> | null,
 ): Promise<Shift[]> {
     let query = db
         .selectFrom("shift")
         .innerJoin("shiftKind", "shiftKind.id", "shift.shiftKind")
         .where("shiftKind.eventId", "=", eventId)
-        .orderBy("eventDay")
+        .orderBy("eventDayId")
         .orderBy("startDatetime")
         .selectAll("shift");
 
-    if (eventDay !== undefined && eventDay !== "") {
-        query = query.where("shift.eventDay", "=", eventDay);
+    if (eventDayId !== undefined) {
+        query = query.where("shift.eventDayId", "=", eventDayId);
     }
     if (authError) query = query.where("shift.internal", "=", false);
 

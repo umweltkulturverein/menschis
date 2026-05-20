@@ -9,16 +9,16 @@ import { NextResponse } from "next/server";
 
 export default async function ShiftSummary({
     eventId,
-    eventDay,
+    eventDayId,
     authError,
 }: {
     eventId: number;
-    eventDay: string;
+    eventDayId?: number;
     authError: NextResponse<unknown> | null;
 }) {
     const session = await getServerSession(authOptions);
     const [shifts, kinds] = await Promise.all([
-        GetShiftsByEvent(eventId, eventDay, authError),
+        GetShiftsByEvent(eventId, eventDayId, authError),
         GetShiftKindsByEvent(eventId),
     ]);
 

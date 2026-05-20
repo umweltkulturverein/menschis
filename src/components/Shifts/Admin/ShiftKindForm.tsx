@@ -2,12 +2,22 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { ShiftKind } from "@/types/shift";
+import FormModal from "@/components/Misc/FormModal";
+import FormTrigger from "@/components/Misc/FormTrigger";
+import {
+    ColorField,
+    TextareaField,
+    TextField,
+} from "@/components/Misc/FormFields";
 
 interface Props {
     eventId: number;
+    kind?: ShiftKind;
+    edit?: boolean;
 }
 
-export default function ShiftKindForm({ eventId }: Props) {
+export default function ShiftKindForm({ eventId, kind, edit }: Props) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -28,16 +38,18 @@ export default function ShiftKindForm({ eventId }: Props) {
                 (fd.get("authorizationMessage") as string) || null,
         };
 
-        const res = await fetch(`/api/event/${eventId}/shiftkind`, {
-            method: "POST",
+        const url = kind
+            ? `/api/event/${eventId}/shiftkind/${kind.id}`
+            : `/api/event/${eventId}/shiftkind`;
+        const res = await fetch(url, {
+            method: kind ? "PATCH" : "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
 
         setSubmitting(false);
-
         if (!res.ok) {
-            setError("Failed to create shift kind.");
+            setError("Failed to save shift kind.");
             return;
         }
 
@@ -46,132 +58,77 @@ export default function ShiftKindForm({ eventId }: Props) {
         router.refresh();
     }
 
-    const inputClass =
-        "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-green-500";
-    const labelClass =
-        "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
+    async function handleDelete() {
+        if (!kind) return;
+        const confirmed = window.confirm(
+            `Delete shift kind "${kind.title}"? All shifts of this kind and their entries will also be deleted.`,
+        );
+        if (!confirmed) return;
+        setSubmitting(true);
+        const res = await fetch(
+            `/api/event/${eventId}/shiftkind/${kind.id}`,
+            { method: "DELETE" },
+        );
+        setSubmitting(false);
+        if (!res.ok) {
+            setError("Failed to delete shift kind.");
+            return;
+        }
+        setOpen(false);
+        router.refresh();
+    }
 
     return (
         <>
-            <button
+            <FormTrigger
+                edit={edit}
+                label="+ New Shift Kind"
                 onClick={() => setOpen(true)}
-                className="px-4 py-2 bg-ci-green-500 hover:bg-ci-green-600 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
+            />
+            <FormModal
+                open={open}
+                onClose={() => setOpen(false)}
+                title={edit ? "Edit Shift Kind" : "New Shift Kind"}
+                submitting={submitting}
+                submitLabel={edit ? "Save" : "Create Shift Kind"}
+                onSubmit={handleSubmit}
+                onDelete={edit && kind ? handleDelete : undefined}
+                error={error}
             >
-                + New Shift Kind
-            </button>
-
-            {open && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-                    onClick={() => setOpen(false)}
-                >
-                    <div
-                        className="w-full max-w-lg mx-4 p-6 bg-white dark:bg-ci-blue-700 rounded-lg shadow-xl"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-                                New Shift Kind
-                            </h2>
-                            <button
-                                onClick={() => setOpen(false)}
-                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
-                                aria-label="Close"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className={labelClass}>
-                                        Title *
-                                    </label>
-                                    <input
-                                        name="title"
-                                        type="text"
-                                        required
-                                        className={inputClass}
-                                    />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>
-                                        Icon (emoji)
-                                    </label>
-                                    <input
-                                        name="icon"
-                                        type="text"
-                                        placeholder="📋"
-                                        className={inputClass}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className={labelClass}>
-                                    Description
-                                </label>
-                                <textarea
-                                    name="description"
-                                    rows={2}
-                                    className={inputClass}
-                                />
-                            </div>
-
-                            <div>
-                                <label className={labelClass}>Color *</label>
-                                <input
-                                    name="color"
-                                    type="color"
-                                    required
-                                    defaultValue="#3b82f6"
-                                    className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-ci-blue-800 cursor-pointer"
-                                />
-                            </div>
-
-                            <div>
-                                <label className={labelClass}>
-                                    Authorization message
-                                </label>
-                                <input
-                                    name="authorizationMessage"
-                                    type="text"
-                                    className={inputClass}
-                                />
-                            </div>
-
-                            {error && (
-                                <p
-                                    className="text-red-500 text-sm"
-                                    role="alert"
-                                >
-                                    {error}
-                                </p>
-                            )}
-
-                            <div className="flex gap-3 justify-end">
-                                <button
-                                    type="button"
-                                    onClick={() => setOpen(false)}
-                                    className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors cursor-pointer"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={submitting}
-                                    className="px-4 py-2 bg-ci-green-500 hover:bg-ci-green-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
-                                >
-                                    {submitting
-                                        ? "Creating…"
-                                        : "Create Shift Kind"}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <TextField
+                        name="title"
+                        label="Title"
+                        required
+                        defaultValue={kind?.title}
+                    />
+                    <TextField
+                        name="icon"
+                        label="Icon (emoji)"
+                        defaultValue={kind?.icon ?? ""}
+                        placeholder="📋"
+                    />
                 </div>
-            )}
+
+                <TextareaField
+                    name="description"
+                    label="Description"
+                    defaultValue={kind?.description ?? ""}
+                />
+
+                <ColorField
+                    name="color"
+                    label="Color"
+                    required
+                    defaultValue={kind?.color ?? "#3b82f6"}
+                />
+
+                <TextField
+                    name="authorizationMessage"
+                    label="Authorization message"
+                    defaultValue={kind?.authorizationMessage ?? ""}
+                />
+            </FormModal>
         </>
     );
 }

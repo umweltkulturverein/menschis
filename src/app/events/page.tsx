@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import EventSummary from "@/components/Events/EventSummary";
-import CreateEventForm from "@/components/Events/CreateEventForm";
+import EventForm from "@/components/Events/EventForm";
 
 export default async function EventsPage() {
     const session = await getServerSession(authOptions);
@@ -13,7 +13,7 @@ export default async function EventsPage() {
                 Events
             </h1>
 
-            {session && <CreateEventForm />}
+            {session && <EventForm />}
 
             <Suspense
                 fallback={

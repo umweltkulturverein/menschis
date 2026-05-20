@@ -3,11 +3,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Shift, ShiftKind } from "@/types/shift";
+import type { EventDay } from "@/types/eventDay";
+import FormModal from "@/components/Misc/FormModal";
+import FormTrigger from "@/components/Misc/FormTrigger";
+import {
+    CheckboxField,
+    SelectField,
+    TextField,
+} from "@/components/Misc/FormFields";
 
 interface Props {
     eventId: number;
     shiftKinds: ShiftKind[];
-    days: string[];
+    days: EventDay[];
     shift?: Shift;
     edit?: boolean;
 }
@@ -35,25 +43,19 @@ export default function ShiftForm({
             startDatetime: fd.get("startDatetime") as string,
             endDatetime: fd.get("endDatetime") as string,
             slots: fd.get("slots") as string,
-            day: fd.get("day") as string,
+            eventDayId: fd.get("eventDayId") as string,
             internal: fd.get("internal") === "on",
         };
 
-        let method = "POST";
-        if (shift) {
-            method = "PATCH";
-        }
-
         const res = await fetch(`/api/event/${eventId}/shift`, {
-            method: method,
+            method: shift ? "PATCH" : "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
 
         setSubmitting(false);
-
         if (!res.ok) {
-            setError("Failed to create shift.");
+            setError("Failed to save shift.");
             return;
         }
 
@@ -62,198 +64,97 @@ export default function ShiftForm({
         router.refresh();
     }
 
-    const inputClass =
-        "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-green-500";
-    const labelClass =
-        "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
+    const startDefault = shift?.startDatetime
+        ? new Date(shift.startDatetime).toISOString().slice(0, 16)
+        : undefined;
+    const endDefault = shift?.endDatetime
+        ? new Date(shift.endDatetime).toISOString().slice(0, 16)
+        : undefined;
+
     return (
         <>
-            {edit ? (
-                <button
-                    onClick={() => setOpen(true)}
-                    disabled={shiftKinds.length === 0}
-                    title=""
-                    className="hidden group-hover:flex pointer-events-auto cursor-pointer"
+            <FormTrigger
+                edit={edit}
+                label="+ New Shift"
+                disabled={shiftKinds.length === 0}
+                title={
+                    shiftKinds.length === 0
+                        ? "Create a shift kind first"
+                        : undefined
+                }
+                onClick={() => setOpen(true)}
+            />
+            <FormModal
+                open={open}
+                onClose={() => setOpen(false)}
+                title={edit ? "Edit Shift" : "New Shift"}
+                submitting={submitting}
+                submitLabel={edit ? "Save" : "Create Shift"}
+                onSubmit={handleSubmit}
+                error={error}
+            >
+                <SelectField
+                    name="shiftKindId"
+                    label="Shift Kind"
+                    required
+                    defaultValue={shift?.shiftKind}
                 >
-                    ✎
-                </button>
-            ) : (
-                <button
-                    onClick={() => setOpen(true)}
-                    disabled={shiftKinds.length === 0}
-                    title={
-                        shiftKinds.length === 0
-                            ? "Create a shift kind first"
-                            : undefined
-                    }
-                    className="px-4 py-2 bg-ci-green-500 hover:bg-ci-green-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors cursor-pointer"
-                >
-                    + New Shift
-                </button>
-            )}
+                    <option value="">Select a shift kind…</option>
+                    {shiftKinds.map((kind) => (
+                        <option key={kind.id} value={kind.id}>
+                            {kind.icon ? `${kind.icon} ` : ""}
+                            {kind.title}
+                        </option>
+                    ))}
+                </SelectField>
 
-            {open && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-                    onClick={() => setOpen(false)}
-                >
-                    <div
-                        className="w-full max-w-lg mx-4 p-6 bg-white dark:bg-ci-blue-700 rounded-lg shadow-xl"
-                        onClick={(e) => e.stopPropagation()}
+                {days.length > 0 && (
+                    <SelectField
+                        name="eventDayId"
+                        label="Day"
+                        defaultValue={shift?.eventDayId ?? ""}
                     >
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-                                {edit ? "Edit Shift" : "New Shift"}
-                            </h2>
-                            <button
-                                onClick={() => setOpen(false)}
-                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
-                                aria-label="Close"
-                            >
-                                ✕
-                            </button>
-                        </div>
+                        <option value="">—</option>
+                        {days.map((d) => (
+                            <option key={d.id} value={d.id}>
+                                {d.dayTitle}
+                            </option>
+                        ))}
+                    </SelectField>
+                )}
 
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className={labelClass}>
-                                    Shift Kind *
-                                </label>
-                                <select
-                                    name="shiftKindId"
-                                    required
-                                    className={inputClass}
-                                    defaultValue={shift?.shiftKind}
-                                >
-                                    <option value="">
-                                        Select a shift kind…
-                                    </option>
-                                    {shiftKinds.map((kind) => (
-                                        <option key={kind.id} value={kind.id}>
-                                            {kind.icon ? `${kind.icon} ` : ""}
-                                            {kind.title}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                <TextField
+                    name="slots"
+                    label="Number of Slots"
+                    type="number"
+                    min="1"
+                    required
+                    defaultValue={shift?.slots ?? 2}
+                />
 
-                            {days.length > 0 && (
-                                <div>
-                                    <label className={labelClass}>Day</label>
-                                    <select
-                                        name="day"
-                                        className={inputClass}
-                                        defaultValue={shift?.eventDay}
-                                    >
-                                        {days.map((d) => (
-                                            <option key={d} value={d}>
-                                                {d}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
-
-                            <div>
-                                <label className={labelClass}>
-                                    Number of Slots
-                                </label>
-                                <input
-                                    name="slots"
-                                    type="number"
-                                    min="1"
-                                    defaultValue={shift?.slots ?? "2"}
-                                    required
-                                    className={inputClass}
-                                ></input>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className={labelClass}>
-                                        Start *
-                                    </label>
-                                    <input
-                                        name="startDatetime"
-                                        type="datetime-local"
-                                        defaultValue={
-                                            shift?.startDatetime
-                                                ? new Date(shift.startDatetime)
-                                                      .toISOString()
-                                                      .slice(0, 16)
-                                                : undefined
-                                        }
-                                        required
-                                        className={inputClass}
-                                    />
-                                </div>
-                                <div>
-                                    <label className={labelClass}>End *</label>
-                                    <input
-                                        name="endDatetime"
-                                        type="datetime-local"
-                                        defaultValue={
-                                            shift?.endDatetime
-                                                ? new Date(shift.endDatetime)
-                                                      .toISOString()
-                                                      .slice(0, 16)
-                                                : undefined
-                                        }
-                                        required
-                                        className={inputClass}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <input
-                                    name="internal"
-                                    type="checkbox"
-                                    id="internal"
-                                    defaultChecked={shift?.internal}
-                                    className="rounded border-gray-300 dark:border-gray-600"
-                                />
-                                <label
-                                    htmlFor="internal"
-                                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    Internal shift
-                                </label>
-                            </div>
-
-                            {error && (
-                                <p
-                                    className="text-red-500 text-sm"
-                                    role="alert"
-                                >
-                                    {error}
-                                </p>
-                            )}
-
-                            <div className="flex gap-3 justify-end">
-                                <button
-                                    type="button"
-                                    onClick={() => setOpen(false)}
-                                    className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors cursor-pointer"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={submitting}
-                                    className="px-4 py-2 bg-ci-green-500 hover:bg-ci-green-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
-                                >
-                                    {submitting
-                                        ? "Creating…"
-                                        : edit
-                                          ? "Save"
-                                          : "Create Shift"}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <TextField
+                        name="startDatetime"
+                        label="Start"
+                        type="datetime-local"
+                        required
+                        defaultValue={startDefault}
+                    />
+                    <TextField
+                        name="endDatetime"
+                        label="End"
+                        type="datetime-local"
+                        required
+                        defaultValue={endDefault}
+                    />
                 </div>
-            )}
+
+                <CheckboxField
+                    name="internal"
+                    label="Internal shift"
+                    defaultChecked={shift?.internal}
+                />
+            </FormModal>
         </>
     );
 }

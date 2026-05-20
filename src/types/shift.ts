@@ -22,7 +22,7 @@ export interface ShiftTable {
     internal: boolean;
     slots: number;
     shiftKind: number;
-    eventDay: string;
+    eventDayId: number | null;
 }
 
 export type Shift = Selectable<ShiftTable>;

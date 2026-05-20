@@ -3,14 +3,13 @@ import { authOptions } from "@/lib/auth";
 import { isInternalUser } from "@/lib/permissions";
 import { redirect, RedirectType } from "next/navigation";
 import { GetEventAdmin } from "@/lib/db/events";
+import { GetEventDays } from "@/lib/db/eventDays";
 import { GetShiftKindsByEvent } from "@/lib/db/shiftKinds";
 import { GetShiftsByEvent } from "@/lib/db/shifts";
-import { Shift } from "@/types/shift";
-import { EventItem } from "@/types/event";
 import EventBanner from "@/components/Events/EventBanner";
 import ShiftKindForm from "@/components/Shifts/Admin/ShiftKindForm";
 import ShiftForm from "@/components/Shifts/Admin/ShiftForm";
-import EventDaysEditor from "@/components/Events/EventDaysEditor";
+import EventDayForm from "@/components/Events/EventDayForm";
 import CopyButton from "@/components/Misc/CopyButton";
 import { NaturalDateTime } from "@/lib/misc/contextAwareDates";
 import { StringToColour } from "@/lib/misc/color";
@@ -31,9 +30,10 @@ export default async function EventEditPage({
         redirect("/404", RedirectType.replace);
     }
 
-    const [shiftKinds, shifts] = await Promise.all([
+    const [shiftKinds, shifts, eventDays] = await Promise.all([
         GetShiftKindsByEvent(Number(eventId)),
         GetShiftsByEvent(Number(eventId)),
+        GetEventDays(Number(eventId)),
     ]);
 
     const base = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
@@ -41,7 +41,7 @@ export default async function EventEditPage({
 
     return (
         <div className="min-h-screen bg-zinc-50 dark:bg-ci-blue-800">
-            <EventBanner event={event} />
+            <EventBanner event={event} editable />
 
             <div className="max-w-4xl mx-auto px-6 py-8 space-y-10">
                 {/* Internal login link */}
@@ -63,10 +63,55 @@ export default async function EventEditPage({
 
                 {/* Event Days */}
                 <section>
-                    <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-                        Event Days
-                    </h2>
-                    <EventDaysEditor eventId={event.id} days={event.days} />
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                            Event Days
+                        </h2>
+                        <EventDayForm eventId={event.id} />
+                    </div>
+
+                    {eventDays.length === 0 ? (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            No days yet.
+                        </p>
+                    ) : (
+                        <div className="space-y-2">
+                            {eventDays.map((day) => (
+                                <div
+                                    key={day.id}
+                                    className="relative min-h-full min-w-full group"
+                                >
+                                    <div className="z-10 absolute inset-0 flex items-center justify-center">
+                                        <EventDayForm
+                                            eventId={event.id}
+                                            day={day}
+                                            edit
+                                        />
+                                    </div>
+                                    <div className="flex group-hover:brightness-75 items-center gap-4 p-4 rounded-lg bg-white dark:bg-ci-blue-700 shadow-sm">
+                                        <span
+                                            style={{
+                                                backgroundColor: StringToColour(
+                                                    day.dayTitle,
+                                                ),
+                                            }}
+                                            className="w-2 self-stretch rounded-full shrink-0"
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-gray-800 dark:text-white">
+                                                {day.dayTitle}
+                                            </p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-mono">
+                                                {day.shopItemId
+                                                    ? `Shop item ${day.shopItemId}`
+                                                    : "No shop item"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </section>
 
                 {/* Shift Kinds */}
@@ -87,25 +132,36 @@ export default async function EventEditPage({
                             {shiftKinds.map((kind) => (
                                 <div
                                     key={kind.id}
-                                    className="rounded-lg overflow-hidden shadow-md bg-white dark:bg-ci-blue-700"
+                                    className="relative group rounded-lg overflow-hidden shadow-md bg-white dark:bg-ci-blue-700"
                                 >
-                                    <div
-                                        className="w-full h-16 flex items-center justify-center"
-                                        style={{ backgroundColor: kind.color }}
-                                    >
-                                        <span className="text-2xl">
-                                            {kind.icon ?? "📋"}
-                                        </span>
+                                    <div className="z-10 absolute inset-0 flex items-center justify-center">
+                                        <ShiftKindForm
+                                            eventId={event.id}
+                                            kind={kind}
+                                            edit
+                                        />
                                     </div>
-                                    <div className="p-3">
-                                        <h3 className="text-sm font-bold text-gray-800 dark:text-white">
-                                            {kind.title}
-                                        </h3>
-                                        {kind.description && (
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                                                {kind.description}
-                                            </p>
-                                        )}
+                                    <div className="group-hover:brightness-75">
+                                        <div
+                                            className="w-full h-16 flex items-center justify-center"
+                                            style={{
+                                                backgroundColor: kind.color,
+                                            }}
+                                        >
+                                            <span className="text-2xl">
+                                                {kind.icon ?? "📋"}
+                                            </span>
+                                        </div>
+                                        <div className="p-3">
+                                            <h3 className="text-sm font-bold text-gray-800 dark:text-white">
+                                                {kind.title}
+                                            </h3>
+                                            {kind.description && (
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                                                    {kind.description}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -122,7 +178,7 @@ export default async function EventEditPage({
                         <ShiftForm
                             eventId={event.id}
                             shiftKinds={shiftKinds}
-                            days={event.days ?? []}
+                            days={eventDays}
                         />
                     </div>
 
@@ -136,6 +192,9 @@ export default async function EventEditPage({
                                 const kind = shiftKinds.find(
                                     (k) => k.id === shift.shiftKind,
                                 );
+                                const day = eventDays.find(
+                                    (d) => d.id === shift.eventDayId,
+                                );
                                 return (
                                     <div
                                         key={shift.id}
@@ -145,7 +204,7 @@ export default async function EventEditPage({
                                             <ShiftForm
                                                 eventId={event.id}
                                                 shiftKinds={shiftKinds}
-                                                days={event.days ?? []}
+                                                days={eventDays}
                                                 shift={shift}
                                                 edit
                                             />
@@ -179,17 +238,17 @@ export default async function EventEditPage({
                                                     Internal
                                                 </span>
                                             )}
-                                            {shift.eventDay ? (
+                                            {day ? (
                                                 <span
                                                     style={{
                                                         backgroundColor:
                                                             StringToColour(
-                                                                shift.eventDay,
+                                                                day.dayTitle,
                                                             ),
                                                     }}
                                                     className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full text-white  dark:text-white"
                                                 >
-                                                    {shift.eventDay}
+                                                    {day.dayTitle}
                                                 </span>
                                             ) : (
                                                 <></>
