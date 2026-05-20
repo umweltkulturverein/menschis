@@ -110,7 +110,6 @@ export default function EventBanner({ event, editable }: Props) {
                         </svg>
                         <span>
                             Booking opens {NaturalDateTime(bookingDate)}
-                            Uhr
                         </span>
                     </div>
                 </div>

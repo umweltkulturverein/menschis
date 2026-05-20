@@ -34,6 +34,12 @@ export async function POST(
         return NextResponse.json({ error: "Email and Name required" }, { status: 400 });
     }
 
+    // A signed-in user proved their identity (SSO or an earlier magic-link
+    // login), so their own sign-up is confirmed immediately. An anonymous
+    // sign-up stays pending until the real owner confirms it via the pop-up
+    // after logging in through the magic link they receive below.
+    const isAuthed = !!session?.user?.id;
+
     const person: { id: number } = await personInit(req, session?.user?.id || undefined, name, email, phone)
 
     const authError = requireInternalUser(session);
@@ -47,6 +53,7 @@ export async function POST(
         order,
         notes ?? "",
         authError,
+        isAuthed,
     );
 
     if (entry == undefined)

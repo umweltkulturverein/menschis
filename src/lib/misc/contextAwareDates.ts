@@ -17,7 +17,7 @@ export function NaturalTime(dateTime: Date): string {
         return dateTime.toLocaleTimeString("de-DE", {
             hour: "2-digit",
             minute: "2-digit",
-        });
+        })+ " Uhr";
     }
     const diffMs = dateTime.getTime() - currentDateTime.getTime();
     const diffMin = Math.round(diffMs / 60000); // 1 Minute
