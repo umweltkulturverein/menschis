@@ -20,9 +20,7 @@ function isInternalRequest(req: NextRequest): boolean {
     );
 }
 
-// Cancels and removes sign-ups that were never confirmed within the verify
-// window. Driven by the in-Pod cron sidecar (see gitops deployment), reachable
-// only from inside the Pod.
+// Cancels and removes sign-ups that were never confirmed within the verify window
 export async function GET(req: NextRequest) {
     if (!isInternalRequest(req)) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
