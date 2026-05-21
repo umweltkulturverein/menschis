@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/nextauth";
 import { requireInternalUser } from "@/lib/permissions";
 import { DeleteEvent, GetEvent, UpdateEvent } from "@/lib/db/events";
 import type { UpdateEventItem } from "@/types/event";

@@ -1,21 +1,15 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
-import { GetPersonBySub } from "@/lib/db/persons";
 import {
     ConfirmPendingEntriesByPerson,
     GetPendingEntriesByPerson,
 } from "@/lib/db/shiftEntries";
+import { getAuthenticatedPerson } from "@/lib/auth/userauth";
 
 // GET: list the current user's pending (unconfirmed) sign-ups for the pop-up.
 export async function GET() {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-        return NextResponse.json([]);
-    }
-    const person = await GetPersonBySub(session.user.id);
-    if (!person) {
-        return NextResponse.json([]);
+    const person = await getAuthenticatedPerson();
+    if (person instanceof NextResponse) {
+        return person;
     }
     const pending = await GetPendingEntriesByPerson(person.id);
     return NextResponse.json(pending);
@@ -23,13 +17,9 @@ export async function GET() {
 
 // POST: the owner accepts — confirm all of their pending sign-ups.
 export async function POST() {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    const person = await GetPersonBySub(session.user.id);
-    if (!person) {
-        return NextResponse.json({ error: "Person not found" }, { status: 404 });
+    const person = await getAuthenticatedPerson();
+    if (person instanceof NextResponse) {
+        return person;
     }
     const confirmed = await ConfirmPendingEntriesByPerson(person.id);
     return NextResponse.json({ confirmed });

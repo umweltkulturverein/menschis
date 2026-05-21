@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/nextauth";
 import { requireInternalUser } from "@/lib/permissions";
 import { GetShiftKindsByEvent, CreateShiftKind } from "@/lib/db/shifts";
 import type { NewShiftKind } from "@/types/shift";

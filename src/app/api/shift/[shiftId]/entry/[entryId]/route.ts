@@ -1,28 +1,16 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { db } from "@/db";
 import {DeleteShiftEntry, GetShiftEntry, UpdateShiftEntry} from "@/lib/db/shiftEntries";
 import { NextResponse } from "next/server";
-import {Person} from "@/lib/db/persons";
 import {CancelOrder} from "@/lib/ticket/pretix";
 import {GetEventByShiftEntryId} from "@/lib/db/events";
-
-async function resolvePerson(sub: string): Promise<Person | null> {
-    const person = await db
-        .selectFrom("person")
-        .selectAll()
-        .where("sub", "=", sub)
-        .executeTakeFirst();
-    return person ?? null;
-}
+import { getAuthenticatedPerson } from "@/lib/auth/userauth";
 
 export async function DELETE(
     _req: Request,
     { params }: { params: Promise<{ shiftId: string; entryId: string }> },
 ) {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const person = await getAuthenticatedPerson();
+    if (person instanceof NextResponse) {
+        return person;
     }
 
     const { entryId: entryIdParam } = await params;
@@ -31,14 +19,6 @@ export async function DELETE(
         return NextResponse.json(
             { error: "Invalid entry ID" },
             { status: 400 },
-        );
-    }
-
-    const person = await resolvePerson(session.user.id);
-    if (!person?.id) {
-        return NextResponse.json(
-            { error: "Person not found" },
-            { status: 404 },
         );
     }
     const shiftentry = await GetShiftEntry(entryId, person.id);
@@ -63,9 +43,9 @@ export async function PATCH(
     req: Request,
     { params }: { params: Promise<{ shiftId: string; entryId: string }> },
 ) {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const person = await getAuthenticatedPerson();
+    if (person instanceof NextResponse) {
+        return person;
     }
 
     const { entryId: entryIdParam } = await params;
@@ -74,14 +54,6 @@ export async function PATCH(
         return NextResponse.json(
             { error: "Invalid entry ID" },
             { status: 400 },
-        );
-    }
-
-    const person = await resolvePerson(session.user.id);
-    if (!person?.id) {
-        return NextResponse.json(
-            { error: "Person not found" },
-            { status: 404 },
         );
     }
 

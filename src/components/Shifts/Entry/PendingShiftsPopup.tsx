@@ -24,9 +24,13 @@ export default function PendingShiftsPopup() {
     const [pending, setPending] = useState<PendingEntry[]>([]);
     const [open, setOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-
+    const header = new Headers();
     useEffect(() => {
         if (status !== "authenticated") return;
+
+        if (header.has("deny-pending-shifts")) {
+            return;
+        }
         let active = true;
         fetch("/api/auth/pending")
             .then((r) => (r.ok ? r.json() : []))
@@ -53,6 +57,10 @@ export default function PendingShiftsPopup() {
             setOpen(false);
         }
     };
+    const deny = () => {
+        header.set("deny-pending-shifts", "true")
+        setOpen(false);
+    }
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -85,7 +93,7 @@ export default function PendingShiftsPopup() {
                 <div className="flex gap-3 justify-end items-center">
                     <button
                         type="button"
-                        onClick={() => setOpen(false)}
+                        onClick={deny}
                         disabled={submitting}
                         className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors cursor-pointer"
                     >

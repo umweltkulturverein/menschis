@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/nextauth";
 import { db } from "@/db";
 import { CreateShiftEntry } from "@/lib/db/shiftEntries";
 import { FindOrCreatePersonByEmail, GetPersonBySub } from "@/lib/db/persons";
@@ -34,13 +34,17 @@ export async function POST(
         return NextResponse.json({ error: "Email and Name required" }, { status: 400 });
     }
 
-    // A signed-in user proved their identity (SSO or an earlier magic-link
-    // login), so their own sign-up is confirmed immediately. An anonymous
-    // sign-up stays pending until the real owner confirms it via the pop-up
-    // after logging in through the magic link they receive below.
-    const isAuthed = !!session?.user?.id;
+    let isAuthed = false
+    let userId = undefined;
 
-    const person: { id: number } = await personInit(req, session?.user?.id || undefined, name, email, phone)
+    // user creates shift for himself. no need to verify the shift or create the person
+    if (session?.user?.email == email) {
+         isAuthed = !!session?.user?.id;
+         userId = session?.user?.id
+    }
+
+
+    const person: { id: number } = await personInit(req, userId, name, email, phone)
 
     const authError = requireInternalUser(session);
 

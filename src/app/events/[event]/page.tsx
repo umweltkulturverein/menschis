@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/nextauth";
 import { redirect, RedirectType } from "next/navigation";
 import { GetEvent } from "@/lib/db/events";
 import { GetEventDays } from "@/lib/db/eventDays";

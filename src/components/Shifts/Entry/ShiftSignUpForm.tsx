@@ -11,7 +11,6 @@ interface EntryForm {
 
 interface Props {
     form: EntryForm;
-    isGuest: boolean;
     submitting: boolean;
     onChange: (form: EntryForm) => void;
     onCancel: () => void;
@@ -22,7 +21,6 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ShiftSignUpForm({
     form,
-    isGuest,
     submitting,
     onChange,
     onCancel,
@@ -89,12 +87,6 @@ export default function ShiftSignUpForm({
                     className={`${inputClass} resize-none`}
                 />
             </div>
-            {isGuest && (
-                <p className="text-xs text-gray-400 dark:text-gray-500">
-                    You{"'"}ll receive an email link to edit and verify your
-                    registration.
-                </p>
-            )}
             <div className="flex gap-2">
                 <button
                     onClick={onCancel}

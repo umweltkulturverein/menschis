@@ -1,6 +1,6 @@
 import Image from "next/image";
 import {getServerSession} from "next-auth";
-import {authOptions} from "@/lib/auth";
+import {authOptions} from "@/lib/auth/nextauth";
 import Link from "next/link";
 
 export default async function Home() {

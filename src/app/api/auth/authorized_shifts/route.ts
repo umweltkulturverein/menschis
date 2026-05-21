@@ -2,14 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { encode } from "next-auth/jwt";
 import {GetPersonByLoginToken, GetPersonBySub} from "@/lib/db/persons";
 import {getServerSession} from "next-auth";
-import {authOptions} from "@/lib/auth";
+import {authOptions} from "@/lib/auth/nextauth";
 import {db} from "@/db";
 
 
 async function validateAuthorizedShifts(shiftId: number, shiftSecret: string): Promise<boolean> {
     if (Number.isNaN(shiftId)|| shiftSecret === "") return false;
 
-    const res = await db.selectFrom("shiftKind").where("id", "=", shiftId).where("authorizationMagicLinkToken", "=", shiftSecret).execute()
+    const res = await db.selectFrom("shiftKind")
+        .where("id", "=", shiftId)
+        .where("authorizationMagicLinkToken", "=", shiftSecret)
+        .execute()
     return res.length >= 1;
 }
 

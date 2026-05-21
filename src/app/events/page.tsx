@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/nextauth";
 import EventSummary from "@/components/Events/EventSummary";
 import EventForm from "@/components/Events/EventForm";
 

@@ -33,12 +33,14 @@ export default function ShiftEntries({
     const [editing, setEditing] = useState<EditState | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [guestSubmitted, setGuestSubmitted] = useState(false);
+    const [lastForm, setLastForm] = useState<EntryForm | null>(null);
 
     const myEntries = entries.filter(isOwnEntry);
     const isFull = entries.length >= shift.slots;
-    const isGuest = !session;
 
     async function handleSignUp(form: EntryForm) {
+        const wasGuest = !session || session.user.email !== form.email;
+        setLastForm(form);
         setSubmitting(true);
         try {
             const res = await fetch(`/api/shift/${shift.id}/entry`, {
@@ -56,7 +58,7 @@ export default function ShiftEntries({
                 };
                 setEntries((prev) => [...prev, newEntry]);
                 setSignUpForm(null);
-                if (isGuest) setGuestSubmitted(true);
+                if (wasGuest) setGuestSubmitted(true);
             }
         } finally {
             setSubmitting(false);
@@ -168,9 +170,9 @@ export default function ShiftEntries({
 
             {/* Guest submitted banner */}
             {guestSubmitted && (
-                <div className="mx-4 mb-4 mt-2 flex items-start gap-2 rounded-md bg-orange-50 dark:bg-amber-900 border border-orange-500 px-3 py-2">
+                <div className="mx-4 mb-4 mt-2 flex items-start gap-2 rounded-md bg-orange-50 dark:bg-amber-800 border border-orange-500 px-3 py-2">
                     <svg
-                        className="w-4 h-4 text-orange-500 dark:text-orange-100 shrink-0 mt-0.5"
+                        className="w-4 h-4 text-orange-500 dark:text-white shrink-0 mt-0.5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -182,9 +184,10 @@ export default function ShiftEntries({
                             d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                         />
                     </svg>
-                    <p className="text-xs text-orange-500 dark:text-orange-100">
-                        Check your email — verify the Shift. <br /> You can also
-                        Delete and Edit with the Link provided to you.
+                    <p className="text-xs text-orange-400 dark:text-white">
+                        Hi! {lastForm?.name} will have to verify the Shift.<br /> There has been send a Link to <b>{lastForm?.email}</b> expires after <b>30 Minutes</b> after that the Slot becomes unbooked.
+                        <br /><br />
+                        The Shift can also be Deleted and Edited with the Link provided.
                     </p>
                 </div>
             )}
@@ -193,15 +196,16 @@ export default function ShiftEntries({
             {!signUpForm && !isFull && !kind?.authorizationMessage && (
                 <div className="px-4 pb-4 pt-2">
                     <button
-                        onClick={() =>
+                        onClick={() => {
+                            setResponded(false);
                             setSignUpForm({
                                 name: prefill.name || session?.user?.name || "",
                                 email:
                                     prefill.email || session?.user?.email || "",
                                 phone: prefill.phone,
                                 notes: "",
-                            })
-                        }
+                            });
+                        }}
                         className="w-full text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
                     >
                         Anmelden
@@ -219,7 +223,6 @@ export default function ShiftEntries({
             {signUpForm && !kind?.authorizationMessage && (
                 <ShiftSignUpForm
                     form={signUpForm}
-                    isGuest={isGuest}
                     submitting={submitting}
                     onChange={setSignUpForm}
                     onCancel={() => setSignUpForm(null)}
