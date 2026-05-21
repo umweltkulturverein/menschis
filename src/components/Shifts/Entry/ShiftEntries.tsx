@@ -197,7 +197,6 @@ export default function ShiftEntries({
                 <div className="px-4 pb-4 pt-2">
                     <button
                         onClick={() => {
-                            setResponded(false);
                             setSignUpForm({
                                 name: prefill.name || session?.user?.name || "",
                                 email:
