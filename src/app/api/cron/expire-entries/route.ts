@@ -6,26 +6,25 @@ import {
 } from "@/lib/db/shiftEntries";
 import { CancelOrder } from "@/lib/ticket/pretix";
 
-// Only accept calls originating from inside the container (the in-container
-// cron curls 127.0.0.1 directly). Requests proxied from outside carry
-// forwarding headers and/or a non-loopback Host, so they are rejected.
-function isLoopbackRequest(req: NextRequest): boolean {
-    if (
+// Only accept calls that did not pass through a reverse proxy. The cron sidecar
+// shares the Pod network namespace and hits the app directly, so its request
+// carries no forwarding headers. Traefik (and any other ingress/proxy) injects
+// these on every external request, so their presence means the call came from
+// outside the Pod and is rejected.
+function isInternalRequest(req: NextRequest): boolean {
+    return !(
         req.headers.get("x-forwarded-for") ||
         req.headers.get("x-real-ip") ||
+        req.headers.get("x-forwarded-host") ||
         req.headers.get("forwarded")
-    ) {
-        return false;
-    }
-    const host = (req.headers.get("host") ?? "").split(":")[0].toLowerCase();
-    return host === "127.0.0.1" || host === "localhost" || host === "::1";
+    );
 }
 
 // Cancels and removes sign-ups that were never confirmed within the verify
-// window. Driven by the in-container cron (see docker/crontab), reachable only
-// from localhost.
+// window. Driven by the in-Pod cron sidecar (see gitops deployment), reachable
+// only from inside the Pod.
 export async function GET(req: NextRequest) {
-    if (!isLoopbackRequest(req)) {
+    if (!isInternalRequest(req)) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

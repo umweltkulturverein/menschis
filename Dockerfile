@@ -33,20 +33,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN useradd --system --uid 1001 nextjs
 
-# Plain cron to drive the shift-entry expiry sweep. It runs as the unprivileged
-# nextjs user handling only its own crontab, so no root/privilege escalation is
-# needed. Make the spool dir owned by nextjs so the daemon can read it.
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends cron \
-    && rm -rf /var/lib/apt/lists/* \
-    && chown nextjs /var/spool/cron/crontabs
-
-# Crontab: hit the loopback-only expiry endpoint every 5 minutes; job output
-# goes to the container's stdout (PID 1).
-RUN printf 'PATH=/usr/local/bin:/usr/bin:/bin\n*/5 * * * * bun -e "fetch('"'"'http://127.0.0.1:3000/api/cron/expire-entries'"'"').then(r=>r.text()).then(t=>console.log(t)).catch(e=>console.error(e))" > /proc/1/fd/1 2>&1\n' > /tmp/menschis.cron \
-    && crontab -u nextjs /tmp/menschis.cron \
-    && rm /tmp/menschis.cron
-
 COPY --from=builder /app/public ./public
 
 # Set the correct permission for prerender cache
@@ -70,5 +56,5 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 
-# exec server PID 1 so it receives SIGTERM for clean shutdown.
-CMD ["/bin/sh", "-c", "/usr/sbin/cron -f & exec bun server.js"]
+# exec server as PID 1 so it receives SIGTERM for clean shutdown.
+CMD ["bun", "server.js"]
