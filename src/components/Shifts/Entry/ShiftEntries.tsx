@@ -16,6 +16,7 @@ interface Props {
     kind: ShiftKind | undefined;
     initialEntries: ClientShiftEntry[];
     prefill: { name: string; email: string; phone: string };
+    turnsitleSiteKey: string | undefined;
 }
 
 type EntryForm = { name: string; email: string; phone: string; notes: string };
@@ -26,6 +27,7 @@ export default function ShiftEntries({
     kind,
     initialEntries,
     prefill,
+    turnsitleSiteKey
 }: Props) {
     const { data: session } = useSession();
     const [entries, setEntries] = useState<ClientShiftEntry[]>(initialEntries);
@@ -223,6 +225,7 @@ export default function ShiftEntries({
                 <ShiftSignUpForm
                     form={signUpForm}
                     submitting={submitting}
+                    turnstileSiteKey={turnsitleSiteKey}
                     onChange={setSignUpForm}
                     onCancel={() => setSignUpForm(null)}
                     onConfirm={() => handleSignUp(signUpForm)}

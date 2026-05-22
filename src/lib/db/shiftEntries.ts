@@ -1,6 +1,7 @@
-import { ShiftEntry } from "@/types/shift";
+import {Shift, ShiftEntry, UpdateShiftEntry} from "@/types/shift";
 import { db } from "@/db";
 import { NextResponse } from "next/server";
+import ShiftEntries from "@/components/Shifts/Entry/ShiftEntries";
 
 // Time an anonymous sign-up has to be confirmed (via first login) before it is
 // cancelled and removed by the expiry sweeper.
@@ -25,7 +26,7 @@ export async function CreateShiftEntry(
     shiftId: number,
     personId: number,
     name: string,
-    order: string,
+    order: string | null,
     notes: string,
     authError: NextResponse<unknown> | null,
     verified: boolean,
@@ -49,7 +50,7 @@ export async function CreateShiftEntry(
             shift: shiftId,
             person: personId,
             name,
-            order,
+            order: order ?? null,
             notes,
             verified,
             createdAt: now,
@@ -97,20 +98,20 @@ export async function GetPendingEntriesByPerson(
 // pop-up after proving identity (magic-link or SSO login). Returns the count.
 export async function ConfirmPendingEntriesByPerson(
     personId: number,
-): Promise<number> {
-    const res = await db
+): Promise<ShiftEntry[]> {
+    return await db
         .updateTable("shiftEntry")
         .set({ verified: true, updatedAt: new Date() })
         .where("person", "=", personId)
         .where("verified", "=", false)
-        .executeTakeFirst();
-    return Number(res.numUpdatedRows);
+        .returningAll()
+        .execute();
 }
 
 // An expired, unconfirmed sign-up the sweeper must cancel and delete.
 export interface ExpiredPendingEntry {
     id: number;
-    order: string;
+    order: string | null;
     shopEventId: string | undefined;
 }
 
@@ -144,15 +145,17 @@ export async function GetShiftEntry(
         .executeTakeFirst();
 }
 
-export async function UpdateShiftEntry(
+
+
+export async function UpdateShiftEntryRow(
     entryId: number,
     personId: number,
-    name: string,
-    notes: string,
+    patch: UpdateShiftEntry,
 ): Promise<ShiftEntry | undefined> {
+    patch.updatedAt = new Date();
     return await db
         .updateTable("shiftEntry")
-        .set({ name, notes, updatedAt: new Date() })
+        .set(patch)
         .where("id", "=", entryId)
         .where("person", "=", personId)
         .returningAll()

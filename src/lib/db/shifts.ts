@@ -6,6 +6,10 @@ export async function DeleteShiftById(id: number) {
     await db.deleteFrom("shift").where("id", "=", id).execute();
 }
 
+export async function GetShiftById(id: number): Promise<Shift> {
+    return await db.selectFrom("shift").selectAll().where("id", "=", id).executeTakeFirstOrThrow();
+}
+
 export async function GetShiftsByEvent(
     eventId: number,
     eventDayId?: number,

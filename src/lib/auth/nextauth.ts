@@ -58,10 +58,12 @@ export const authOptions: NextAuthOptions = {
             if (!sub) return true;
 
             const name = user.name ?? sub;
-            const email = user.email ?? null;
+            const email = user.email;
             const phone = rawProfile.phone_number ?? null;
             const loginToken = crypto.randomUUID();
-
+            if (!email || email == "") {
+                return false
+            }
             await db
                 .insertInto("person")
                 .values({

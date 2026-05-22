@@ -79,6 +79,7 @@ export default function ShiftPanel({
                     kind={kind}
                     initialEntries={clientEntries}
                     prefill={prefill}
+                    turnsitleSiteKey={process.env.TURNSTILE_SITE_KEY}
                 />
             </div>
         </div>

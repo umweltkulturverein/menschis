@@ -18,12 +18,23 @@ export default async function EventPage({
     const session = await getServerSession(authOptions);
     const authError = await requireInternalUser(session);
     const event = await GetEvent(Number(eventId));
+    const turnstile = process.env.TURNSTILE_SITE_KEY;
     if (event === undefined) {
         redirect("/404", RedirectType.replace);
     }
     const days = await GetEventDays(event.id);
     return (
         <div className="min-h-screen bg-zinc-50 dark:bg-ci-blue-800">
+            {turnstile && (
+                <>
+                    <script
+                        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+                        async
+                        defer
+                    ></script>
+                    <link rel="preconnect" href="https://challenges.cloudflare.com" />
+                </>
+            )}
             <EventBanner event={event} editable={isInternalUser(session)} />
             <div className="max-w-4xl mx-auto px-6 py-8">
                 {isInternalUser(session) && (

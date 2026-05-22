@@ -34,7 +34,7 @@ export interface ShiftEntryTable {
     createdAt: Date;
     updatedAt: Date;
     name: string;
-    order: string;
+    order: string | null;
     verified?: boolean;
     notes: string;
     shift: number;

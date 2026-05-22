@@ -9,6 +9,7 @@ import { requireInternalUser } from "@/lib/permissions";
 import {CreateOrder} from "@/lib/ticket/pretix";
 import { GetEventDay } from "@/lib/db/eventDays";
 import { GetEvent } from "@/lib/db/events";
+import {IssueOrder} from "@/lib/ticket/main";
 
 export async function POST(
     req: Request,
@@ -34,13 +35,12 @@ export async function POST(
         return NextResponse.json({ error: "Email and Name required" }, { status: 400 });
     }
 
-    let isAuthed = false
-    let userId = undefined;
-
-    // user creates shift for himself. no need to verify the shift or create the person
+    let order, isAuthed, userId = undefined;
+    // user creates shift for himself. no need to verify the shift or create the person. order for unregistered shifts is done after verified
     if (session?.user?.email == email) {
          isAuthed = !!session?.user?.id;
          userId = session?.user?.id
+         order = await IssueOrder(shiftId, name, email);
     }
 
 
@@ -48,16 +48,16 @@ export async function POST(
 
     const authError = requireInternalUser(session);
 
-    const order = await issueOrder(shiftId, name, email);
+
 
     const entry = await CreateShiftEntry(
         shiftId,
         person.id,
         name,
-        order,
+        order ?? null,
         notes ?? "",
         authError,
-        isAuthed,
+        isAuthed ?? false,
     );
 
     if (entry == undefined)
@@ -87,34 +87,6 @@ async function validateSlotsFull(
         return NextResponse.json({ error: "No Slots left" }, { status: 400 });
     }
     return undefined;
-}
-
-async function issueOrder(
-    shiftId: number,
-    name: string,
-    email: string,
-): Promise<string> {
-    const shift = await db
-        .selectFrom("shift")
-        .innerJoin("shiftKind", "shiftKind.id", "shift.shiftKind")
-        .select(["shift.eventDayId", "shiftKind.eventId"])
-        .where("shift.id", "=", shiftId)
-        .executeTakeFirst();
-    if (!shift?.eventDayId) return "";
-
-    const day = await GetEventDay(shift.eventDayId);
-    if (!day?.shopItemId) return "";
-
-    const event = await GetEvent(shift.eventId);
-    if (!event?.shopEventId) return "";
-
-    return await CreateOrder(
-        event.shopEventId,
-        name,
-        email,
-        day.shopItemId,
-        "4944231",
-    );
 }
 
 async function personInit(req: Request,id: string | undefined, name: string, email:string, phone: string): Promise<{ id: number }> {

@@ -1,12 +1,14 @@
 "use client";
 
 import { inputClass, labelClass } from "@/components/Misc/FormModal";
+import {useEffect, useRef} from "react";
 
 interface EntryForm {
     name: string;
     email: string;
     phone: string;
     notes: string;
+    captchaChallenge?: string;
 }
 
 interface Props {
@@ -15,9 +17,20 @@ interface Props {
     onChange: (form: EntryForm) => void;
     onCancel: () => void;
     onConfirm: () => void;
+    turnstileSiteKey: string | undefined;
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+declare global {
+    interface Window {
+        onCaptchaSuccess: (token: string) => void;
+        onCaptchaExpired: () => void;
+        turnstile?: {
+            render: (el: HTMLElement) => void;
+        };
+    }
+}
 
 export default function ShiftSignUpForm({
     form,
@@ -25,11 +38,25 @@ export default function ShiftSignUpForm({
     onChange,
     onCancel,
     onConfirm,
+    turnstileSiteKey
 }: Props) {
     const trimmedEmail = form.email.trim();
     const emailValid = EMAIL_REGEX.test(trimmedEmail);
     const showEmailError = trimmedEmail.length > 0 && !emailValid;
-
+    const widgetRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        // The api.js auto-scan only runs once on script load. If the script is
+        // already loaded (e.g. the form was opened before), render explicitly.
+        if (turnstileSiteKey && widgetRef.current && window.turnstile) {
+            window.turnstile.render(widgetRef.current);
+        }
+    }, [turnstileSiteKey]);
+    useEffect(() => {
+        window.onCaptchaSuccess = (token: string) =>
+            onChange({ ...form, captchaChallenge: token });
+        window.onCaptchaExpired = () =>
+            onChange({ ...form, captchaChallenge: undefined });
+    }, [form, onChange]);
     return (
         <div className="px-4 pb-4 pt-2 space-y-3">
             <div>
@@ -37,7 +64,7 @@ export default function ShiftSignUpForm({
                 <input
                     value={form.name}
                     onChange={(e) =>
-                        onChange({ ...form, name: e.target.value })
+                        onChange({...form, name: e.target.value})
                     }
                     placeholder="Name"
                     required
@@ -50,7 +77,7 @@ export default function ShiftSignUpForm({
                     type="email"
                     value={form.email}
                     onChange={(e) =>
-                        onChange({ ...form, email: e.target.value })
+                        onChange({...form, email: e.target.value})
                     }
                     placeholder="E-Mail"
                     required
@@ -69,7 +96,7 @@ export default function ShiftSignUpForm({
                     type="tel"
                     value={form.phone}
                     onChange={(e) =>
-                        onChange({ ...form, phone: e.target.value })
+                        onChange({...form, phone: e.target.value})
                     }
                     placeholder="Telefon (optional)"
                     className={inputClass}
@@ -80,13 +107,14 @@ export default function ShiftSignUpForm({
                 <textarea
                     value={form.notes}
                     onChange={(e) =>
-                        onChange({ ...form, notes: e.target.value })
+                        onChange({...form, notes: e.target.value})
                     }
                     placeholder="Notiz (optional)"
                     rows={2}
                     className={`${inputClass} resize-none`}
                 />
             </div>
+
             <div className="flex gap-2">
                 <button
                     onClick={onCancel}
@@ -99,13 +127,26 @@ export default function ShiftSignUpForm({
                     disabled={
                         submitting ||
                         !form.name.trim() ||
-                        !emailValid
+                        !emailValid ||
+                        !form.captchaChallenge
                     }
                     className="flex-1 text-sm px-3 py-1.5 rounded-md bg-green-500 hover:bg-green-600 text-white font-medium disabled:opacity-50"
                 >
                     {submitting ? "..." : "Bestätigen"}
                 </button>
             </div>
+            {turnstileSiteKey && (
+                <div className="flex mt-8 justify-center items-center captcha">
+                    <div
+                        ref={widgetRef}
+                        className="cf-turnstile"
+                        data-sitekey={turnstileSiteKey}
+                        data-size="compact"
+                        data-callback="onCaptchaSuccess"
+                        data-expired-callback="onCaptchaExpired"
+                    ></div>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,4 +1,4 @@
-import {DeleteShiftEntry, GetShiftEntry, UpdateShiftEntry} from "@/lib/db/shiftEntries";
+import {DeleteShiftEntry, GetShiftEntry, UpdateShiftEntryRow} from "@/lib/db/shiftEntries";
 import { NextResponse } from "next/server";
 import {CancelOrder} from "@/lib/ticket/pretix";
 import {GetEventByShiftEntryId} from "@/lib/db/events";
@@ -58,12 +58,14 @@ export async function PATCH(
     }
 
     const { name, notes } = await req.json();
-    const updated = await UpdateShiftEntry(
+    const updated = await UpdateShiftEntryRow(
         entryId,
         person.id,
-        name ?? "",
-        notes ?? "",
-    );
+        {
+            name: name ?? "",
+            notes: notes ?? ""
+        });
+
     if (!updated) {
         return NextResponse.json({ error: "Entry not found" }, { status: 404 });
     }
