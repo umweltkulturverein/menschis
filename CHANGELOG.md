@@ -1,3 +1,23 @@
+## [1.1.0](https://github.com/umweltkulturverein/menschis/compare/v1.0.0...v1.1.0) (2026-05-22)
+
+### Features
+
+* add email verification ([be7ea4e](https://github.com/umweltkulturverein/menschis/commit/be7ea4ead76c0f18d0048ba23b258e37bc5a469f))
+* **front-end:** edit shift form ([53e67c8](https://github.com/umweltkulturverein/menschis/commit/53e67c8929ecced2fe80d6ae28089906a645d45e))
+* **front-end:** edit shift form ([d7a9645](https://github.com/umweltkulturverein/menschis/commit/d7a96452a53fc3238fa735b205f9288401339687))
+* **shifts:** integrate Pretix ticket lifecycle with shift entries ([6e22966](https://github.com/umweltkulturverein/menschis/commit/6e22966de7cb4ae5f3b3da3e241257fc3923266f))
+* smtp connector and email template, add cancel orders, implement lazy resp code check, add status validation of order ([ee820ab](https://github.com/umweltkulturverein/menschis/commit/ee820ab0587d3396fcbf9665bb90b48e1850cb67))
+
+### Bug Fixes
+
+* add kysely ([71befb6](https://github.com/umweltkulturverein/menschis/commit/71befb6e26955d62c4cb2fea2e9244a1c2fe8dcd))
+* add kysely ([20d871d](https://github.com/umweltkulturverein/menschis/commit/20d871d3a5d3ea5586174edf94d40f46e00506b7))
+* build ([fb32f54](https://github.com/umweltkulturverein/menschis/commit/fb32f54333cd200189074dcc74c97a6106f1618c))
+* cancel orders, implement lazy resp code check, add status validation of order ([7875c4a](https://github.com/umweltkulturverein/menschis/commit/7875c4aa1aa724af52e7ec82b2dbe31689c82f96))
+* change internal validation ([88e6e13](https://github.com/umweltkulturverein/menschis/commit/88e6e133a43ec17b40ac972ba1bf7342f969ac07))
+* improve feedback to user ([0ca8e62](https://github.com/umweltkulturverein/menschis/commit/0ca8e623d7fcfefdb5f6151e2968ff15b3f55977))
+* remove unused log statements ([6bbf70d](https://github.com/umweltkulturverein/menschis/commit/6bbf70d06783cbe20b27cf391ea9c531e6820e6a))
+
 ## 1.0.0 (2026-04-19)
 
 ### Features
