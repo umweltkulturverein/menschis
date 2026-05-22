@@ -1,5 +1,8 @@
 import type { NextAuthOptions } from "next-auth";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
 import { db } from "@/db";
+import { GetPersonBySub, type Person } from "@/lib/db/persons";
 
 export const authOptions: NextAuthOptions = {
     // http://localhost:3000/api/auth/callback/oidc
@@ -55,10 +58,12 @@ export const authOptions: NextAuthOptions = {
             if (!sub) return true;
 
             const name = user.name ?? sub;
-            const email = user.email ?? null;
+            const email = user.email;
             const phone = rawProfile.phone_number ?? null;
             const loginToken = crypto.randomUUID();
-
+            if (!email || email == "") {
+                return false
+            }
             await db
                 .insertInto("person")
                 .values({
@@ -86,3 +91,4 @@ export const authOptions: NextAuthOptions = {
         },
     },
 };
+

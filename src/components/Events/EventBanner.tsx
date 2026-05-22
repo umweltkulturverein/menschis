@@ -4,18 +4,25 @@ import {
     NaturalTime,
 } from "@/lib/misc/contextAwareDates";
 import { EventItem } from "@/types/event";
+import EventForm from "@/components/Events/EventForm";
 
 interface Props {
     event: EventItem;
+    editable?: boolean;
 }
 
-export default function EventBanner({ event }: Props) {
+export default function EventBanner({ event, editable }: Props) {
     const startDate = new Date(event.startDate);
     const endDate = new Date(event.endDate);
     const bookingDate = new Date(event.startBookingDateTime);
 
     return (
-        <div className="relative w-full h-50 bg-gradient-to-br from-blue-200 to-indigo-300 dark:from-ci-blue-600 dark:to-ci-blue-500 flex items-end">
+        <div className="relative w-full h-50 bg-gradient-to-br from-ci-green-200 to-ci-green-300 dark:from-ci-green-600 dark:to-ci-green-500 flex items-end group">
+            {editable && (
+                <div className="absolute top-4 right-4 z-20">
+                    <EventForm event={event} edit />
+                </div>
+            )}
             <div className="absolute inset-0 flex items-center justify-center opacity-20">
                 <svg
                     className="w-40 h-30 text-white"
@@ -103,7 +110,6 @@ export default function EventBanner({ event }: Props) {
                         </svg>
                         <span>
                             Booking opens {NaturalDateTime(bookingDate)}
-                            Uhr
                         </span>
                     </div>
                 </div>

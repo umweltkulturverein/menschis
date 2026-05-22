@@ -44,6 +44,8 @@ RUN chown nextjs:bun .next
 COPY --from=builder --chown=nextjs:bun /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:bun /app/.next/static ./.next/static
 
+RUN bun add kysely
+
 USER nextjs
 
 EXPOSE 3000
@@ -53,4 +55,6 @@ ENV PORT=3000
 # Set hostname to localhost
 ENV HOSTNAME="0.0.0.0"
 
+
+# exec server as PID 1 so it receives SIGTERM for clean shutdown.
 CMD ["bun", "server.js"]

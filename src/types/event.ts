@@ -8,10 +8,10 @@ export interface EventItemTable {
     endDate: Date;
     startBookingDateTime: Date;
     public: boolean;
+    shopEventId?: string;
     location: string;
     backstageAccess: boolean;
     tokenCount: number;
-    days: string[] | null; // YYYY-MM-DD date strings
 }
 export type EventItem = Selectable<EventItemTable>;
 export type NewEventItem = Insertable<EventItemTable>;

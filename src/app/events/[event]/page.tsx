@@ -1,12 +1,13 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/nextauth";
 import { redirect, RedirectType } from "next/navigation";
 import { GetEvent } from "@/lib/db/events";
+import { GetEventDays } from "@/lib/db/eventDays";
 import EventBanner from "@/components/Events/EventBanner";
 import { Suspense } from "react";
 import ShiftSummary from "@/components/Shifts/ShiftSummary";
 import Link from "next/link";
-import { requireInternalUser } from "@/lib/permissions";
+import { isInternalUser, requireInternalUser } from "@/lib/permissions";
 
 export default async function EventPage({
     params,
@@ -17,14 +18,26 @@ export default async function EventPage({
     const session = await getServerSession(authOptions);
     const authError = await requireInternalUser(session);
     const event = await GetEvent(Number(eventId));
+    const turnstile = process.env.TURNSTILE_SITE_KEY;
     if (event === undefined) {
         redirect("/404", RedirectType.replace);
     }
+    const days = await GetEventDays(event.id);
     return (
         <div className="min-h-screen bg-zinc-50 dark:bg-ci-blue-800">
-            <EventBanner event={event} />
+            {turnstile && (
+                <>
+                    <script
+                        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+                        async
+                        defer
+                    ></script>
+                    <link rel="preconnect" href="https://challenges.cloudflare.com" />
+                </>
+            )}
+            <EventBanner event={event} editable={isInternalUser(session)} />
             <div className="max-w-4xl mx-auto px-6 py-8">
-                {session && (
+                {isInternalUser(session) && (
                     <div className="flex justify-end mb-4">
                         <Link
                             href={`/events/${eventId}/edit`}
@@ -55,13 +68,15 @@ export default async function EventPage({
                     }
                 >
                     <div className="-mt-8">
-                        {event.days && event.days.length > 0 ? (
-                            event.days.map((day) => (
-                                <div key={day}>
-                                    <h1 className="text-2xl m-2 pt-8">{day}</h1>
+                        {days.length > 0 ? (
+                            days.map((day) => (
+                                <div key={day.id}>
+                                    <h1 className="text-2xl m-2 pt-8">
+                                        {day.dayTitle}
+                                    </h1>
                                     <ShiftSummary
                                         eventId={event.id}
-                                        eventDay={day}
+                                        eventDayId={day.id}
                                         authError={authError}
                                     />
                                 </div>
@@ -71,7 +86,6 @@ export default async function EventPage({
                                 <ShiftSummary
                                     authError={authError}
                                     eventId={event.id}
-                                    eventDay=""
                                 />
                             </div>
                         )}

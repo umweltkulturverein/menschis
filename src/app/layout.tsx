@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Righteous } from "next/font/google";
 import Providers from "@/components/Providers";
 import NavBar from "@/components/Navigation/NavBar";
+import PendingShiftsPopup from "@/components/Shifts/Entry/PendingShiftsPopup";
 import "./globals.css";
 import { AppName } from "@/lib/misc/vars";
 
@@ -24,6 +25,7 @@ export default function RootLayout({
             <body className={`${righteous.className} antialiased`}>
                 <Providers>
                     <NavBar />
+                    <PendingShiftsPopup />
                     {children}
                 </Providers>
             </body>

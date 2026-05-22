@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/nextauth";
 import { requireInternalUser } from "@/lib/permissions";
 import {
     GetShiftsByEvent,
@@ -44,7 +44,7 @@ export async function POST(
 
     const shift: NewShift = {
         startDatetime: new Date(body.startDatetime),
-        eventDay: body.day ?? undefined,
+        eventDayId: body.eventDayId ? Number(body.eventDayId) : null,
         slots: Number(body.slots),
         endDatetime: new Date(body.endDatetime),
         internal: body.internal ?? false,

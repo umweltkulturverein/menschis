@@ -1,66 +1,120 @@
 "use client";
 
+import { inputClass, labelClass } from "@/components/Misc/FormModal";
+import {useEffect, useRef} from "react";
+
 interface EntryForm {
     name: string;
     email: string;
     phone: string;
     notes: string;
+    captchaChallenge?: string;
 }
 
 interface Props {
     form: EntryForm;
-    isGuest: boolean;
     submitting: boolean;
     onChange: (form: EntryForm) => void;
     onCancel: () => void;
     onConfirm: () => void;
+    turnstileSiteKey: string | undefined;
+}
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+declare global {
+    interface Window {
+        onCaptchaSuccess: (token: string) => void;
+        onCaptchaExpired: () => void;
+        turnstile?: {
+            render: (el: HTMLElement) => void;
+        };
+    }
 }
 
 export default function ShiftSignUpForm({
     form,
-    isGuest,
     submitting,
     onChange,
     onCancel,
     onConfirm,
+    turnstileSiteKey
 }: Props) {
+    const trimmedEmail = form.email.trim();
+    const emailValid = EMAIL_REGEX.test(trimmedEmail);
+    const showEmailError = trimmedEmail.length > 0 && !emailValid;
+    const widgetRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        // The api.js auto-scan only runs once on script load. If the script is
+        // already loaded (e.g. the form was opened before), render explicitly.
+        if (turnstileSiteKey && widgetRef.current && window.turnstile) {
+            window.turnstile.render(widgetRef.current);
+        }
+    }, [turnstileSiteKey]);
+    useEffect(() => {
+        window.onCaptchaSuccess = (token: string) =>
+            onChange({ ...form, captchaChallenge: token });
+        window.onCaptchaExpired = () =>
+            onChange({ ...form, captchaChallenge: undefined });
+    }, [form, onChange]);
     return (
-        <div className="px-4 pb-4 pt-2 space-y-2">
-            <input
-                value={form.name}
-                onChange={(e) => onChange({ ...form, name: e.target.value })}
-                placeholder="Name"
-                required
-                className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-ci-blue-600 text-gray-800 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-            <input
-                type="email"
-                value={form.email}
-                onChange={(e) => onChange({ ...form, email: e.target.value })}
-                placeholder="E-Mail"
-                required
-                className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-ci-blue-600 text-gray-800 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-            <input
-                type="tel"
-                value={form.phone}
-                onChange={(e) => onChange({ ...form, phone: e.target.value })}
-                placeholder="Telefon (optional)"
-                className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-ci-blue-600 text-gray-800 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-            <textarea
-                value={form.notes}
-                onChange={(e) => onChange({ ...form, notes: e.target.value })}
-                placeholder="Notiz (optional)"
-                rows={2}
-                className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-ci-blue-600 text-gray-800 dark:text-white px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-            {isGuest && (
-                <p className="text-xs text-gray-400 dark:text-gray-500">
-                    You{"'"}ll receive an email link to edit and verify your
-                    registration.
-                </p>
-            )}
+        <div className="px-4 pb-4 pt-2 space-y-3">
+            <div>
+                <label className={labelClass}>Name *</label>
+                <input
+                    value={form.name}
+                    onChange={(e) =>
+                        onChange({...form, name: e.target.value})
+                    }
+                    placeholder="Name"
+                    required
+                    className={inputClass}
+                />
+            </div>
+            <div>
+                <label className={labelClass}>E-Mail *</label>
+                <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) =>
+                        onChange({...form, email: e.target.value})
+                    }
+                    placeholder="E-Mail"
+                    required
+                    aria-invalid={showEmailError}
+                    className={inputClass}
+                />
+                {showEmailError ? (
+                    <p className="mt-1 text-xs text-red-500">
+                        Bitte gib eine gültige E-Mail-Adresse ein.
+                    </p>
+                ) : null}
+            </div>
+            <div>
+                <label className={labelClass}>Telefon</label>
+                <input
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) =>
+                        onChange({...form, phone: e.target.value})
+                    }
+                    placeholder="Telefon (optional)"
+                    className={inputClass}
+                />
+            </div>
+            <div>
+                <label className={labelClass}>Notiz</label>
+                <textarea
+                    value={form.notes}
+                    onChange={(e) =>
+                        onChange({...form, notes: e.target.value})
+                    }
+                    placeholder="Notiz (optional)"
+                    rows={2}
+                    className={`${inputClass} resize-none`}
+                />
+            </div>
+
             <div className="flex gap-2">
                 <button
                     onClick={onCancel}
@@ -73,13 +127,26 @@ export default function ShiftSignUpForm({
                     disabled={
                         submitting ||
                         !form.name.trim() ||
-                        !form.email.trim()
+                        !emailValid ||
+                        !form.captchaChallenge
                     }
                     className="flex-1 text-sm px-3 py-1.5 rounded-md bg-green-500 hover:bg-green-600 text-white font-medium disabled:opacity-50"
                 >
                     {submitting ? "..." : "Bestätigen"}
                 </button>
             </div>
+            {turnstileSiteKey && (
+                <div className="flex mt-8 justify-center items-center captcha">
+                    <div
+                        ref={widgetRef}
+                        className="cf-turnstile"
+                        data-sitekey={turnstileSiteKey}
+                        data-size="compact"
+                        data-callback="onCaptchaSuccess"
+                        data-expired-callback="onCaptchaExpired"
+                    ></div>
+                </div>
+            )}
         </div>
     );
 }

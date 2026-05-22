@@ -4,7 +4,7 @@ export interface PersonTable {
     id: Generated<number>;
     sub: string;
     name: string;
-    email: string | null;
+    email: string;
     phone: string | null;
     loginToken: string | null;
     roles: ColumnType<string[] | null, string[] | null, string[] | null>;

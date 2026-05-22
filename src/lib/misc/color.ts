@@ -8,6 +8,5 @@ export const StringToColour = (str: string) => {
         const c = (hash >> (i * 8)) & 0xff;
         out += c.toString(16).padStart(2, "0");
     }
-    console.log(out);
     return out;
 };

@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import type { EventItem, NewEventItem } from "@/types/event";
+import type { EventItem, NewEventItem, UpdateEventItem } from "@/types/event";
 
 export async function GetEvent(id: number): Promise<EventItem | undefined> {
     return await db
@@ -28,6 +28,19 @@ export async function GetEvents(): Promise<EventItem[] | undefined> {
         .execute();
 }
 
+export async function GetEventByShiftEntryId(
+    shiftEntryId: number,
+): Promise<EventItem | undefined> {
+    return await db
+        .selectFrom("event")
+        .innerJoin("shiftKind", "shiftKind.eventId", "event.id")
+        .innerJoin("shift", "shift.shiftKind", "shiftKind.id")
+        .innerJoin("shiftEntry", "shiftEntry.shift", "shift.id")
+        .selectAll("event")
+        .where("shiftEntry.id", "=", shiftEntryId)
+        .executeTakeFirst();
+}
+
 export async function CreateEvent(
     e: NewEventItem,
 ): Promise<EventItem | undefined> {
@@ -37,4 +50,20 @@ export async function CreateEvent(
         .returningAll()
         .executeTakeFirstOrThrow();
     return event;
+}
+
+export async function UpdateEvent(
+    id: number,
+    patch: UpdateEventItem,
+): Promise<EventItem | undefined> {
+    return await db
+        .updateTable("event")
+        .set(patch)
+        .where("id", "=", id)
+        .returningAll()
+        .executeTakeFirst();
+}
+
+export async function DeleteEvent(id: number): Promise<void> {
+    await db.deleteFrom("event").where("id", "=", id).execute();
 }

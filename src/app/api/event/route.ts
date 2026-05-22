@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/nextauth";
 import { requireInternalUser } from "@/lib/permissions";
 import { db } from "@/db";
 import type { EventItem, NewEventItem } from "@/types/event";
@@ -26,6 +26,7 @@ export async function POST(req: Request) {
     const newEvent: NewEventItem = {
         title: body.title,
         description: body.description ?? null,
+        shopEventId: body.shopEventId ?? null,
         startDate: new Date(body.startDate),
         endDate: new Date(body.endDate),
         startBookingDateTime: new Date(body.startBookingDateTime),

@@ -1,4 +1,4 @@
-import { Shift, ShiftKind, ShiftEntry } from "@/types/shift";
+import { Shift, ShiftKind, ShiftEntry, ClientShiftEntry } from "@/types/shift";
 import ShiftEntries from "./Entry/ShiftEntries";
 
 interface Props {
@@ -16,7 +16,13 @@ export default function ShiftPanel({
     currentPersonId,
     prefill,
 }: Props) {
-    return (
+
+    const clientEntries: ClientShiftEntry[] = initialEntries.map((e) => {
+        return e.person === currentPersonId
+            ? { id: e.id, name: e.name, notes: e.notes, person: e.person }
+            : { id: e.id };
+    });
+        return (
         <div className="relative group flex flex-col rounded-lg overflow-hidden shadow-md bg-white dark:bg-ci-blue-700">
             {/* Header */}
             <div
@@ -71,9 +77,9 @@ export default function ShiftPanel({
                 <ShiftEntries
                     shift={shift}
                     kind={kind}
-                    initialEntries={initialEntries}
-                    currentPersonId={currentPersonId}
+                    initialEntries={clientEntries}
                     prefill={prefill}
+                    turnsitleSiteKey={process.env.TURNSTILE_SITE_KEY}
                 />
             </div>
         </div>
