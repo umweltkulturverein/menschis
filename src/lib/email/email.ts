@@ -128,7 +128,7 @@ export async function sendShiftEntryEmail(args: {
     const loginToken = await EnsureLoginToken(args.person.id);
     const editUrl = buildMagicLinkUrl(loginToken, `/events/${args.event.id}`);
 
-    const subject = `Deine Schicht bei ${args.event.title} (${args.shiftKind.title})`;
+    const subject = `${args.event.title} Schicht bestätigt`;
     const html =
         "<!DOCTYPE html>" +
         renderToStaticMarkup(

@@ -44,19 +44,26 @@ export default function ShiftSignUpForm({
     const emailValid = EMAIL_REGEX.test(trimmedEmail);
     const showEmailError = trimmedEmail.length > 0 && !emailValid;
     const widgetRef = useRef<HTMLDivElement>(null);
+    const formRef = useRef(form);
+    const onChangeRef = useRef(onChange);
+    formRef.current = form;
+    onChangeRef.current = onChange;
+
     useEffect(() => {
+        // Register the callbacks BEFORE asking Turnstile to render — Cloudflare
+        // may short-circuit and fire onCaptchaSuccess synchronously when a
+        // clearance cookie is present.
+        window.onCaptchaSuccess = (token: string) =>
+            onChangeRef.current({ ...formRef.current, captchaChallenge: token });
+        window.onCaptchaExpired = () =>
+            onChangeRef.current({ ...formRef.current, captchaChallenge: undefined });
+
         // The api.js auto-scan only runs once on script load. If the script is
         // already loaded (e.g. the form was opened before), render explicitly.
         if (turnstileSiteKey && widgetRef.current && window.turnstile) {
             window.turnstile.render(widgetRef.current);
         }
     }, [turnstileSiteKey]);
-    useEffect(() => {
-        window.onCaptchaSuccess = (token: string) =>
-            onChange({ ...form, captchaChallenge: token });
-        window.onCaptchaExpired = () =>
-            onChange({ ...form, captchaChallenge: undefined });
-    }, [form, onChange]);
     return (
         <div className="px-4 pb-4 pt-2 space-y-3">
             <div>
@@ -128,7 +135,7 @@ export default function ShiftSignUpForm({
                         submitting ||
                         !form.name.trim() ||
                         !emailValid ||
-                        !form.captchaChallenge
+                        (!!turnstileSiteKey && !form.captchaChallenge)
                     }
                     className="flex-1 text-sm px-3 py-1.5 rounded-md bg-green-500 hover:bg-green-600 text-white font-medium disabled:opacity-50"
                 >

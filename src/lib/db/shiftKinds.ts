@@ -18,6 +18,15 @@ export async function GetShiftKindsByEvent(
         .where("eventId", "=", eventId)
         .execute();
 }
+export async function GetShiftKindById(
+    id: number,
+): Promise<ShiftKind> {
+    return await db
+        .selectFrom("shiftKind")
+        .selectAll()
+        .where("id", "=", id)
+        .executeTakeFirstOrThrow();
+}
 
 export async function UpdateShiftKindRow(
     id: number,

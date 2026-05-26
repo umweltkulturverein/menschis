@@ -28,6 +28,8 @@ export async function PATCH(
     if (body.title !== undefined) patch.title = body.title;
     if (body.description !== undefined)
         patch.description = body.description || null;
+    if (body.infoText !== undefined)
+        patch.infoText = body.infoText || null;
     if (body.shopEventId !== undefined)
         patch.shopEventId = body.shopEventId || undefined;
     if (body.startDate !== undefined)

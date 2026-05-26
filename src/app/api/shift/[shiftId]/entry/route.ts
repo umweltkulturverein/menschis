@@ -2,14 +2,17 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/nextauth";
 import { db } from "@/db";
 import { CreateShiftEntry } from "@/lib/db/shiftEntries";
-import { FindOrCreatePersonByEmail, GetPersonBySub } from "@/lib/db/persons";
-import { sendMagicLink } from "@/lib/email/email";
+import { FindOrCreatePersonByEmail, GetPersonBySub, type Person } from "@/lib/db/persons";
+import { sendMagicLink, sendShiftEntryEmail } from "@/lib/email/email";
 import { NextResponse } from "next/server";
 import { requireInternalUser } from "@/lib/permissions";
 import {CreateOrder} from "@/lib/ticket/pretix";
 import { GetEventDay } from "@/lib/db/eventDays";
 import { GetEvent } from "@/lib/db/events";
+import { GetShiftById } from "@/lib/db/shifts";
+import { GetShiftKindById } from "@/lib/db/shiftKinds";
 import {IssueOrder} from "@/lib/ticket/main";
+import type { ShiftEntry } from "@/types/shift";
 
 export async function POST(
     req: Request,
@@ -34,17 +37,20 @@ export async function POST(
     if (!email || !name) {
         return NextResponse.json({ error: "Email and Name required" }, { status: 400 });
     }
+    const sessionEmail = session?.user?.email?.trim().toLowerCase();
+    const formEmail = email?.trim().toLowerCase();
+    const isInternalUser = !!sessionEmail && sessionEmail === formEmail;
 
     let order, isAuthed, userId = undefined;
     // user creates shift for himself. no need to verify the shift or create the person. order for unregistered shifts is done after verified
-    if (session?.user?.email == email) {
+    if (isInternalUser) {
          isAuthed = !!session?.user?.id;
          userId = session?.user?.id
          order = await IssueOrder(shiftId, name, email);
     }
 
 
-    const person: { id: number } = await personInit(req, userId, name, email, phone)
+    const person = await personInit(req, userId, name, email, phone)
 
     const authError = requireInternalUser(session);
 
@@ -64,7 +70,26 @@ export async function POST(
         return NextResponse.json("You cannot Register for this shift", {
             status: 401,
         });
+    if (isInternalUser) {
+        await sendShiftEntryConfirmation(entry, person);
+    }
+
+
     return NextResponse.json(entry, { status: 201 });
+}
+
+async function sendShiftEntryConfirmation(
+    entry: ShiftEntry,
+    person: Person,
+): Promise<void> {
+    const shift = await GetShiftById(entry.shift);
+    const shiftKind = await GetShiftKindById(shift.shiftKind);
+    const event = await GetEvent(shiftKind.eventId);
+    if (!event) return;
+    const eventDay = shift.eventDayId
+        ? await GetEventDay(shift.eventDayId)
+        : null;
+    await sendShiftEntryEmail({ entry, person, shift, shiftKind, event, eventDay });
 }
 
 async function validateSlotsFull(
@@ -89,11 +114,11 @@ async function validateSlotsFull(
     return undefined;
 }
 
-async function personInit(req: Request,id: string | undefined, name: string, email:string, phone: string): Promise<{ id: number }> {
+async function personInit(req: Request,id: string | undefined, name: string, email:string, phone: string): Promise<Person> {
     if (id) { // User that already has an authenticated session
         const person = await GetPersonBySub(id);
         if (!person) throw new Error(`No person found for sub: ${id}`);
-        return { id: person.id };
+        return person;
     }
     const p = await FindOrCreatePersonByEmail(
         email,
@@ -103,5 +128,5 @@ async function personInit(req: Request,id: string | undefined, name: string, ema
     const referer = req.headers.get("referer");
     const redirectPath = referer ? new URL(referer).pathname : undefined;
     await sendMagicLink(email, p.loginToken!, redirectPath);
-    return {id: p.id};
+    return p;
 }
