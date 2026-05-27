@@ -9,7 +9,7 @@ import {
     isOwnEntry,
 } from "@/types/shift";
 import ShiftEntryRow from "./ShiftEntryRow";
-import ShiftSignUpForm from "./ShiftSignUpForm";
+import ShiftEntryForm from "./ShiftEntryForm";
 
 interface Props {
     shift: Shift;
@@ -222,7 +222,7 @@ export default function ShiftEntries({
 
             {/* Sign-up form */}
             {signUpForm && !kind?.authorizationMessage && (
-                <ShiftSignUpForm
+                <ShiftEntryForm
                     form={signUpForm}
                     submitting={submitting}
                     turnstileSiteKey={turnsitleSiteKey}

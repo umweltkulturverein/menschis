@@ -32,7 +32,7 @@ declare global {
     }
 }
 
-export default function ShiftSignUpForm({
+export default function ShiftEntryForm({
     form,
     submitting,
     onChange,

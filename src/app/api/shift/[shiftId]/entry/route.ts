@@ -19,7 +19,7 @@ export async function POST(
     { params }: { params: Promise<{ shiftId: string }> },
 ) {
     const session = await getServerSession(authOptions);
-    const { name, email, phone, notes } = await req.json();
+    const { name, email, phone, notes, captchaChallenge } = await req.json();
     const { shiftId: shiftIdParam } = await params;
     const shiftId = parseInt(shiftIdParam);
     if (isNaN(shiftId)) {
@@ -39,14 +39,21 @@ export async function POST(
     }
     const sessionEmail = session?.user?.email?.trim().toLowerCase();
     const formEmail = email?.trim().toLowerCase();
-    const isInternalUser = !!sessionEmail && sessionEmail === formEmail;
+    const isSignedInUser = !!sessionEmail && sessionEmail === formEmail;
 
     let order, isAuthed, userId = undefined;
     // user creates shift for himself. no need to verify the shift or create the person. order for unregistered shifts is done after verified
-    if (isInternalUser) {
+    if (isSignedInUser) {
          isAuthed = !!session?.user?.id;
          userId = session?.user?.id
          order = await IssueOrder(shiftId, name, email);
+    } else {
+        const ok = await ValidateTurnstile(captchaChallenge)
+        if (!ok.success) {
+            return NextResponse.json("Supplied Captcha was not valid. Please try again." + ok["error-codes"], {
+                status: 403,
+            });
+        }
     }
 
 
@@ -70,7 +77,7 @@ export async function POST(
         return NextResponse.json("You cannot Register for this shift", {
             status: 401,
         });
-    if (isInternalUser) {
+    if (isSignedInUser) {
         await sendShiftEntryConfirmation(entry, person);
     }
 
