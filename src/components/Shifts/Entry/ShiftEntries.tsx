@@ -34,6 +34,7 @@ export default function ShiftEntries({
     const [signUpForm, setSignUpForm] = useState<EntryForm | null>(null);
     const [editing, setEditing] = useState<EditState | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [guestSubmitted, setGuestSubmitted] = useState(false);
     const [lastForm, setLastForm] = useState<EntryForm | null>(null);
 
@@ -44,6 +45,7 @@ export default function ShiftEntries({
         const wasGuest = !session || session.user.email !== form.email;
         setLastForm(form);
         setSubmitting(true);
+        setError(null);
         try {
             const res = await fetch(`/api/shift/${shift.id}/entry`, {
                 method: "POST",
@@ -61,6 +63,9 @@ export default function ShiftEntries({
                 setEntries((prev) => [...prev, newEntry]);
                 setSignUpForm(null);
                 if (wasGuest) setGuestSubmitted(true);
+            } else {
+                const data = await res.json();
+                setError(typeof data === "string" ? data : data.error ?? "An error occurred.");
             }
         } finally {
             setSubmitting(false);
@@ -225,6 +230,7 @@ export default function ShiftEntries({
                 <ShiftEntryForm
                     form={signUpForm}
                     submitting={submitting}
+                    error={error}
                     turnstileSiteKey={turnsitleSiteKey}
                     onChange={setSignUpForm}
                     onCancel={() => setSignUpForm(null)}

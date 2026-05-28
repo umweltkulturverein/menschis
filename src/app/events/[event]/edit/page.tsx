@@ -134,7 +134,7 @@ export default async function EventEditPage({
                                     key={kind.id}
                                     className="relative group rounded-lg overflow-hidden shadow-md bg-white dark:bg-ci-blue-700"
                                 >
-                                    <div className="z-10 absolute inset-0 flex items-center justify-center">
+                                    <div className="z-20 absolute inset-0 flex items-center justify-center">
                                         <ShiftKindForm
                                             eventId={event.id}
                                             kind={kind}

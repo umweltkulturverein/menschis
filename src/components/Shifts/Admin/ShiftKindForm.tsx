@@ -11,6 +11,7 @@ import {
     TextField,
 } from "@/components/Misc/FormFields";
 
+
 interface Props {
     eventId: number;
     kind?: ShiftKind;
@@ -123,9 +124,9 @@ export default function ShiftKindForm({ eventId, kind, edit }: Props) {
                     defaultValue={kind?.color ?? "#3b82f6"}
                 />
 
-                <TextField
+                <TextareaField
                     name="authorizationMessage"
-                    label="Authorization message"
+                    label="Authorization message (Markdown)"
                     defaultValue={kind?.authorizationMessage ?? ""}
                 />
             </FormModal>
