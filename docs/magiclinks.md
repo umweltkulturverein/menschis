@@ -53,16 +53,16 @@ Guest persons have `sub` prefixed with `"email:"`. SSO persons have a bare OIDC 
 ```ts
 // src/lib/permissions.ts
 isInternalUser(session)       // true for SSO users only
-requireInternalUser(session)  // returns 401/403 NextResponse or null
+isAdminUser(session)          // true for users with admin group
+requireInternalUser/requireAdminUser(session)  // returns 401/403 NextResponse or null
 ```
 
-`requireInternalUser` is applied to all admin/edit API routes:
+`requireAdminUser` is applied to all admin/edit API routes:
 - `POST /api/event`
 - `PATCH /api/event/[id]/edit`
 - `POST /api/event/[id]/shiftkind`
 - `POST /api/event/[id]/shift`
-This is temporary and will be split into 
-`requireInternalUser & requirePlannerUser`
+
 
 The edit page itself redirects guests to the event overview instead of showing an error.
 

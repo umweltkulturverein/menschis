@@ -9,7 +9,7 @@ import {
 } from "@/lib/db/persons";
 import { sendMagicLink, sendShiftEntryEmail } from "@/lib/email/email";
 import { NextResponse } from "next/server";
-import { requireInternalUser } from "@/lib/permissions";
+import { requireInternalUser } from "@/lib/auth/permissions";
 import { GetEventDay } from "@/lib/db/eventDays";
 import { GetEvent } from "@/lib/db/events";
 import { GetShiftById } from "@/lib/db/shifts";
