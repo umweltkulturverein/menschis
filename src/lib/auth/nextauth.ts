@@ -1,6 +1,20 @@
 import type { NextAuthOptions } from "next-auth";
 import { db } from "@/db";
 
+const rolesClaim = process.env.OIDC_ROLES_CLAIM ?? "groups";
+
+function extractRoles(
+  profile: Record<string, unknown> | null | undefined,
+): string[] | null {
+  if (!profile) return null;
+  const value = profile[rolesClaim];
+  if (Array.isArray(value)) {
+    return value.filter((v): v is string => typeof v === "string");
+  }
+  if (typeof value === "string") return [value];
+  return null;
+}
+
 export const authOptions: NextAuthOptions = {
   // http://localhost:3000/api/auth/callback/oidc
   providers: [
@@ -11,7 +25,9 @@ export const authOptions: NextAuthOptions = {
       wellKnown: `${process.env.OIDC_ISSUER}/.well-known/openid-configuration`,
       clientId: process.env.OIDC_CLIENT_ID,
       clientSecret: process.env.OIDC_CLIENT_SECRET,
-      authorization: { params: { scope: "openid email profile roles" } },
+      authorization: {
+        params: { scope: `openid email profile ${rolesClaim}` },
+      },
       checks: ["pkce", "state"],
       client: {
         token_endpoint_auth_method: process.env.OIDC_CLIENT_SECRET
@@ -23,7 +39,7 @@ export const authOptions: NextAuthOptions = {
           id: profile.sub,
           name: profile.name ?? profile.preferred_username ?? profile.sub,
           email: profile.email,
-          roles: profile.roles,
+          roles: extractRoles(profile),
           image: profile.picture ?? null,
         };
       },
@@ -32,12 +48,20 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async jwt({ token }) {
+    async jwt({ token, user, profile }) {
+      if (user && "roles" in user) {
+        token.roles = (user as { roles?: string[] | null }).roles ?? null;
+      } else if (profile) {
+        token.roles = extractRoles(profile as Record<string, unknown>);
+      }
       return token;
     },
     async session({ session, token }) {
       if (token.sub) {
         session.user.id = token.sub;
+      }
+      if (token.roles !== undefined) {
+        session.user.roles = token.roles as string[] | null;
       }
       if (token.shiftAccess) {
         session.user.shiftAccess = token.shiftAccess as Record<number, string>;
@@ -49,13 +73,12 @@ export const authOptions: NextAuthOptions = {
       const rawProfile = profile as {
         sub?: string;
         phone_number?: string;
-        roles?: string[];
-      };
+      } & Record<string, unknown>;
       const sub = rawProfile?.sub;
       if (!sub) return true;
 
       const name = user.name ?? sub;
-      const roles = rawProfile.roles ?? null;
+      const roles = extractRoles(rawProfile);
       const email = user.email;
       const phone = rawProfile.phone_number ?? null;
       const loginToken = crypto.randomUUID();

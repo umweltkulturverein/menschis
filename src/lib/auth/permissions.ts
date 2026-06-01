@@ -18,16 +18,13 @@ export function requireInternalUser(
   return null;
 }
 
-function getRoles(user: Session | Person): string[] {
-  return ("user" in user ? user.user?.roles : user.roles) ?? [];
-}
 
-export function isAdminUser(user: Session | Person | null): boolean {
+export function isAdminUser(user: Session | null): boolean {
   const adminGroup = process.env.OIDC_ADMIN_GROUP ?? "admin";
-  if (user) {
-    console.log(adminGroup, getRoles(user));
-  }
-  return !!user && getRoles(user).includes(adminGroup);
+    console.log(user?.user.roles);
+    return (!!user && !!user.user.roles && user.user.roles.includes(adminGroup));
+
+
 }
 
 export function requireAdminUser(session: Session | null): NextResponse | null {
