@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Righteous } from "next/font/google";
 import Providers from "@/components/Providers";
 import NavBar from "@/components/Navigation/NavBar";
+import Footer from "@/components/Navigation/Footer";
 import PendingShiftsPopup from "@/components/Shifts/Entry/PendingShiftsPopup";
 import "./globals.css";
 import { AppName } from "@/lib/misc/vars";
@@ -27,6 +28,7 @@ export default function RootLayout({
                     <NavBar />
                     <PendingShiftsPopup />
                     {children}
+                    <Footer />
                 </Providers>
             </body>
         </html>

@@ -36,6 +36,7 @@ export default function EventForm({ event, edit }: Props) {
         const body = {
             title: fd.get("title") as string,
             description: (fd.get("description") as string) || null,
+            infoText: (fd.get("infoText") as string) || null,
             shopEventId: (fd.get("shopEventId") as string) || null,
             startDate: fd.get("startDate") as string,
             endDate: fd.get("endDate") as string,
@@ -123,6 +124,13 @@ export default function EventForm({ event, edit }: Props) {
                     label="Description"
                     rows={3}
                     defaultValue={event?.description ?? ""}
+                />
+
+                <TextareaField
+                    name="infoText"
+                    label="Info text (sent in shift confirmation emails)"
+                    rows={4}
+                    defaultValue={event?.infoText ?? ""}
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -12,6 +12,7 @@ export interface EventItemTable {
     location: string;
     backstageAccess: boolean;
     tokenCount: number;
+    infoText: string | null;
 }
 export type EventItem = Selectable<EventItemTable>;
 export type NewEventItem = Insertable<EventItemTable>;

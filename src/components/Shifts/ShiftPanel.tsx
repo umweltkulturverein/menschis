@@ -1,4 +1,5 @@
 import { Shift, ShiftKind, ShiftEntry, ClientShiftEntry } from "@/types/shift";
+import Markdown from "react-markdown";
 import ShiftEntries from "./Entry/ShiftEntries";
 
 interface Props {
@@ -68,10 +69,10 @@ export default function ShiftPanel({
 
             <div className="relative flex-1">
                 {kind?.authorizationMessage && (
-                    <div className="absolute inset-0 z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                        <p className="text-white text-xs text-center font-medium px-4">
-                            {kind.authorizationMessage}
-                        </p>
+                    <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                        <div className="text-white text-xs text-center font-medium px-4 prose prose-invert prose-xs prose-p:m-0 prose-a:text-green-300">
+                            <Markdown>{kind.authorizationMessage}</Markdown>
+                        </div>
                     </div>
                 )}
                 <ShiftEntries
