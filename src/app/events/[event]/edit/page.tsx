@@ -11,6 +11,7 @@ import ShiftKindForm from "@/components/Shifts/Admin/ShiftKindForm";
 import ShiftForm from "@/components/Shifts/Admin/ShiftForm";
 import EventDayForm from "@/components/Events/EventDayForm";
 import CopyButton from "@/components/Misc/CopyButton";
+import Pill from "@/components/Misc/Pill";
 import { NaturalDateTime } from "@/lib/misc/contextAwareDates";
 import { StringToColour } from "@/lib/misc/color";
 
@@ -211,19 +212,14 @@ export default async function EventEditPage({
                         </p>
                       </div>
                       {shift.internal && (
-                        <span className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+                        <Pill className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
                           Internal
-                        </span>
+                        </Pill>
                       )}
                       {day ? (
-                        <span
-                          style={{
-                            backgroundColor: StringToColour(day.dayTitle),
-                          }}
-                          className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full text-white  dark:text-white"
-                        >
+                        <Pill color={StringToColour(day.dayTitle)}>
                           {day.dayTitle}
-                        </span>
+                        </Pill>
                       ) : (
                         <></>
                       )}

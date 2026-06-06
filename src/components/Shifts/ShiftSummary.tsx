@@ -6,26 +6,39 @@ import { GetEntriesByShifts } from "@/lib/db/shiftEntries";
 import { GetPersonBySub } from "@/lib/db/persons";
 import ShiftPanel from "./ShiftPanel";
 import { NextResponse } from "next/server";
+import {
+    EMPTY_FILTERS,
+    ShiftFilters,
+    shiftInTimeWindow,
+} from "@/lib/shifts/filters";
 
 export default async function ShiftSummary({
     eventId,
     eventDayId,
     authError,
+    filters = EMPTY_FILTERS,
 }: {
     eventId: number;
     eventDayId?: number;
     authError: NextResponse<unknown> | null;
+    filters?: ShiftFilters;
 }) {
     const session = await getServerSession(authOptions);
-    const [shifts, kinds] = await Promise.all([
-        GetShiftsByEvent(eventId, eventDayId, authError),
+    const [allShifts, kinds] = await Promise.all([
+        GetShiftsByEvent(eventId, eventDayId, authError, filters),
         GetShiftKindsByEvent(eventId),
     ]);
+
+    // Start-time window is applied here: it aggregates across days, so it can't
+    // live in the SQL query alongside the eventDay grouping.
+    const shifts = allShifts.filter((s) =>
+        shiftInTimeWindow(s, filters.fromMin, filters.toMin),
+    );
 
     if (shifts.length === 0) {
         return (
             <p className="text-gray-500 dark:text-gray-400 text-sm">
-                No shifts yet.
+                Keine Schichten entsprechen den Filtern.
             </p>
         );
     }
