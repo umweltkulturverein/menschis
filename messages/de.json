@@ -150,7 +150,7 @@
         "fullyBooked": "Ausgebucht",
         "errorOccurred": "Ein Fehler ist aufgetreten.",
         "deleteConfirm": "Möchtest du den Schichteintrag von {name} wirklich löschen?",
-        "guestVerify": "Hi! {name} muss die Schicht noch bestätigen. Ein Link wurde an {email} gesendet; er läuft nach 30 Minuten ab, danach wird der Platz wieder frei.",
+        "guestVerify": "Hi! {name} muss die Schicht noch bestätigen. Ein Link wurde an {email} gesendet; er läuft nach 2 Stunden ab, danach wird der Platz wieder frei.",
         "guestEdit": "Über den Link kann die Schicht auch gelöscht und bearbeitet werden.",
         "name": "Name",
         "email": "E-Mail",

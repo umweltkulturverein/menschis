@@ -150,7 +150,7 @@
         "fullyBooked": "Fully booked",
         "errorOccurred": "An error occurred.",
         "deleteConfirm": "Are you sure you want to delete {name}'s shift entry?",
-        "guestVerify": "Hi {name}, you still need to confirm the shift. A link has been sent to {email}; it expires after 30 minutes, after which the slot is released again.",
+        "guestVerify": "Hi {name}, you still need to confirm the shift. A link has been sent to {email}; it expires after 2 Hours, after which the slot is released again.",
         "guestEdit": "The shift can also be deleted and edited via the link provided.",
         "name": "Name",
         "email": "Email",

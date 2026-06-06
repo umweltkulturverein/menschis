@@ -24,7 +24,9 @@ export default async function EventsPage() {
                     </p>
                 }
             >
-                <EventSummary />
+                <EventSummary
+                session={session}
+                />
             </Suspense>
         </div>
     );

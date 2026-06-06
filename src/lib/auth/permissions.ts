@@ -21,10 +21,7 @@ export function requireInternalUser(
 
 export function isAdminUser(user: Session | null): boolean {
   const adminGroup = process.env.OIDC_ADMIN_GROUP ?? "admin";
-    console.log(user?.user.roles);
-    return (!!user && !!user.user.roles && user.user.roles.includes(adminGroup));
-
-
+  return !!user?.user?.roles?.includes(adminGroup);
 }
 
 export function requireAdminUser(session: Session | null): NextResponse | null {
