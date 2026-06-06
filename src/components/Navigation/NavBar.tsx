@@ -1,9 +1,16 @@
 import { getServerSession } from "next-auth";
+import { getTranslations } from "next-intl/server";
 import { authOptions } from "@/lib/auth/nextauth";
 import Link from "next/link";
+import Pill from "@/components/Misc/Pill";
+import LanguageSwitcher from "@/components/Navigation/LanguageSwitcher";
 
 export default async function NavBar() {
     const session = await getServerSession(authOptions);
+    const t = await getTranslations("Nav");
+
+    const pillText = process.env.BANNER_PILL_TEXT;
+    const pillColor = process.env.BANNER_PILL_COLOR;
 
     return (
         <nav className="w-full sticky top-0 z-50 bg-white/70 dark:bg-black/60 backdrop-blur-md p-4 shadow-md">
@@ -16,18 +23,19 @@ export default async function NavBar() {
                             alt="umku logo"
                         />
                         <span className="ml-4 text-xl font-semibold text-gray-900 dark:text-white">
-                            Menschis - Helfer*innen Tool
+                            {t("brand")}
                         </span>
                     </Link>
                     <Link
                         href="/events"
                         className="px-6 py-1.5 text-m text- font-medium text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
-                        Events
+                        {t("events")}
                     </Link>
                 </div>
 
                 <div className="flex items-center gap-3">
+                    {pillText && <Pill color={pillColor}>{pillText}</Pill>}
                     {session && (
                         <>
                             <span className="text-sm text-gray-600 dark:text-gray-300">
@@ -37,10 +45,11 @@ export default async function NavBar() {
                                 href="/api/auth/signout"
                                 className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                             >
-                                Sign out
+                                {t("signOut")}
                             </Link>
                         </>
                     )}
+                    <LanguageSwitcher />
                 </div>
             </div>
         </nav>

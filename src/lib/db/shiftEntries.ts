@@ -5,7 +5,7 @@ import ShiftEntries from "@/components/Shifts/Entry/ShiftEntries";
 
 // Time an anonymous sign-up has to be confirmed (via first login) before it is
 // cancelled and removed by the expiry sweeper.
-export const VERIFY_WINDOW_MS = 30 * 60 * 1000;
+export const VERIFY_WINDOW_MS = 2 * 60 * 60 * 1000;
 
 export async function DeleteShiftEntry(
     entryId: number,

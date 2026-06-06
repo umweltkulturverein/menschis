@@ -2,6 +2,7 @@
 
 import { inputClass, labelClass } from "@/components/Misc/FormModal";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
 interface EntryForm {
@@ -43,6 +44,7 @@ export default function ShiftEntryForm({
   onConfirm,
   turnstileSiteKey,
 }: Props) {
+  const t = useTranslations("Entry");
   const trimmedEmail = form.email.trim();
   const emailValid = EMAIL_REGEX.test(trimmedEmail);
   const showEmailError = trimmedEmail.length > 0 && !emailValid;
@@ -72,48 +74,48 @@ export default function ShiftEntryForm({
   return (
     <div className="px-4 pb-4 pt-2 space-y-3">
       <div>
-        <label className={labelClass}>Name *</label>
+        <label className={labelClass}>{t("name")} *</label>
         <input
           value={form.name}
           onChange={(e) => onChange({ ...form, name: e.target.value })}
-          placeholder="Name"
+          placeholder={t("name")}
           required
           className={inputClass}
         />
       </div>
       <div>
-        <label className={labelClass}>E-Mail *</label>
+        <label className={labelClass}>{t("email")} *</label>
         <input
           type="email"
           value={form.email}
           onChange={(e) => onChange({ ...form, email: e.target.value })}
-          placeholder="E-Mail"
+          placeholder={t("email")}
           required
           aria-invalid={showEmailError}
           className={inputClass}
         />
         {showEmailError ? (
           <p className="mt-1 text-xs text-red-500">
-            Bitte gib eine gültige E-Mail-Adresse ein.
+            {t("emailInvalid")}
           </p>
         ) : null}
       </div>
       <div>
-        <label className={labelClass}>Telefon</label>
+        <label className={labelClass}>{t("phone")}</label>
         <input
           type="tel"
           value={form.phone}
           onChange={(e) => onChange({ ...form, phone: e.target.value })}
-          placeholder="Telefon (optional)"
+          placeholder={t("phonePlaceholder")}
           className={inputClass}
         />
       </div>
       <div>
-        <label className={labelClass}>Notiz</label>
+        <label className={labelClass}>{t("note")}</label>
         <textarea
           value={form.notes}
           onChange={(e) => onChange({ ...form, notes: e.target.value })}
-          placeholder="Notiz (optional)"
+          placeholder={t("notePlaceholder")}
           rows={2}
           className={`${inputClass} resize-none`}
         />
@@ -126,7 +128,7 @@ export default function ShiftEntryForm({
           onClick={onCancel}
           className="flex-1 text-sm px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-ci-blue-600"
         >
-          Abbrechen
+          {t("cancel")}
         </button>
         <button
           onClick={onConfirm}
@@ -138,7 +140,7 @@ export default function ShiftEntryForm({
           }
           className="flex-1 text-sm px-3 py-1.5 rounded-md bg-green-500 hover:bg-green-600 text-white font-medium disabled:opacity-50"
         >
-          {submitting ? "..." : "Bestätigen"}
+          {submitting ? "..." : t("confirm")}
         </button>
       </div>
       {showCaptcha && (

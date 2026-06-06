@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { EventItem } from "@/types/event";
 import FormModal from "@/components/Misc/FormModal";
 import FormTrigger from "@/components/Misc/FormTrigger";
@@ -23,6 +24,8 @@ function toLocalInput(date: Date | string | undefined): string | undefined {
 
 export default function EventForm({ event, edit }: Props) {
     const router = useRouter();
+    const t = useTranslations("EventForm");
+    const tf = useTranslations("Forms");
     const [open, setOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -54,7 +57,7 @@ export default function EventForm({ event, edit }: Props) {
 
         setSubmitting(false);
         if (!res.ok) {
-            setError("Failed to save event.");
+            setError(t("saveFailed"));
             return;
         }
 
@@ -66,14 +69,14 @@ export default function EventForm({ event, edit }: Props) {
     async function handleDelete() {
         if (!event) return;
         const confirmed = window.confirm(
-            `Delete event "${event.title}"? All days, shift kinds, shifts and entries will also be deleted.`,
+            t("deleteConfirm", { title: event.title }),
         );
         if (!confirmed) return;
         setSubmitting(true);
         const res = await fetch(`/api/event/${event.id}`, { method: "DELETE" });
         setSubmitting(false);
         if (!res.ok) {
-            setError("Failed to delete event.");
+            setError(t("deleteFailed"));
             return;
         }
         setOpen(false);
@@ -85,15 +88,15 @@ export default function EventForm({ event, edit }: Props) {
         <>
             <FormTrigger
                 edit={edit}
-                label="+ New Event"
+                label={t("new")}
                 onClick={() => setOpen(true)}
             />
             <FormModal
                 open={open}
                 onClose={() => setOpen(false)}
-                title={edit ? "Edit Event" : "New Event"}
+                title={edit ? t("editTitle") : t("newTitle")}
                 submitting={submitting}
-                submitLabel={edit ? "Save" : "Create Event"}
+                submitLabel={edit ? tf("save") : t("create")}
                 onSubmit={handleSubmit}
                 onDelete={edit && event ? handleDelete : undefined}
                 error={error}
@@ -101,13 +104,13 @@ export default function EventForm({ event, edit }: Props) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <TextField
                         name="title"
-                        label="Title"
+                        label={t("title")}
                         required
                         defaultValue={event?.title}
                     />
                     <TextField
                         name="location"
-                        label="Location"
+                        label={t("location")}
                         required
                         defaultValue={event?.location}
                     />
@@ -115,20 +118,20 @@ export default function EventForm({ event, edit }: Props) {
 
                 <TextField
                     name="shopEventId"
-                    label="Event ID in Ticketshop (optional)"
+                    label={t("shopEventId")}
                     defaultValue={event?.shopEventId ?? ""}
                 />
 
                 <TextareaField
                     name="description"
-                    label="Description"
+                    label={t("description")}
                     rows={3}
                     defaultValue={event?.description ?? ""}
                 />
 
                 <TextareaField
                     name="infoText"
-                    label="Info text (sent in shift confirmation emails)"
+                    label={t("infoText")}
                     rows={4}
                     defaultValue={event?.infoText ?? ""}
                 />
@@ -136,21 +139,21 @@ export default function EventForm({ event, edit }: Props) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <TextField
                         name="startDate"
-                        label="Start"
+                        label={t("start")}
                         type="datetime-local"
                         required
                         defaultValue={toLocalInput(event?.startDate)}
                     />
                     <TextField
                         name="endDate"
-                        label="End"
+                        label={t("end")}
                         type="datetime-local"
                         required
                         defaultValue={toLocalInput(event?.endDate)}
                     />
                     <TextField
                         name="startBookingDateTime"
-                        label="Booking opens"
+                        label={t("bookingOpens")}
                         type="datetime-local"
                         required
                         defaultValue={toLocalInput(event?.startBookingDateTime)}
@@ -159,7 +162,7 @@ export default function EventForm({ event, edit }: Props) {
 
                 <CheckboxField
                     name="public"
-                    label="List Publicly"
+                    label={t("listPublicly")}
                     defaultChecked={event?.public}
                 />
             </FormModal>

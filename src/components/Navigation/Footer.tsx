@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { AppName } from "@/lib/misc/vars";
 
 const IMPRINT_URL = "https://organicbeats.org/impressum/";
 
-export default function Footer() {
+export default async function Footer() {
     const year = new Date().getFullYear();
+    const t = await getTranslations("Footer");
 
     return (
         <footer className="border-t border-zinc-200 bg-zinc-50 px-6 pt-10 pb-6 text-zinc-600 dark:border-zinc-800 dark:bg-black dark:text-zinc-400">
@@ -20,7 +22,7 @@ export default function Footer() {
                             {AppName}
                         </p>
                         <p className="text-sm text-zinc-500">
-                            Helfer*innen-Planungstool des umweltkulturverein e.V.
+                            {t("tagline")}
                         </p>
                     </div>
                 </div>
@@ -28,22 +30,23 @@ export default function Footer() {
                 <div className="flex flex-row gap-12 text-sm sm:gap-16">
                     <nav className="flex flex-col gap-2">
                         <span className="font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
-                            Intern
+                            {t("internal")}
                         </span>
                         <Link
                             href="/api/auth/signin"
                             className="transition-colors hover:text-ci-green-400 dark:hover:text-ci-green-300"
                         >
-                            Login für das UmKu Team
+                            {t("teamLogin")}
                         </Link>
                     </nav>
 
                     <nav className="flex flex-col gap-2">
                         <span className="font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
-                            Infos
+                            {t("infos")}
                         </span>
                         <span className="text-zinc-400 dark:text-zinc-500">
-                            Quellcode <i className="text-xs">Bald verfügbar :)</i>
+                            {t("sourceCode")}{" "}
+                            <i className="text-xs">{t("comingSoon")}</i>
                         </span>
                         <a
                             href={IMPRINT_URL}
@@ -51,20 +54,20 @@ export default function Footer() {
                             rel="noopener noreferrer"
                             className="transition-colors hover:text-ci-green-400 dark:hover:text-ci-green-300"
                         >
-                            Impressum
+                            {t("imprint")}
                         </a>
                         <Link
                             href="/legal/privacy"
                             className="transition-colors hover:text-ci-green-400 dark:hover:text-ci-green-300"
                         >
-                            Datenschutz
+                            {t("privacy")}
                         </Link>
                     </nav>
                 </div>
             </div>
 
             <div className="mt-8 border-t border-zinc-200 pt-4 text-center text-xs text-zinc-400 dark:border-zinc-800 dark:text-zinc-500">
-                © {year} umweltkulturverein e.V.
+                {t("copyright", { year })}
             </div>
         </footer>
     );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ClientShiftEntry, isOwnEntry } from "@/types/shift";
 
 interface Props {
@@ -23,6 +24,7 @@ export default function ShiftEntryRow({
     onEditConfirm,
     onDelete,
 }: Props) {
+    const t = useTranslations("Entry");
     const ownEntry = isOwnEntry(entry) ? entry : null;
     const isEditing = editing?.id === entry.id;
 
@@ -51,7 +53,7 @@ export default function ShiftEntryRow({
                         onChange={(e) =>
                             onEditChange({ ...editing, name: e.target.value })
                         }
-                        placeholder="Name"
+                        placeholder={t("name")}
                         className="flex-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-ci-blue-700 text-gray-800 dark:text-white px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-green-500"
                     />
                     <div className="flex gap-1">
@@ -63,7 +65,7 @@ export default function ShiftEntryRow({
                                     notes: e.target.value,
                                 })
                             }
-                            placeholder="Notiz (optional)"
+                            placeholder={t("notePlaceholder")}
                             className="flex-1 text-xs rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-ci-blue-700 text-gray-800 dark:text-white px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-green-500"
                         />
                         <button
@@ -85,7 +87,7 @@ export default function ShiftEntryRow({
                 <>
                     <div className="flex-1 min-w-0">
                         <span className="text-xs text-gray-600 dark:text-gray-300 truncate block">
-                            {ownEntry ? ownEntry.name || "Angemeldet" : "Angemeldet"}
+                            {ownEntry ? ownEntry.name || t("registered") : t("registered")}
                         </span>
                         {ownEntry?.notes && (
                             <span className="text-xs text-gray-400 dark:text-gray-500 truncate block">
@@ -104,7 +106,7 @@ export default function ShiftEntryRow({
                                     })
                                 }
                                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                                title="Bearbeiten"
+                                title={t("edit")}
                             >
                                 <svg
                                     className="w-3 h-3"
@@ -123,7 +125,7 @@ export default function ShiftEntryRow({
                             <button
                                 onClick={() => onDelete(ownEntry.id, ownEntry.name)}
                                 className="text-gray-400 hover:text-red-500 dark:hover:text-red-400"
-                                title="Abmelden"
+                                title={t("signOff")}
                             >
                                 <svg
                                     className="w-3 h-3"

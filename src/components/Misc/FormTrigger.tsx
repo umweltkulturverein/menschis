@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 interface Props {
     edit?: boolean;
     label: string;
@@ -15,6 +17,7 @@ export default function FormTrigger({
     title,
     onClick,
 }: Props) {
+    const t = useTranslations("Forms");
     if (edit) {
         return (
             <button
@@ -22,7 +25,7 @@ export default function FormTrigger({
                 onClick={onClick}
                 disabled={disabled}
                 title={title ?? ""}
-                aria-label="Edit"
+                aria-label={t("edit")}
                 className="hidden group-hover:flex pointer-events-auto cursor-pointer items-center justify-center w-9 h-9 rounded-full bg-white/90 dark:bg-ci-blue-700/90 shadow-md text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-ci-blue-700"
             >
                 ✎

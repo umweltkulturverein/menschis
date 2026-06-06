@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { ShiftKind } from "@/types/shift";
 import FormModal from "@/components/Misc/FormModal";
 import FormTrigger from "@/components/Misc/FormTrigger";
@@ -20,6 +21,8 @@ interface Props {
 
 export default function ShiftKindForm({ eventId, kind, edit }: Props) {
     const router = useRouter();
+    const t = useTranslations("ShiftKindForm");
+    const tf = useTranslations("Forms");
     const [open, setOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -50,7 +53,7 @@ export default function ShiftKindForm({ eventId, kind, edit }: Props) {
 
         setSubmitting(false);
         if (!res.ok) {
-            setError("Failed to save shift kind.");
+            setError(t("saveFailed"));
             return;
         }
 
@@ -62,7 +65,7 @@ export default function ShiftKindForm({ eventId, kind, edit }: Props) {
     async function handleDelete() {
         if (!kind) return;
         const confirmed = window.confirm(
-            `Delete shift kind "${kind.title}"? All shifts of this kind and their entries will also be deleted.`,
+            t("deleteConfirm", { title: kind.title }),
         );
         if (!confirmed) return;
         setSubmitting(true);
@@ -72,7 +75,7 @@ export default function ShiftKindForm({ eventId, kind, edit }: Props) {
         );
         setSubmitting(false);
         if (!res.ok) {
-            setError("Failed to delete shift kind.");
+            setError(t("deleteFailed"));
             return;
         }
         setOpen(false);
@@ -83,15 +86,15 @@ export default function ShiftKindForm({ eventId, kind, edit }: Props) {
         <>
             <FormTrigger
                 edit={edit}
-                label="+ New Shift Kind"
+                label={t("new")}
                 onClick={() => setOpen(true)}
             />
             <FormModal
                 open={open}
                 onClose={() => setOpen(false)}
-                title={edit ? "Edit Shift Kind" : "New Shift Kind"}
+                title={edit ? t("editTitle") : t("newTitle")}
                 submitting={submitting}
-                submitLabel={edit ? "Save" : "Create Shift Kind"}
+                submitLabel={edit ? tf("save") : t("create")}
                 onSubmit={handleSubmit}
                 onDelete={edit && kind ? handleDelete : undefined}
                 error={error}
@@ -99,13 +102,13 @@ export default function ShiftKindForm({ eventId, kind, edit }: Props) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <TextField
                         name="title"
-                        label="Title"
+                        label={t("title")}
                         required
                         defaultValue={kind?.title}
                     />
                     <TextField
                         name="icon"
-                        label="Icon (emoji)"
+                        label={t("icon")}
                         defaultValue={kind?.icon ?? ""}
                         placeholder="📋"
                     />
@@ -113,20 +116,20 @@ export default function ShiftKindForm({ eventId, kind, edit }: Props) {
 
                 <TextareaField
                     name="description"
-                    label="Description"
+                    label={t("description")}
                     defaultValue={kind?.description ?? ""}
                 />
 
                 <ColorField
                     name="color"
-                    label="Color"
+                    label={t("color")}
                     required
                     defaultValue={kind?.color ?? "#3b82f6"}
                 />
 
                 <TextareaField
                     name="authorizationMessage"
-                    label="Authorization message (Markdown)"
+                    label={t("authMessage")}
                     defaultValue={kind?.authorizationMessage ?? ""}
                 />
             </FormModal>

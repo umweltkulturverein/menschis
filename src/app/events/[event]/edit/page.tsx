@@ -11,8 +11,10 @@ import ShiftKindForm from "@/components/Shifts/Admin/ShiftKindForm";
 import ShiftForm from "@/components/Shifts/Admin/ShiftForm";
 import EventDayForm from "@/components/Events/EventDayForm";
 import CopyButton from "@/components/Misc/CopyButton";
+import Pill from "@/components/Misc/Pill";
 import { NaturalDateTime } from "@/lib/misc/contextAwareDates";
 import { StringToColour } from "@/lib/misc/color";
+import { getTranslations } from "next-intl/server";
 
 export default async function EventEditPage({
   params,
@@ -39,6 +41,8 @@ export default async function EventEditPage({
   const base = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
   const loginUrl = `${base}/api/auth/signin/oidc?callbackUrl=${encodeURIComponent(`/events/${eventId}`)}`;
 
+  const t = await getTranslations("EventEdit");
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-ci-blue-800">
       <EventBanner event={event} editable />
@@ -46,7 +50,7 @@ export default async function EventEditPage({
       <div className="max-w-4xl mx-auto px-6 py-8 space-y-10">
         <section>
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-            Internal Shift Entry Link
+            {t("internalLink")}
           </h2>
           <div className="flex items-center gap-2 rounded-lg bg-white dark:bg-ci-blue-700 border border-gray-200 dark:border-gray-600 px-3 py-2 shadow-sm">
             <span className="flex-1 text-xs text-gray-500 dark:text-gray-400 font-mono truncate">
@@ -55,8 +59,7 @@ export default async function EventEditPage({
             <CopyButton value={loginUrl} />
           </div>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-            Share with internal members — signs in via SSO and lands on this
-            event.
+            {t("internalLinkHint")}
           </p>
         </section>
 
@@ -64,14 +67,14 @@ export default async function EventEditPage({
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-              Event Days
+              {t("eventDays")}
             </h2>
             <EventDayForm eventId={event.id} />
           </div>
 
           {eventDays.length === 0 ? (
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              No days yet.
+              {t("noDays")}
             </p>
           ) : (
             <div className="space-y-2">
@@ -96,8 +99,8 @@ export default async function EventEditPage({
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-mono">
                         {day.shopItemId
-                          ? `Shop item ${day.shopItemId}`
-                          : "No shop item"}
+                          ? t("shopItem", { id: day.shopItemId })
+                          : t("noShopItem")}
                       </p>
                     </div>
                   </div>
@@ -111,14 +114,14 @@ export default async function EventEditPage({
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-              Shift Kinds
+              {t("shiftKinds")}
             </h2>
             <ShiftKindForm eventId={event.id} />
           </div>
 
           {shiftKinds.length === 0 ? (
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              No shift kinds yet. Create one to get started.
+              {t("noShiftKinds")}
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -160,18 +163,19 @@ export default async function EventEditPage({
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-              Shifts
+              {t("shifts")}
             </h2>
             <ShiftForm
               eventId={event.id}
               shiftKinds={shiftKinds}
               days={eventDays}
+              eventStartDate={event.startDate}
             />
           </div>
 
           {shifts.length === 0 ? (
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              No shifts yet.
+              {t("noShifts")}
             </p>
           ) : (
             <div className="space-y-2">
@@ -204,26 +208,21 @@ export default async function EventEditPage({
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-800 dark:text-white">
                           {kind?.icon ? `${kind.icon} ` : ""}
-                          {kind?.title ?? "Unknown kind"}
+                          {kind?.title ?? t("unknownKind")}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                           {NaturalDateTime(shift?.startDatetime)}
                         </p>
                       </div>
                       {shift.internal && (
-                        <span className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
-                          Internal
-                        </span>
+                        <Pill className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+                          {t("internal")}
+                        </Pill>
                       )}
                       {day ? (
-                        <span
-                          style={{
-                            backgroundColor: StringToColour(day.dayTitle),
-                          }}
-                          className="shrink-0 text-xs font-medium px-2 py-0.5 rounded-full text-white  dark:text-white"
-                        >
+                        <Pill color={StringToColour(day.dayTitle)}>
                           {day.dayTitle}
-                        </span>
+                        </Pill>
                       ) : (
                         <></>
                       )}

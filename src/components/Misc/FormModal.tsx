@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 
 export const inputClass =
     "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-ci-blue-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-ci-green-500";
@@ -31,8 +32,13 @@ export default function FormModal({
     error,
     children,
 }: Props) {
-    if (!open) return null;
-    return (
+    const t = useTranslations("Forms");
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+    if (!open || !mounted) return null;
+    // Portal to <body> so the modal escapes any parent stacking context (e.g.
+    // the event banner's z-20 layer) and always sits above the page chrome.
+    return createPortal(
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
             onClick={onClose}
@@ -49,7 +55,7 @@ export default function FormModal({
                         onClick={onClose}
                         type="button"
                         className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
-                        aria-label="Close"
+                        aria-label={t("close")}
                     >
                         ✕
                     </button>
@@ -72,7 +78,7 @@ export default function FormModal({
                                 disabled={submitting}
                                 className="mr-auto px-3 py-2 text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors cursor-pointer"
                             >
-                                Delete
+                                {t("delete")}
                             </button>
                         )}
                         <button
@@ -80,18 +86,19 @@ export default function FormModal({
                             onClick={onClose}
                             className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors cursor-pointer"
                         >
-                            Cancel
+                            {t("cancel")}
                         </button>
                         <button
                             type="submit"
                             disabled={submitting}
                             className="px-4 py-2 bg-ci-green-500 hover:bg-ci-green-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
                         >
-                            {submitting ? "Saving…" : submitLabel}
+                            {submitting ? t("saving") : submitLabel}
                         </button>
                     </div>
                 </form>
             </div>
-        </div>
+        </div>,
+        document.body,
     );
 }

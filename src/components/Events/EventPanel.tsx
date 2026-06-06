@@ -1,14 +1,16 @@
 import { NaturalDateTime } from "@/lib/misc/contextAwareDates";
 import { EventItem } from "@/types/event";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 interface Props {
     event: EventItem;
 }
 
-export default function EventPanel({ event }: Props) {
+export default async function EventPanel({ event }: Props) {
     const startDate = new Date(event.startDate);
     const endDate = new Date(event.endDate);
+    const t = await getTranslations("Events");
 
     return (
         <Link href={`/events/${event.id}`} className="block">
@@ -36,12 +38,12 @@ export default function EventPanel({ event }: Props) {
                     {event.public ? (
                         <span className="flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400 shrink-0 ml-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-green-400 inline-block" />
-                            Visible
+                            {t("visible")}
                         </span>
                     ) : (
                         <span className="flex items-center gap-1 text-xs font-medium text-yellow-600 dark:text-yellow-400 shrink-0 ml-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 dark:bg-yellow-400 inline-block" />
-                            Editor mode
+                            {t("editorMode")}
                         </span>
                     )}
                 </div>
@@ -55,13 +57,13 @@ export default function EventPanel({ event }: Props) {
                 <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-2">
                     <div>
                         <span className="text-ci-green-400 dark:text-ci-green-300">
-                            Start:{" "}
+                            {t("start")}{" "}
                         </span>
                         <span>{NaturalDateTime(startDate)}</span>
                     </div>
                     <div>
                         <span className="text-ci-green-400 dark:text-ci-green-300">
-                            End:{" "}
+                            {t("end")}{" "}
                         </span>
                         <span>{NaturalDateTime(endDate)}</span>
                     </div>

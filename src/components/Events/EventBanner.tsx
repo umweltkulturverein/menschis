@@ -5,16 +5,18 @@ import {
 } from "@/lib/misc/contextAwareDates";
 import { EventItem } from "@/types/event";
 import EventForm from "@/components/Events/EventForm";
+import { getTranslations } from "next-intl/server";
 
 interface Props {
     event: EventItem;
     editable?: boolean;
 }
 
-export default function EventBanner({ event, editable }: Props) {
+export default async function EventBanner({ event, editable }: Props) {
     const startDate = new Date(event.startDate);
     const endDate = new Date(event.endDate);
     const bookingDate = new Date(event.startBookingDateTime);
+    const t = await getTranslations("Events");
 
     return (
         <div className="relative w-full h-50 bg-gradient-to-br from-ci-green-200 to-ci-green-300 dark:from-ci-green-600 dark:to-ci-green-500 flex items-end group">
@@ -42,12 +44,12 @@ export default function EventBanner({ event, editable }: Props) {
                 {event.public ? (
                     <span className="flex items-center gap-1.5 text-xs font-medium text-green-300 mb-2 w-fit">
                         <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
-                        Open to Entry
+                        {t("openToEntry")}
                     </span>
                 ) : (
                     <span className="flex items-center gap-1.5 text-xs font-medium text-yellow-300 mb-2 w-fit">
                         <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" />
-                        Editor mode
+                        {t("editorMode")}
                     </span>
                 )}
                 <h1 className="text-3xl font-bold text-white drop-shadow mb-4">
@@ -109,7 +111,9 @@ export default function EventBanner({ event, editable }: Props) {
                             />
                         </svg>
                         <span>
-                            Booking opens {NaturalDateTime(bookingDate)}
+                            {t("bookingOpens", {
+                                date: NaturalDateTime(bookingDate),
+                            })}
                         </span>
                     </div>
                 </div>

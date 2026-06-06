@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import {
   DeleteShiftEntryById,
   GetExpiredPendingEntries,
@@ -6,23 +7,25 @@ import {
 } from "@/lib/db/shiftEntries";
 import { CancelOrder } from "@/lib/ticket/pretix";
 
-// Only accept calls that did not pass through a reverse proxy. The cron sidecar
-// shares the Pod network namespace and hits the app directly, so its request
-// carries no forwarding headers. Traefik (and any other ingress/proxy) injects
-// these on every external request, so their presence means the call came from
-// outside the Pod and is rejected.
-function isExternalRequest(req: NextRequest): boolean {
-  return !!(
-    req.headers.get("x-forwarded-for") ||
-    req.headers.get("x-real-ip") ||
-    req.headers.get("x-forwarded-host") ||
-    req.headers.get("forwarded")
-  );
+// Authenticate the cron sidecar with a shared secret. Header sniffing is not
+// usable here: Next.js synthesizes x-forwarded-* headers on every request, so
+// there is no way to distinguish an in-Pod loopback call from a proxied one.
+// The sidecar sends `Authorization: Bearer <CRON_SECRET>` instead.
+function isAuthorized(req: NextRequest): boolean {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return false;
+
+  const header = req.headers.get("authorization") ?? "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : "";
+
+  const a = Buffer.from(token);
+  const b = Buffer.from(secret);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 
 // Cancels and removes sign-ups that were never confirmed within the verify window
 export async function GET(req: NextRequest) {
-  if (isExternalRequest(req)) {
+  if (!isAuthorized(req)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

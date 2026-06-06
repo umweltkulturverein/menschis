@@ -1,12 +1,33 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server.edge";
 import nodemailer, { type Transporter } from "nodemailer";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { EventItem } from "@/types/event";
 import type { EventDay } from "@/types/eventDay";
 import type { Shift, ShiftEntry, ShiftKind } from "@/types/shift";
 import { EnsureLoginToken, type Person } from "@/lib/db/persons";
+import { defaultLocale, dateLocale, type Locale } from "@/i18n/config";
 import { MagicLinkEmail } from "./templates/MagicLinkEmail";
 import { ShiftEntryEmail } from "./templates/ShiftEntryEmail";
+
+/**
+ * Resolves the recipient-facing locale and a translator for email content.
+ * Emails are sent within request scope (auth/entry routes), so the request's
+ * locale is used; if unavailable, falls back to the default locale.
+ */
+async function emailLocale(): Promise<{
+    locale: Locale;
+    t: Awaited<ReturnType<typeof getTranslations<"Emails">>>;
+}> {
+    let locale: Locale = defaultLocale;
+    try {
+        locale = (await getLocale()) as Locale;
+    } catch {
+        locale = defaultLocale;
+    }
+    const t = await getTranslations({ locale, namespace: "Emails" });
+    return { locale, t };
+}
 
 let cachedTransport: Transporter | null = null;
 let cachedTransportKey: string | null = null;
@@ -78,28 +99,34 @@ export async function sendMagicLink(
     recipientName?: string,
 ): Promise<void> {
     const url = buildMagicLinkUrl(loginToken, redirectPath);
+    const { locale, t } = await emailLocale();
 
-    const subject = "Dein Login-Link für Menschis";
+    const subject = t("magicLink.subject");
     const html =
         "<!DOCTYPE html>" +
-        renderToStaticMarkup(createElement(MagicLinkEmail, { url, recipientName }));
+        renderToStaticMarkup(
+            createElement(MagicLinkEmail, { url, recipientName, locale, t }),
+        );
     const text = [
-        recipientName ? `Hallo ${recipientName},` : "Hallo,",
+        recipientName
+            ? t("magicLink.greeting", { name: recipientName })
+            : t("magicLink.greetingPlain"),
         "",
-        "klicke auf den folgenden Link, um dich bei Menschis anzumelden:",
+        t("magicLink.textBody"),
         url,
         "",
-        "Wenn du diese E-Mail nicht angefordert hast, kannst du sie einfach ignorieren.",
+        t("magicLink.textIgnore"),
         "",
-        "— Das Menschis-Team",
+        t("magicLink.signature"),
     ].join("\n");
 
     await sendMail({ to: email, subject, html, text });
 }
 
-function formatShiftRange(shift: Shift): string {
+function formatShiftRange(shift: Shift, locale: Locale, clock: string): string {
     const start = new Date(shift.startDatetime);
     const end = new Date(shift.endDatetime);
+    const tag = dateLocale[locale];
     const dateFmt: Intl.DateTimeFormatOptions = {
         weekday: "long",
         day: "2-digit",
@@ -112,9 +139,9 @@ function formatShiftRange(shift: Shift): string {
     };
     const sameDay = start.toDateString() === end.toDateString();
     if (sameDay) {
-        return `${start.toLocaleDateString("de-DE", dateFmt)}, ${start.toLocaleTimeString("de-DE", timeFmt)} – ${end.toLocaleTimeString("de-DE", timeFmt)} Uhr`;
+        return `${start.toLocaleDateString(tag, dateFmt)}, ${start.toLocaleTimeString(tag, timeFmt)} – ${end.toLocaleTimeString(tag, timeFmt)}${clock}`;
     }
-    return `${start.toLocaleDateString("de-DE", dateFmt)} ${start.toLocaleTimeString("de-DE", timeFmt)} – ${end.toLocaleDateString("de-DE", dateFmt)} ${end.toLocaleTimeString("de-DE", timeFmt)} Uhr`;
+    return `${start.toLocaleDateString(tag, dateFmt)} ${start.toLocaleTimeString(tag, timeFmt)} – ${end.toLocaleDateString(tag, dateFmt)} ${end.toLocaleTimeString(tag, timeFmt)}${clock}`;
 }
 
 export async function sendShiftEntryEmail(args: {
@@ -127,8 +154,9 @@ export async function sendShiftEntryEmail(args: {
 }): Promise<void> {
     const loginToken = await EnsureLoginToken(args.person.id);
     const editUrl = buildMagicLinkUrl(loginToken, `/events/${args.event.id}`);
+    const { locale, t } = await emailLocale();
 
-    const subject = `${args.event.title} Schicht bestätigt`;
+    const subject = t("shiftEntry.subject", { title: args.event.title });
     const html =
         "<!DOCTYPE html>" +
         renderToStaticMarkup(
@@ -139,35 +167,43 @@ export async function sendShiftEntryEmail(args: {
                 event: args.event,
                 eventDay: args.eventDay ?? null,
                 editUrl,
+                locale,
+                t,
             }),
         );
 
     const lines: string[] = [
-        `Hallo ${args.entry.name},`,
+        t("shiftEntry.greeting", { name: args.entry.name }),
         "",
-        `deine Anmeldung für "${args.shiftKind.title}" bei "${args.event.title}" ist gespeichert.`,
+        t("shiftEntry.textIntro", {
+            kind: args.shiftKind.title,
+            event: args.event.title,
+        }),
         "",
-        `Event: ${args.event.title}`,
+        `${t("shiftEntry.labelEvent")}: ${args.event.title}`,
     ];
-    if (args.eventDay) lines.push(`Tag: ${args.eventDay.dayTitle}`);
-    lines.push(`Schicht: ${args.shiftKind.title}`);
-    lines.push(`Zeit: ${formatShiftRange(args.shift)}`);
-    lines.push(`Ort: ${args.event.location}`);
-    lines.push(`Name: ${args.entry.name}`);
-    if (args.entry.notes) lines.push(`Notiz: ${args.entry.notes}`);
+    if (args.eventDay)
+        lines.push(`${t("shiftEntry.labelDay")}: ${args.eventDay.dayTitle}`);
+    lines.push(`${t("shiftEntry.labelShift")}: ${args.shiftKind.title}`);
+    lines.push(
+        `${t("shiftEntry.labelTime")}: ${formatShiftRange(args.shift, locale, t("shiftEntry.clockSuffix"))}`,
+    );
+    lines.push(`${t("shiftEntry.labelLocation")}: ${args.event.location}`);
+    lines.push(`${t("shiftEntry.labelName")}: ${args.entry.name}`);
+    if (args.entry.notes)
+        lines.push(`${t("shiftEntry.labelNote")}: ${args.entry.notes}`);
     if (args.shiftKind.description) {
-        lines.push("", `Beschreibung: ${args.shiftKind.description}`);
+        lines.push(
+            "",
+            t("shiftEntry.textDescription", {
+                description: args.shiftKind.description,
+            }),
+        );
     }
     if (args.event.infoText) {
         lines.push("", args.event.infoText);
     }
-    lines.push(
-        "",
-        "Schicht ansehen oder bearbeiten:",
-        editUrl,
-        "",
-        "— Das Menschis-Team",
-    );
+    lines.push("", t("shiftEntry.textCta"), editUrl, "", t("shiftEntry.signature"));
 
     await sendMail({ to: args.person.email, subject, html, text: lines.join("\n") });
 }
