@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import {
     Shift,
     ShiftKind,
@@ -30,6 +31,7 @@ export default function ShiftEntries({
     turnsitleSiteKey
 }: Props) {
     const { data: session } = useSession();
+    const t = useTranslations("Entry");
     const [entries, setEntries] = useState<ClientShiftEntry[]>(initialEntries);
     const [signUpForm, setSignUpForm] = useState<EntryForm | null>(null);
     const [editing, setEditing] = useState<EditState | null>(null);
@@ -65,7 +67,7 @@ export default function ShiftEntries({
                 if (wasGuest) setGuestSubmitted(true);
             } else {
                 const data = await res.json();
-                setError(typeof data === "string" ? data : data.error ?? "An error occurred.");
+                setError(typeof data === "string" ? data : data.error ?? t("errorOccurred"));
             }
         } finally {
             setSubmitting(false);
@@ -73,12 +75,7 @@ export default function ShiftEntries({
     }
 
     async function handleDelete(entryId: number, name: string) {
-        if (
-            !window.confirm(
-                `Are you sure you want to delete ${name}'s Shift Entry?`,
-            )
-        )
-            return;
+        if (!window.confirm(t("deleteConfirm", { name }))) return;
         await fetch(`/api/shift/${shift.id}/entry/${entryId}`, {
             method: "DELETE",
         });
@@ -123,7 +120,7 @@ export default function ShiftEntries({
             <div className="px-4 pt-3 pb-1">
                 <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                        Anmeldungen
+                        {t("signUps")}
                     </span>
                     <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">
                         {entries.length}/{shift.slots}
@@ -168,7 +165,7 @@ export default function ShiftEntries({
                                 </svg>
                             </div>
                             <span className="text-xs text-gray-300 dark:text-gray-500">
-                                Offen
+                                {t("open")}
                             </span>
                         </div>
                     ))}
@@ -192,9 +189,13 @@ export default function ShiftEntries({
                         />
                     </svg>
                     <p className="text-xs text-orange-400 dark:text-white">
-                        Hi! {lastForm?.name} will have to verify the Shift.<br /> There has been send a Link to <b>{lastForm?.email}</b> expires after <b>30 Minutes</b> after that the Slot becomes unbooked.
-                        <br /><br />
-                        The Shift can also be Deleted and Edited with the Link provided.
+                        {t("guestVerify", {
+                            name: lastForm?.name ?? "",
+                            email: lastForm?.email ?? "",
+                        })}
+                        <br />
+                        <br />
+                        {t("guestEdit")}
                     </p>
                 </div>
             )}
@@ -214,14 +215,14 @@ export default function ShiftEntries({
                         }}
                         className="w-full text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
                     >
-                        Anmelden
+                        {t("signUp")}
                     </button>
                 </div>
             )}
 
             {isFull && myEntries.length === 0 && !signUpForm && (
                 <p className="text-center text-xs text-gray-400 dark:text-gray-500 px-4 pb-4 pt-2">
-                    Ausgebucht
+                    {t("fullyBooked")}
                 </p>
             )}
 

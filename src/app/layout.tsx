@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Righteous } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
 import Providers from "@/components/Providers";
 import NavBar from "@/components/Navigation/NavBar";
 import Footer from "@/components/Navigation/Footer";
@@ -11,25 +13,31 @@ const righteous = Righteous({
     weight: "400",
 });
 
-export const metadata: Metadata = {
-    title: AppName,
-    description: "Helfer*innen Planungstool des umweltkulturverein e.V. ",
-};
+export async function generateMetadata(): Promise<Metadata> {
+    const t = await getTranslations("Common");
+    return {
+        title: AppName,
+        description: t("description"),
+    };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    const locale = await getLocale();
     return (
-        <html lang="en">
+        <html lang={locale}>
             <body className={`${righteous.className} antialiased`}>
-                <Providers>
-                    <NavBar />
-                    <PendingShiftsPopup />
-                    {children}
-                    <Footer />
-                </Providers>
+                <NextIntlClientProvider>
+                    <Providers>
+                        <NavBar />
+                        <PendingShiftsPopup />
+                        {children}
+                        <Footer />
+                    </Providers>
+                </NextIntlClientProvider>
             </body>
         </html>
     );

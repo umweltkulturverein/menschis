@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth";
+import { getTranslations } from "next-intl/server";
 import { authOptions } from "@/lib/auth/nextauth";
 import { GetShiftsByEvent } from "@/lib/db/shifts";
 import { GetShiftKindsByEvent } from "@/lib/db/shiftKinds";
@@ -36,9 +37,10 @@ export default async function ShiftSummary({
     );
 
     if (shifts.length === 0) {
+        const t = await getTranslations("Shifts");
         return (
             <p className="text-gray-500 dark:text-gray-400 text-sm">
-                Keine Schichten entsprechen den Filtern.
+                {t("noneMatchFilters")}
             </p>
         );
     }

@@ -1,6 +1,7 @@
 import { Shift, ShiftKind, ShiftEntry, ClientShiftEntry } from "@/types/shift";
 import Markdown from "react-markdown";
 import ShiftEntries from "./Entry/ShiftEntries";
+import { getTranslations } from "next-intl/server";
 
 interface Props {
     shift: Shift;
@@ -10,13 +11,14 @@ interface Props {
     prefill: { name: string; email: string; phone: string };
 }
 
-export default function ShiftPanel({
+export default async function ShiftPanel({
     shift,
     kind,
     initialEntries,
     currentPersonId,
     prefill,
 }: Props) {
+    const t = await getTranslations("Shifts");
 
     const clientEntries: ClientShiftEntry[] = initialEntries.map((e) => {
         return e.person === currentPersonId
@@ -36,11 +38,11 @@ export default function ShiftPanel({
             <div className="p-4">
                 <div className="flex items-start justify-between mb-1">
                     <h2 className="text-base font-bold text-gray-800 dark:text-white">
-                        {kind?.title ?? "Unknown kind"}
+                        {kind?.title ?? t("unknownKind")}
                     </h2>
                     {shift.internal && (
                         <span className="ml-2 shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
-                            Internal
+                            {t("internal")}
                         </span>
                     )}
                 </div>
@@ -52,16 +54,16 @@ export default function ShiftPanel({
                 )}
 
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {new Date(shift.startDatetime).toLocaleTimeString("de-DE", {
-                        hour: "2-digit",
-                        minute: "2-digit",
+                    {t("timeRange", {
+                        start: new Date(shift.startDatetime).toLocaleTimeString(
+                            "de-DE",
+                            { hour: "2-digit", minute: "2-digit" },
+                        ),
+                        end: new Date(shift.endDatetime).toLocaleTimeString(
+                            "de-DE",
+                            { hour: "2-digit", minute: "2-digit" },
+                        ),
                     })}
-                    {" – "}
-                    {new Date(shift.endDatetime).toLocaleTimeString("de-DE", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                    })}{" "}
-                    Uhr
                 </p>
             </div>
 

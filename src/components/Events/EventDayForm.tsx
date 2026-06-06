@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { EventDay } from "@/types/eventDay";
 import FormModal from "@/components/Misc/FormModal";
 import FormTrigger from "@/components/Misc/FormTrigger";
@@ -15,6 +16,8 @@ interface Props {
 
 export default function EventDayForm({ eventId, day, edit }: Props) {
     const router = useRouter();
+    const t = useTranslations("EventDayForm");
+    const tf = useTranslations("Forms");
     const [open, setOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -31,7 +34,7 @@ export default function EventDayForm({ eventId, day, edit }: Props) {
         };
         if (!body.dayTitle) {
             setSubmitting(false);
-            setError("Day name is required.");
+            setError(t("nameRequired"));
             return;
         }
 
@@ -46,7 +49,7 @@ export default function EventDayForm({ eventId, day, edit }: Props) {
 
         setSubmitting(false);
         if (!res.ok) {
-            setError("Failed to save day.");
+            setError(t("saveFailed"));
             return;
         }
 
@@ -58,7 +61,7 @@ export default function EventDayForm({ eventId, day, edit }: Props) {
     async function handleDelete() {
         if (!day) return;
         const confirmed = window.confirm(
-            `Delete day "${day.dayTitle}"? Shifts assigned to it will lose their day.`,
+            t("deleteConfirm", { title: day.dayTitle }),
         );
         if (!confirmed) return;
         setSubmitting(true);
@@ -67,7 +70,7 @@ export default function EventDayForm({ eventId, day, edit }: Props) {
         });
         setSubmitting(false);
         if (!res.ok) {
-            setError("Failed to delete day.");
+            setError(t("deleteFailed"));
             return;
         }
         setOpen(false);
@@ -78,31 +81,31 @@ export default function EventDayForm({ eventId, day, edit }: Props) {
         <>
             <FormTrigger
                 edit={edit}
-                label="+ New Day"
+                label={t("new")}
                 onClick={() => setOpen(true)}
             />
             <FormModal
                 open={open}
                 onClose={() => setOpen(false)}
-                title={edit ? "Edit Day" : "New Day"}
+                title={edit ? t("editTitle") : t("newTitle")}
                 submitting={submitting}
-                submitLabel={edit ? "Save" : "Create Day"}
+                submitLabel={edit ? tf("save") : t("create")}
                 onSubmit={handleSubmit}
                 onDelete={edit && day ? handleDelete : undefined}
                 error={error}
             >
                 <TextField
                     name="dayTitle"
-                    label="Day name"
+                    label={t("dayName")}
                     required
                     defaultValue={day?.dayTitle}
-                    placeholder="e.g. Friday, Day 1…"
+                    placeholder={t("dayNamePlaceholder")}
                 />
                 <TextField
                     name="shopItemId"
-                    label="Shop item ID (optional)"
+                    label={t("shopItemId")}
                     defaultValue={day?.shopItemId ?? ""}
-                    placeholder="Pretix item ID for this day"
+                    placeholder={t("shopItemPlaceholder")}
                 />
             </FormModal>
         </>

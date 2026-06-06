@@ -16,6 +16,7 @@ import {
   requireInternalUser,
 } from "@/lib/auth/permissions";
 import { computeTimeAxis, parseFilters } from "@/lib/shifts/filters";
+import { getTranslations } from "next-intl/server";
 
 export default async function EventPage({
   params,
@@ -42,6 +43,7 @@ export default async function EventPage({
     GetShiftKindsByEvent(event.id),
     GetShiftDatetimesByEvent(event.id, authError),
   ]);
+  const t = await getTranslations();
   const timeAxis = computeTimeAxis(shiftTimes);
   const visibleDays = filters.dayIds.length
     ? days.filter((d) => filters.dayIds.includes(d.id))
@@ -79,7 +81,7 @@ export default async function EventPage({
                   d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H7v-3a2 2 0 01.586-1.414z"
                 />
               </svg>
-              Edit
+              {t("Events.edit")}
             </Link>
           </div>
         )}
@@ -94,7 +96,7 @@ export default async function EventPage({
         <Suspense
           fallback={
             <p className="text-gray-500 dark:text-gray-400 text-sm">
-              Loading shifts…
+              {t("Shifts.loading")}
             </p>
           }
         >

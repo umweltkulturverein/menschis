@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ShiftKind } from "@/types/shift";
 import { EventDay } from "@/types/eventDay";
 import { FILTER_KEYS, formatMinute, parseFilters } from "@/lib/shifts/filters";
 import {StringToColour} from "@/lib/misc/color";
+import SearchSelect from "@/components/Misc/SearchSelect";
 
 const STEP = 30; // minutes
 
@@ -25,22 +27,6 @@ function parseNums(v: string | null): number[] {
     );
 }
 
-/** Close `onDismiss` when clicking outside `ref`. */
-function useOutsideClose(
-    ref: React.RefObject<HTMLElement | null>,
-    onDismiss: () => void,
-) {
-    useEffect(() => {
-        function onClick(e: MouseEvent) {
-            if (ref.current && !ref.current.contains(e.target as Node)) {
-                onDismiss();
-            }
-        }
-        document.addEventListener("mousedown", onClick);
-        return () => document.removeEventListener("mousedown", onClick);
-    }, [ref, onDismiss]);
-}
-
 export default function ShiftFilterBar({
     kinds,
     days,
@@ -50,6 +36,7 @@ export default function ShiftFilterBar({
     const router = useRouter();
     const pathname = usePathname();
     const sp = useSearchParams();
+    const t = useTranslations("ShiftFilter");
     const filters = parseFilters((k) => sp.get(k));
     const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -110,7 +97,7 @@ export default function ShiftFilterBar({
                     d="M3 4h18M6 10h12M10 16h4"
                 />
             </svg>
-            Filter
+            {t("filter")}
             {activeCount > 0 && (
                 <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ci-green-300 px-1 text-xs font-semibold text-ci-blue-800">
                     {activeCount}
@@ -135,24 +122,28 @@ export default function ShiftFilterBar({
         <div
             className={`${
                 mobileOpen ? "flex" : "hidden"
-            } mt-2 md:mt-0 md:flex w-fit max-w-full flex-wrap items-center gap-x-3 gap-y-3 rounded-2xl border border-gray-200/80 dark:border-white/10 bg-white/80 dark:bg-ci-blue-700/50 backdrop-blur-sm shadow-sm ring-1 ring-black/[0.03] dark:ring-white/5 px-4 py-3`}
+            } mt-2 md:mt-0 md:flex mx-auto w-fit max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-3 rounded-2xl border border-gray-200/80 dark:border-white/10 bg-white/80 dark:bg-ci-blue-700/50 backdrop-blur-sm shadow-sm ring-1 ring-black/[0.03] dark:ring-white/5 px-4 py-3`}
         >
-            <MultiSelectSearch
+            <SearchSelect
+                multiple
                 options={kinds.map((k) => ({
                     id: k.id,
                     label: k.title,
                     color: k.color,
+                    icon: k.icon ?? undefined,
                 }))}
                 selected={filters.kindIds}
                 onToggle={(id) => toggleNum(FILTER_KEYS.kind, id)}
-                placeholder="Schichtarten suchen…"
-                emptyText="Keine passenden Schichtarten"
+                placeholder={t("searchKinds")}
+                emptyText={t("noKinds")}
+                removeLabel={(label) => t("remove", { label })}
             />
 
             {days.length > 0 && (
                 <>
                     <Divider />
-                    <MultiSelectSearch
+                    <SearchSelect
+                        multiple
                         options={days.map((d) => ({
                             id: d.id,
                             label: d.dayTitle,
@@ -160,8 +151,9 @@ export default function ShiftFilterBar({
                         }))}
                         selected={filters.dayIds}
                         onToggle={(id) => toggleNum(FILTER_KEYS.day, id)}
-                        placeholder="Tage suchen…"
-                        emptyText="Keine passenden Tage"
+                        placeholder={t("searchDays")}
+                        emptyText={t("noDays")}
+                        removeLabel={(label) => t("remove", { label })}
                     />
                 </>
             )}
@@ -172,6 +164,7 @@ export default function ShiftFilterBar({
                     <div className="flex shrink-0 items-center">
                         <TimeRangeSlider
                             key={`${filters.fromMin}-${filters.toMin}`}
+                            label={t("startTime")}
                             bounds={bounds}
                             fromMin={filters.fromMin}
                             toMin={filters.toMin}
@@ -196,7 +189,7 @@ export default function ShiftFilterBar({
                     <Switch
                         checked={filters.internalOnly}
                         onChange={setInternal}
-                        label="Nur interne Schichten"
+                        label={t("internalOnly")}
                     />
                 </div>
             )}
@@ -209,7 +202,7 @@ export default function ShiftFilterBar({
                     mobileOpen ? "block" : "hidden"
                 } md:block mt-2 ml-1 text-xs font-medium text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer`}
             >
-                Zurücksetzen
+                {t("reset")}
             </button>
         )}
         </div>
@@ -219,122 +212,6 @@ export default function ShiftFilterBar({
 function Divider() {
     return (
         <span className="hidden h-8 shrink-0 lg:block w-px bg-gray-200/70 dark:bg-white/10" />
-    );
-}
-
-interface SelectOption {
-    id: number;
-    label: string;
-    /** Optional hex colour; renders a dot before the label when present. */
-    color?: string;
-}
-
-/** Search field + dropdown for multi-selecting options; selected ones become
- *  removable chips inside the field. Shared by the kind and day filters. */
-function MultiSelectSearch({
-    options,
-    selected,
-    onToggle,
-    placeholder,
-    emptyText,
-}: {
-    options: SelectOption[];
-    selected: number[];
-    onToggle: (id: number) => void;
-    placeholder: string;
-    emptyText: string;
-}) {
-    const [open, setOpen] = useState(false);
-    const [query, setQuery] = useState("");
-    const ref = useRef<HTMLDivElement>(null);
-    useOutsideClose(ref, () => setOpen(false));
-
-    const selectedOptions = options.filter((o) => selected.includes(o.id));
-    const visible = options.filter((o) =>
-        o.label.toLowerCase().includes(query.toLowerCase()),
-    );
-
-    return (
-        <div ref={ref} className="relative shrink-0">
-            <div
-                onClick={() => setOpen(true)}
-                className="flex min-h-9 w-64 flex-wrap items-center gap-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-ci-blue-800/60 px-2.5 py-1.5 focus-within:ring-2 focus-within:ring-ci-green-300/60 focus-within:border-ci-green-300 transition-shadow"
-            >
-                {selectedOptions.map((o) => (
-                    <span
-                        key={o.id}
-                        className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 dark:bg-white/10 pl-1.5 pr-1 py-0.5 text-xs text-gray-700 dark:text-gray-100"
-                    >
-                        {o.color && (
-                            <span
-                                className="h-2 w-2 rounded-full"
-                                style={{ backgroundColor: o.color }}
-                            />
-                        )}
-                        {o.label}
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onToggle(o.id);
-                            }}
-                            className="text-gray-400 hover:text-gray-700 dark:hover:text-white cursor-pointer leading-none"
-                            aria-label={`${o.label} entfernen`}
-                        >
-                            ×
-                        </button>
-                    </span>
-                ))}
-                <input
-                    type="text"
-                    value={query}
-                    placeholder={selectedOptions.length ? "" : placeholder}
-                    onChange={(e) => {
-                        setQuery(e.target.value);
-                        setOpen(true);
-                    }}
-                    onFocus={() => setOpen(true)}
-                    className="min-w-[5rem] flex-1 bg-transparent text-sm text-gray-800 dark:text-white placeholder-gray-400 focus:outline-none"
-                />
-            </div>
-
-            {open && (
-                <ul className="absolute z-30 mt-1.5 w-72 max-h-64 overflow-auto rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-ci-blue-700 shadow-xl shadow-black/10 py-1">
-                    {visible.length === 0 && (
-                        <li className="px-3 py-2 text-sm text-gray-400">
-                            {emptyText}
-                        </li>
-                    )}
-                    {visible.map((o) => {
-                        const active = selected.includes(o.id);
-                        return (
-                            <li key={o.id}>
-                                <button
-                                    type="button"
-                                    onClick={() => onToggle(o.id)}
-                                    className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-left text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-white/5"
-                                >
-                                    {o.color && (
-                                        <span
-                                            className="h-2.5 w-2.5 rounded-full shrink-0 ring-2 ring-white dark:ring-ci-blue-700"
-                                            style={{ backgroundColor: o.color }}
-                                        />
-                                    )}
-                                    <span className="flex-1 truncate">
-                                        {o.label}
-                                    </span>
-                                    {active && (
-                                        <span className="text-ci-green-300 font-semibold">
-                                            ✓
-                                        </span>
-                                    )}
-                                </button>
-                            </li>
-                        );
-                    })}
-                </ul>
-            )}
-        </div>
     );
 }
 
@@ -409,11 +286,13 @@ function TimeRangeSlider({
     fromMin,
     toMin,
     onCommit,
+    label,
 }: {
     bounds: { minMin: number; maxMin: number };
     fromMin: number | null;
     toMin: number | null;
     onCommit: (from: number, to: number) => void;
+    label: string;
 }) {
     const [from, setFrom] = useState(fromMin ?? bounds.minMin);
     const [to, setTo] = useState(toMin ?? bounds.maxMin);
@@ -427,7 +306,7 @@ function TimeRangeSlider({
                 <span className="rounded bg-gray-100 dark:bg-white/10 px-1 py-0.5 font-mono tabular-nums">
                     {formatMinute(from)}
                 </span>
-                <span className="font-medium">Startzeit</span>
+                <span className="font-medium">{label}</span>
                 <span className="rounded bg-gray-100 dark:bg-white/10 px-1 py-0.5 font-mono tabular-nums">
                     {formatMinute(to)}
                 </span>

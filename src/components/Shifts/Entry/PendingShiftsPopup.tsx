@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { NaturalDateTime } from "@/lib/misc/contextAwareDates";
 
 interface PendingEntry {
@@ -21,6 +22,7 @@ interface PendingEntry {
  */
 export default function PendingShiftsPopup() {
     const { status } = useSession();
+    const t = useTranslations("Entry");
     const [pending, setPending] = useState<PendingEntry[]>([]);
     const [open, setOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -66,11 +68,10 @@ export default function PendingShiftsPopup() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div className="w-full max-w-lg mx-4 p-6 bg-white dark:bg-ci-blue-700 rounded-lg shadow-xl">
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">
-                    Schichten bestätigen
+                    {t("pendingTitle")}
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-300 mb-4">
-                    Du wurdest für die folgenden Schichten eingetragen. Bitte
-                    bestätige sie, sonst werden sie automatisch storniert.
+                    {t("pendingDescription")}
                 </p>
 
                 <ul className="space-y-2 mb-5 max-h-72 overflow-y-auto">
@@ -97,7 +98,7 @@ export default function PendingShiftsPopup() {
                         disabled={submitting}
                         className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors cursor-pointer"
                     >
-                        Ablehnen
+                        {t("decline")}
                     </button>
                     <button
                         type="button"
@@ -105,7 +106,7 @@ export default function PendingShiftsPopup() {
                         disabled={submitting}
                         className="px-4 py-2 bg-ci-green-500 hover:bg-ci-green-600 disabled:opacity-50 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
                     >
-                        {submitting ? "..." : "Annehmen"}
+                        {submitting ? "..." : t("accept")}
                     </button>
                 </div>
             </div>

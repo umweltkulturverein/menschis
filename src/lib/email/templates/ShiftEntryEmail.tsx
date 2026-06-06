@@ -1,7 +1,11 @@
 import type { CSSProperties } from "react";
+import type { getTranslations } from "next-intl/server";
 import type { EventItem } from "@/types/event";
 import type { EventDay } from "@/types/eventDay";
 import type { Shift, ShiftEntry, ShiftKind } from "@/types/shift";
+import { type Locale, dateLocale } from "@/i18n/config";
+
+type EmailTranslator = Awaited<ReturnType<typeof getTranslations<"Emails">>>;
 
 type Props = {
     entry: ShiftEntry;
@@ -10,10 +14,12 @@ type Props = {
     event: EventItem;
     eventDay?: EventDay | null;
     editUrl: string;
+    locale: Locale;
+    t: EmailTranslator;
 };
 
-function formatDate(date: Date): string {
-    return new Date(date).toLocaleDateString("de-DE", {
+function formatDate(date: Date, locale: Locale): string {
+    return new Date(date).toLocaleDateString(dateLocale[locale], {
         weekday: "long",
         day: "2-digit",
         month: "long",
@@ -21,8 +27,8 @@ function formatDate(date: Date): string {
     });
 }
 
-function formatTime(date: Date): string {
-    return new Date(date).toLocaleTimeString("de-DE", {
+function formatTime(date: Date, locale: Locale): string {
+    return new Date(date).toLocaleTimeString(dateLocale[locale], {
         hour: "2-digit",
         minute: "2-digit",
     });
@@ -35,25 +41,28 @@ export function ShiftEntryEmail({
     event,
     eventDay,
     editUrl,
+    locale,
+    t,
 }: Props) {
     const start = new Date(shift.startDatetime);
     const end = new Date(shift.endDatetime);
     const sameDay = start.toDateString() === end.toDateString();
+    const clock = t("shiftEntry.clockSuffix");
     const dateLine = sameDay
-        ? `${formatDate(start)}, ${formatTime(start)} – ${formatTime(end)} Uhr`
-        : `${formatDate(start)} ${formatTime(start)} – ${formatDate(end)} ${formatTime(end)} Uhr`;
+        ? `${formatDate(start, locale)}, ${formatTime(start, locale)} – ${formatTime(end, locale)}${clock}`
+        : `${formatDate(start, locale)} ${formatTime(start, locale)} – ${formatDate(end, locale)} ${formatTime(end, locale)}${clock}`;
 
     return (
-        <html lang="de">
+        <html lang={locale}>
             <head>
                 <meta charSet="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <meta name="color-scheme" content="light dark" />
-                <title>{`${event.title} Schicht bestätigt`}</title>
+                <title>{t("shiftEntry.documentTitle", { title: event.title })}</title>
             </head>
             <body style={styles.body}>
                 <span style={styles.preheader}>
-                    Deine Schicht für {event.title} ist bestätigt.
+                    {t("shiftEntry.preheader", { title: event.title })}
                 </span>
                 <table role="presentation" width="100%" cellPadding={0} cellSpacing={0} border={0} style={styles.outerTable}>
                     <tbody>
@@ -67,7 +76,7 @@ export function ShiftEntryEmail({
                                                     <tbody>
                                                         <tr>
                                                             <td style={styles.brand}>Menschis</td>
-                                                            <td align="right" style={styles.headerTag}>Schicht</td>
+                                                            <td align="right" style={styles.headerTag}>{t("shiftEntry.tag")}</td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -75,10 +84,13 @@ export function ShiftEntryEmail({
                                         </tr>
                                         <tr>
                                             <td style={styles.bodyPad}>
-                                                <h1 style={styles.h1}>Deine Schicht ist eingetragen</h1>
-                                                <p style={styles.paragraph}>Hallo {entry.name},</p>
+                                                <h1 style={styles.h1}>{t("shiftEntry.heading")}</h1>
+                                                <p style={styles.paragraph}>{t("shiftEntry.greeting", { name: entry.name })}</p>
                                                 <p style={styles.paragraph}>
-                                                    deine Anmeldung für <strong>{shiftKind.title}</strong> bei <strong>{event.title}</strong> ist gespeichert. Hier sind deine Details:
+                                                    {t("shiftEntry.intro", {
+                                                        kind: shiftKind.title,
+                                                        event: event.title,
+                                                    })}
                                                 </p>
                                             </td>
                                         </tr>
@@ -87,34 +99,34 @@ export function ShiftEntryEmail({
                                                 <table role="presentation" width="100%" cellPadding={0} cellSpacing={0} border={0} style={styles.detailsTable}>
                                                     <tbody>
                                                         <tr>
-                                                            <td style={styles.detailLabel}>Event</td>
+                                                            <td style={styles.detailLabel}>{t("shiftEntry.labelEvent")}</td>
                                                             <td style={styles.detailValue}>{event.title}</td>
                                                         </tr>
                                                         {eventDay && (
                                                             <tr>
-                                                                <td style={styles.detailLabel}>Tag</td>
+                                                                <td style={styles.detailLabel}>{t("shiftEntry.labelDay")}</td>
                                                                 <td style={styles.detailValue}>{eventDay.dayTitle}</td>
                                                             </tr>
                                                         )}
                                                         <tr>
-                                                            <td style={styles.detailLabel}>Schicht</td>
+                                                            <td style={styles.detailLabel}>{t("shiftEntry.labelShift")}</td>
                                                             <td style={styles.detailValue}>{shiftKind.title}</td>
                                                         </tr>
                                                         <tr>
-                                                            <td style={styles.detailLabel}>Zeit</td>
+                                                            <td style={styles.detailLabel}>{t("shiftEntry.labelTime")}</td>
                                                             <td style={styles.detailValue}>{dateLine}</td>
                                                         </tr>
                                                         <tr>
-                                                            <td style={styles.detailLabel}>Ort</td>
+                                                            <td style={styles.detailLabel}>{t("shiftEntry.labelLocation")}</td>
                                                             <td style={styles.detailValue}>{event.location}</td>
                                                         </tr>
                                                         <tr>
-                                                            <td style={styles.detailLabel}>Name</td>
+                                                            <td style={styles.detailLabel}>{t("shiftEntry.labelName")}</td>
                                                             <td style={styles.detailValue}>{entry.name}</td>
                                                         </tr>
                                                         {entry.notes && (
                                                             <tr>
-                                                                <td style={styles.detailLabel}>Notiz</td>
+                                                                <td style={styles.detailLabel}>{t("shiftEntry.labelNote")}</td>
                                                                 <td style={styles.detailValue}>{entry.notes}</td>
                                                             </tr>
                                                         )}
@@ -125,7 +137,7 @@ export function ShiftEntryEmail({
                                         {shiftKind.description && (
                                             <tr>
                                                 <td style={styles.bodyPad}>
-                                                    <p style={styles.smallMuted}>Beschreibung der Schicht:</p>
+                                                    <p style={styles.smallMuted}>{t("shiftEntry.descriptionLabel")}</p>
                                                     <p style={styles.paragraph}>{shiftKind.description}</p>
                                                 </td>
                                             </tr>
@@ -147,7 +159,7 @@ export function ShiftEntryEmail({
                                                     <tbody>
                                                         <tr>
                                                             <td align="center" style={styles.buttonWrap}>
-                                                                <a href={editUrl} style={styles.button}>Schicht ansehen & bearbeiten</a>
+                                                                <a href={editUrl} style={styles.button}>{t("shiftEntry.cta")}</a>
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -157,7 +169,7 @@ export function ShiftEntryEmail({
                                         <tr>
                                             <td style={styles.fallbackCell}>
                                                 <p style={styles.smallMuted}>
-                                                    Falls der Button nicht funktioniert, kopiere diesen Link in deinen Browser:
+                                                    {t("fallback")}
                                                 </p>
                                                 <p style={styles.fallbackLinkP}>
                                                     <a href={editUrl} style={styles.fallbackLink}>{editUrl}</a>
@@ -168,7 +180,7 @@ export function ShiftEntryEmail({
                                             <td style={styles.footerCell}>
                                                 <div style={styles.divider}>
                                                     <p style={styles.smallMuted}>
-                                                        Der Link meldet dich automatisch an. Solltest du diese Schicht nicht angemeldet haben, kannst du sie über den Link wieder austragen.
+                                                        {t("shiftEntry.expiry")}
                                                     </p>
                                                 </div>
                                             </td>
@@ -176,7 +188,7 @@ export function ShiftEntryEmail({
                                     </tbody>
                                 </table>
                                 <p style={styles.footer}>
-                                    Gesendet von Menschis · Schichtplanung für Festivals
+                                    {t("footer")}
                                 </p>
                             </td>
                         </tr>

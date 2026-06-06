@@ -1,24 +1,32 @@
 import type { CSSProperties } from "react";
+import type { getTranslations } from "next-intl/server";
+import type { Locale } from "@/i18n/config";
+
+type EmailTranslator = Awaited<ReturnType<typeof getTranslations<"Emails">>>;
 
 type Props = {
     url: string;
     recipientName?: string;
+    locale: Locale;
+    t: EmailTranslator;
 };
 
-export function MagicLinkEmail({ url, recipientName }: Props) {
-    const greeting = recipientName ? `Hallo ${recipientName},` : "Hallo,";
+export function MagicLinkEmail({ url, recipientName, locale, t }: Props) {
+    const greeting = recipientName
+        ? t("magicLink.greeting", { name: recipientName })
+        : t("magicLink.greetingPlain");
 
     return (
-        <html lang="de">
+        <html lang={locale}>
             <head>
                 <meta charSet="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <meta name="color-scheme" content="light dark" />
-                <title>Bestätige deine Schicht</title>
+                <title>{t("magicLink.documentTitle")}</title>
             </head>
             <body style={styles.body}>
                 <span style={styles.preheader}>
-                    Dein einmaliger Login-Link für Menschis.
+                    {t("magicLink.preheader")}
                 </span>
                 <table role="presentation" width="100%" cellPadding={0} cellSpacing={0} border={0} style={styles.outerTable}>
                     <tbody>
@@ -32,7 +40,7 @@ export function MagicLinkEmail({ url, recipientName }: Props) {
                                                     <tbody>
                                                         <tr>
                                                             <td style={styles.brand}>Menschis</td>
-                                                            <td align="right" style={styles.headerTag}>Login</td>
+                                                            <td align="right" style={styles.headerTag}>{t("magicLink.tag")}</td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -40,10 +48,10 @@ export function MagicLinkEmail({ url, recipientName }: Props) {
                                         </tr>
                                         <tr>
                                             <td style={styles.bodyPad}>
-                                                <h1 style={styles.h1}>Dein Login-Link ist da</h1>
+                                                <h1 style={styles.h1}>{t("magicLink.heading")}</h1>
                                                 <p style={styles.paragraph}>{greeting}</p>
                                                 <p style={styles.paragraph}>
-                                                    klicke auf den Button, um dich sicher bei <strong>Menschis</strong> anzumelden. Du musst dir kein Passwort merken — ein Klick reicht.
+                                                    {t("magicLink.body")}
                                                 </p>
                                             </td>
                                         </tr>
@@ -53,7 +61,7 @@ export function MagicLinkEmail({ url, recipientName }: Props) {
                                                     <tbody>
                                                         <tr>
                                                             <td align="center" style={styles.buttonWrap}>
-                                                                <a href={url} style={styles.button}>Jetzt anmelden</a>
+                                                                <a href={url} style={styles.button}>{t("magicLink.cta")}</a>
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -63,7 +71,7 @@ export function MagicLinkEmail({ url, recipientName }: Props) {
                                         <tr>
                                             <td style={styles.fallbackCell}>
                                                 <p style={styles.smallMuted}>
-                                                    Falls der Button nicht funktioniert, kopiere diesen Link in deinen Browser:
+                                                    {t("fallback")}
                                                 </p>
                                                 <p style={styles.fallbackLinkP}>
                                                     <a href={url} style={styles.fallbackLink}>{url}</a>
@@ -74,7 +82,7 @@ export function MagicLinkEmail({ url, recipientName }: Props) {
                                             <td style={styles.footerCell}>
                                                 <div style={styles.divider}>
                                                     <p style={styles.smallMuted}>
-                                                        Der Link ist nur kurz gültig und kann nur einmal verwendet werden. Wenn du diese E-Mail nicht angefordert hast, kannst du sie einfach ignorieren — es passiert nichts.
+                                                        {t("magicLink.expiry")}
                                                     </p>
                                                 </div>
                                             </td>
@@ -82,7 +90,7 @@ export function MagicLinkEmail({ url, recipientName }: Props) {
                                     </tbody>
                                 </table>
                                 <p style={styles.footer}>
-                                    Gesendet von Menschis · Schichtplanung für Festivals
+                                    {t("footer")}
                                 </p>
                             </td>
                         </tr>

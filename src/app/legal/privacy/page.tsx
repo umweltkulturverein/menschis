@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
 
 const IMPRINT_URL = "https://organicbeats.org/impressum/";
 
 type Lang = "de" | "en";
 
 export default function Privacy() {
-    const [lang, setLang] = useState<Lang>("de");
+    const locale = useLocale();
+    const [lang, setLang] = useState<Lang>(locale === "en" ? "en" : "de");
 
     return (
         <main className="mx-auto max-w-3xl px-6 py-16">
