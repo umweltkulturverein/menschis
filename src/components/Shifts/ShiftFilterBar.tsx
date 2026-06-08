@@ -14,7 +14,7 @@ const STEP = 30; // minutes
 interface Props {
     kinds: ShiftKind[];
     days: EventDay[];
-    bounds: { minMin: number; maxMin: number } | null;
+    bounds: { minMinute: number; maxMinute: number } | null;
     showInternal: boolean;
 }
 
@@ -66,16 +66,16 @@ export default function ShiftFilterBar({
         filters.kindIds.length > 0 ||
         filters.dayIds.length > 0 ||
         filters.internalOnly ||
-        filters.fromMin !== null ||
-        filters.toMin !== null;
+        filters.fromMinute !== null ||
+        filters.toMinute !== null;
 
-    const showSlider = bounds && bounds.maxMin - bounds.minMin > STEP;
+    const showSlider = bounds && bounds.maxMinute - bounds.minMinute > STEP;
 
     const activeCount =
         filters.kindIds.length +
         filters.dayIds.length +
         (filters.internalOnly ? 1 : 0) +
-        (filters.fromMin !== null || filters.toMin !== null ? 1 : 0);
+        (filters.fromMinute !== null || filters.toMinute !== null ? 1 : 0);
 
     return (
         <div className="relative z-30 mb-6">
@@ -163,17 +163,17 @@ export default function ShiftFilterBar({
                     <Divider />
                     <div className="flex shrink-0 items-center">
                         <TimeRangeSlider
-                            key={`${filters.fromMin}-${filters.toMin}`}
+                            key={`${filters.fromMinute}-${filters.toMinute}`}
                             label={t("startTime")}
                             bounds={bounds}
-                            fromMin={filters.fromMin}
-                            toMin={filters.toMin}
+                            fromMinute={filters.fromMinute}
+                            toMinute={filters.toMinute}
                             onCommit={(from, to) => {
                                 const next = new URLSearchParams(sp);
-                                if (from > bounds.minMin)
+                                if (from > bounds.minMinute)
                                     next.set(FILTER_KEYS.from, String(from));
                                 else next.delete(FILTER_KEYS.from);
-                                if (to < bounds.maxMin)
+                                if (to < bounds.maxMinute)
                                     next.set(FILTER_KEYS.to, String(to));
                                 else next.delete(FILTER_KEYS.to);
                                 commit(next);
@@ -283,22 +283,22 @@ function Switch({
  *  Commits on release to avoid a refetch per drag tick. */
 function TimeRangeSlider({
     bounds,
-    fromMin,
-    toMin,
+    fromMinute,
+    toMinute,
     onCommit,
     label,
 }: {
-    bounds: { minMin: number; maxMin: number };
-    fromMin: number | null;
-    toMin: number | null;
+    bounds: { minMinute: number; maxMinute: number };
+    fromMinute: number | null;
+    toMinute: number | null;
     onCommit: (from: number, to: number) => void;
     label: string;
 }) {
-    const [from, setFrom] = useState(fromMin ?? bounds.minMin);
-    const [to, setTo] = useState(toMin ?? bounds.maxMin);
+    const [from, setFrom] = useState(fromMinute ?? bounds.minMinute);
+    const [to, setTo] = useState(toMinute ?? bounds.maxMinute);
 
     const pct = (m: number) =>
-        ((m - bounds.minMin) / (bounds.maxMin - bounds.minMin)) * 100;
+        ((m - bounds.minMinute) / (bounds.maxMinute - bounds.minMinute)) * 100;
 
     return (
         <div className="flex w-60 flex-col gap-1">
@@ -319,8 +319,8 @@ function TimeRangeSlider({
                 />
                 <input
                     type="range"
-                    min={bounds.minMin}
-                    max={bounds.maxMin}
+                    min={bounds.minMinute}
+                    max={bounds.maxMinute}
                     step={STEP}
                     value={from}
                     onChange={(e) =>
@@ -331,8 +331,8 @@ function TimeRangeSlider({
                 />
                 <input
                     type="range"
-                    min={bounds.minMin}
-                    max={bounds.maxMin}
+                    min={bounds.minMinute}
+                    max={bounds.maxMinute}
                     step={STEP}
                     value={to}
                     onChange={(e) =>

@@ -65,6 +65,7 @@ export default function ShiftForm({
         setSubmitting(true);
         const fd = new FormData(e.currentTarget);
         const body = {
+            id: shift?.id,
             shiftKindId: String(shiftKindId),
             startDatetime: fd.get("startDatetime") as string,
             endDatetime: fd.get("endDatetime") as string,

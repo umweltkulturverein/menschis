@@ -15,7 +15,7 @@ import {
   isInternalUser,
   requireInternalUser,
 } from "@/lib/auth/permissions";
-import { computeTimeAxis, parseFilters } from "@/lib/shifts/filters";
+import { computeTimeAxis, computeBaseDays, parseFilters } from "@/lib/shifts/filters";
 import { getTranslations } from "next-intl/server";
 
 export default async function EventPage({
@@ -44,7 +44,8 @@ export default async function EventPage({
     GetShiftDatetimesByEvent(event.id, authError),
   ]);
   const t = await getTranslations();
-  const timeAxis = computeTimeAxis(shiftTimes);
+  const baseDays = computeBaseDays(shiftTimes);
+  const timeAxis = computeTimeAxis(shiftTimes, baseDays);
   const visibleDays = filters.dayIds.length
     ? days.filter((d) => filters.dayIds.includes(d.id))
     : days;
@@ -110,6 +111,7 @@ export default async function EventPage({
                     eventDayId={day.id}
                     authError={authError}
                     filters={filters}
+                    baseDays={baseDays}
                   />
                 </div>
               ))
@@ -119,6 +121,7 @@ export default async function EventPage({
                   authError={authError}
                   eventId={event.id}
                   filters={filters}
+                  baseDays={baseDays}
                 />
               </div>
             )}
