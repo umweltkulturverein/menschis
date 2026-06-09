@@ -33,6 +33,7 @@ export async function POST(
     color: body.color,
     authorizationMessage: body.authorizationMessage ?? null,
     authorizationMagicLinkToken: body.authorizationMagicLinkToken ?? null,
+    allAccess: body.allAccess ?? false,
   };
 
   const created = await CreateShiftKind(kind);

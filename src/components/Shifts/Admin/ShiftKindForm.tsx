@@ -18,9 +18,10 @@ interface Props {
     eventId: number;
     kind?: ShiftKind;
     edit?: boolean;
+    duplicate?: boolean;
 }
 
-export default function ShiftKindForm({ eventId, kind, edit }: Props) {
+export default function ShiftKindForm({ eventId, kind, edit, duplicate }: Props) {
     const router = useRouter();
     const t = useTranslations("ShiftKindForm");
     const tf = useTranslations("Forms");
@@ -44,11 +45,11 @@ export default function ShiftKindForm({ eventId, kind, edit }: Props) {
             allAccess: fd.get("allAccess") === "on",
         };
 
-        const url = kind
+        const url = edit && kind
             ? `/api/event/${eventId}/shiftkind/${kind.id}`
             : `/api/event/${eventId}/shiftkind`;
         const res = await fetch(url, {
-            method: kind ? "PATCH" : "POST",
+            method: edit ? "PATCH" : "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
@@ -88,13 +89,20 @@ export default function ShiftKindForm({ eventId, kind, edit }: Props) {
         <>
             <FormTrigger
                 edit={edit}
+                duplicate={duplicate}
                 label={t("new")}
                 onClick={() => setOpen(true)}
             />
             <FormModal
                 open={open}
                 onClose={() => setOpen(false)}
-                title={edit ? t("editTitle") : t("newTitle")}
+                title={
+                    edit
+                        ? t("editTitle")
+                        : duplicate
+                          ? t("duplicateTitle")
+                          : t("newTitle")
+                }
                 submitting={submitting}
                 submitLabel={edit ? tf("save") : t("create")}
                 onSubmit={handleSubmit}

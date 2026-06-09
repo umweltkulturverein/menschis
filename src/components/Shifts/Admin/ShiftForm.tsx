@@ -18,6 +18,7 @@ interface Props {
     eventStartDate?: Date | string | null;
     shift?: Shift;
     edit?: boolean;
+    duplicate?: boolean;
 }
 
 export default function ShiftForm({
@@ -27,6 +28,7 @@ export default function ShiftForm({
     eventStartDate,
     shift,
     edit,
+    duplicate,
 }: Props) {
     const router = useRouter();
     const t = useTranslations("ShiftForm");
@@ -65,7 +67,7 @@ export default function ShiftForm({
         setSubmitting(true);
         const fd = new FormData(e.currentTarget);
         const body = {
-            id: shift?.id,
+            id: edit ? shift?.id : undefined,
             shiftKindId: String(shiftKindId),
             startDatetime: fd.get("startDatetime") as string,
             endDatetime: fd.get("endDatetime") as string,
@@ -75,7 +77,7 @@ export default function ShiftForm({
         };
 
         const res = await fetch(`/api/event/${eventId}/shift`, {
-            method: shift ? "PATCH" : "POST",
+            method: edit ? "PATCH" : "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
@@ -108,6 +110,7 @@ export default function ShiftForm({
         <>
             <FormTrigger
                 edit={edit}
+                duplicate={duplicate}
                 label={t("new")}
                 disabled={shiftKinds.length === 0}
                 title={
@@ -120,7 +123,13 @@ export default function ShiftForm({
             <FormModal
                 open={open}
                 onClose={() => setOpen(false)}
-                title={edit ? t("editTitle") : t("newTitle")}
+                title={
+                    edit
+                        ? t("editTitle")
+                        : duplicate
+                          ? t("duplicateTitle")
+                          : t("newTitle")
+                }
                 submitting={submitting}
                 submitLabel={edit ? tf("save") : t("create")}
                 onSubmit={handleSubmit}
