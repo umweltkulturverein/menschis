@@ -42,6 +42,17 @@ export async function GetShiftsByEvent(
         if (filters.kindIds.length) {
             query = query.where("shift.shiftKind", "in", filters.kindIds);
         }
+        if (filters.openOnly) {
+            query = query.where((eb) =>
+                eb(
+                    eb.selectFrom("shiftEntry")
+                        .select(eb.fn.countAll().as("c"))
+                        .whereRef("shiftEntry.shift", "=", "shift.id"),
+                    "<",
+                    eb.ref("shift.slots"),
+                ),
+            );
+        }
         // Only narrows; the authError gate above still applies for outsiders.
         if (filters.internalOnly && !authError) {
             query = query.where("shift.internal", "=", true);

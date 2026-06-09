@@ -31,7 +31,7 @@ export default function ShiftFilterBar({
     kinds,
     days,
     bounds,
-    showInternal,
+    showInternal
 }: Props) {
     const router = useRouter();
     const pathname = usePathname();
@@ -61,11 +61,18 @@ export default function ShiftFilterBar({
         else next.delete(FILTER_KEYS.internal);
         commit(next);
     }
+    function setOpen(on: boolean) {
+        const next = new URLSearchParams(sp);
+        if (on) next.set(FILTER_KEYS.open, "1");
+        else next.delete(FILTER_KEYS.open);
+        commit(next);
+    }
 
     const hasFilters =
         filters.kindIds.length > 0 ||
         filters.dayIds.length > 0 ||
         filters.internalOnly ||
+        filters.openOnly ||
         filters.fromMinute !== null ||
         filters.toMinute !== null;
 
@@ -75,6 +82,7 @@ export default function ShiftFilterBar({
         filters.kindIds.length +
         filters.dayIds.length +
         (filters.internalOnly ? 1 : 0) +
+        (filters.openOnly ? 1 : 0) +
         (filters.fromMinute !== null || filters.toMinute !== null ? 1 : 0);
 
     return (
@@ -182,7 +190,14 @@ export default function ShiftFilterBar({
                     </div>
                 </>
             )}
-
+                <div className="flex shrink-0 items-center gap-x-3">
+                    <Divider />
+                    <Switch
+                        checked={filters.openOnly}
+                        onChange={setOpen}
+                        label={t("openOnly")}
+                    />
+                </div>
             {showInternal && (
                 <div className="flex shrink-0 items-center gap-x-3">
                     <Divider />

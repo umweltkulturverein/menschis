@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { Shift, ShiftKind } from "@/types/shift";
 import type { EventDay } from "@/types/eventDay";
-import FormModal, { labelClass } from "@/components/Misc/FormModal";
-import FormTrigger from "@/components/Misc/FormTrigger";
+import FormModal, { labelClass } from "@/components/Misc/Form/FormModal";
+import FormTrigger from "@/components/Misc/Form/FormTrigger";
 import SearchSelect from "@/components/Misc/SearchSelect";
-import { CheckboxField, TextField } from "@/components/Misc/FormFields";
+import { CheckboxField, TextField } from "@/components/Misc/Form/FormFields";
 import { StringToColour } from "@/lib/misc/color";
 
 interface Props {

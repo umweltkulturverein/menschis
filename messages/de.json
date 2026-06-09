@@ -107,6 +107,7 @@
         "icon": "Icon (Emoji)",
         "description": "Beschreibung",
         "color": "Farbe",
+        "allAccess": "Ticket für alle Tage ausstellen",
         "authMessage": "Freischaltungs-Nachricht (Markdown)",
         "saveFailed": "Schichtart konnte nicht gespeichert werden.",
         "deleteFailed": "Schichtart konnte nicht gelöscht werden.",
@@ -139,6 +140,7 @@
         "searchDays": "Tage suchen…",
         "noDays": "Keine passenden Tage",
         "internalOnly": "Nur interne Schichten",
+        "openOnly": "Nur freie Schichten",
         "reset": "Zurücksetzen",
         "startTime": "Startzeit",
         "remove": "{label} entfernen"

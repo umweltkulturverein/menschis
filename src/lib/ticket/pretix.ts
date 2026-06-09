@@ -19,18 +19,20 @@ interface PretixAttendeeNameParts {
 }
 
 
-export async function CreateOrder(eventId: string, shiftAttendeeName: string, email: string, shopItem: string, subeventId?: string): Promise<string> {
+export async function CreateOrder(eventId: string, shiftAttendeeName: string, email: string, shopItemIds: string[]): Promise<string> {
     const pretixConf = getConfig()
+
+    const positions = shopItemIds.map(i => ({
+        item: i,
+        attendee_name_parts: {
+            full_name: shiftAttendeeName
+        }
+    }))
+
     const order: PretixOrder = {
         email: email,
         locale: "de-informal",
-        positions: [{
-            item: shopItem,
-            subevent: subeventId,
-            attendee_name_parts: {
-                full_name: shiftAttendeeName
-            }
-        }],
+        positions: positions,
         send_email: true
 
     }
@@ -75,7 +77,7 @@ export async function CancelOrder(eventId: string, code: string): Promise<boolea
     // catch already cancelled orders
     if (res.status === 400) {
         const status = await GetOrderStatus(eventId, code)
-        if (status === orderStatus.c) return true;
+        if (status === ORDER_STATUS.c) return true;
     }
     if (!res.ok) {
         const resp = await res.text();
@@ -84,15 +86,15 @@ export async function CancelOrder(eventId: string, code: string): Promise<boolea
     return res.ok;
 }
 
-const orderStatus = {
+const ORDER_STATUS = {
     n: "pending",
     p: "paid",
     e: "expired",
     c: "canceled",
 } as const;
 
-export type OrderStatusCode = keyof typeof orderStatus;        // "n" | "p" | "e" | "c"
-export type OrderStatus = (typeof orderStatus)[OrderStatusCode]; // "pending" | "paid" | "expired" | "canceled"
+export type OrderStatusCode = keyof typeof ORDER_STATUS;        // "n" | "p" | "e" | "c"
+export type OrderStatus = (typeof ORDER_STATUS)[OrderStatusCode]; // "pending" | "paid" | "expired" | "canceled"
 
 async function GetOrderStatus(eventId: string, code: string): Promise<OrderStatus> {
     const pretixConf = getConfig()
@@ -105,5 +107,5 @@ async function GetOrderStatus(eventId: string, code: string): Promise<OrderStatu
         throw new Error(`HTTP ${res.status}: ${err}`);
     }
     const body: { status: OrderStatusCode } = await res.json();
-    return orderStatus[body.status];
+    return ORDER_STATUS[body.status];
 }

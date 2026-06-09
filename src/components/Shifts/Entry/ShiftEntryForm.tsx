@@ -1,6 +1,6 @@
 "use client";
 
-import { inputClass, labelClass } from "@/components/Misc/FormModal";
+import { inputClass, labelClass } from "@/components/Misc/Form/FormModal";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";

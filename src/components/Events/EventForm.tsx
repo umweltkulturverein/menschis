@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { EventItem } from "@/types/event";
-import FormModal from "@/components/Misc/FormModal";
-import FormTrigger from "@/components/Misc/FormTrigger";
+import FormModal from "@/components/Misc/Form/FormModal";
+import FormTrigger from "@/components/Misc/Form/FormTrigger";
 import {
     CheckboxField,
     TextareaField,
     TextField,
-} from "@/components/Misc/FormFields";
+} from "@/components/Misc/Form/FormFields";
 
 interface Props {
     event?: EventItem;

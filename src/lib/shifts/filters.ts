@@ -3,27 +3,29 @@
 export const FILTER_KEYS = {
     kind: "kind",
     internal: "internal",
+    open: "open",
     day: "day",
     from: "from",
     to: "to",
 } as const;
 
 export interface ShiftFilters {
-    /** Selected shiftKind ids. Empty = all kinds. */
     kindIds: number[];
-    /** Internal users only: show internal shifts exclusively. */
     internalOnly: boolean;
-    /** Selected eventDay ids. Empty = all days. */
+
+    openOnly: boolean;
+
     dayIds: number[];
-    /** Lower bound of the time-of-day window, in minutes. null = no bound. */
+
+    /** Time Range Slider */
     fromMinute: number | null;
-    /** Upper bound of the time-of-day window, in minutes. null = no bound. */
     toMinute: number | null;
 }
 
 export const EMPTY_FILTERS: ShiftFilters = {
     kindIds: [],
     internalOnly: false,
+    openOnly: false,
     dayIds: [],
     fromMinute: null,
     toMinute: null,
@@ -50,6 +52,7 @@ export function parseFilters(
     return {
         kindIds: nums(FILTER_KEYS.kind),
         internalOnly: get(FILTER_KEYS.internal) === "1",
+        openOnly: get(FILTER_KEYS.open) === "1",
         dayIds: nums(FILTER_KEYS.day),
         fromMinute: num(FILTER_KEYS.from),
         toMinute: num(FILTER_KEYS.to),
@@ -64,10 +67,10 @@ function midnightMs(d: Date): number {
     return m.getTime();
 }
 
-/** Base day (local midnight, ms) per group — the zero point that group's times
- *  are measured from, derived from the *earliest shift start* in the group since
- *  there is no stored day start date to rely on. Shifts are grouped by event day
- *  (`eventDayId`); all day-less shifts share the `null` group. Measuring from the
+/** Base day (local midnight) per group — the zero point that group's times
+ *  are measured from, derived from the *earliest shift start* in the group.
+ *  Shifts are grouped by event day (`eventDayId`)
+ *  all day-less shifts share the `null` group. Measuring from the
  *  base day with the real datetime keeps a group running 14:00→02:00 contiguous:
  *  the 02:00 start becomes 1560 (past midnight) instead of wrapping back to 120. */
 export type BaseDays = Map<number | null, number>;

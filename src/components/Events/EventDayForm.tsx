@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { EventDay } from "@/types/eventDay";
-import FormModal from "@/components/Misc/FormModal";
-import FormTrigger from "@/components/Misc/FormTrigger";
-import { TextField } from "@/components/Misc/FormFields";
+import FormModal from "@/components/Misc/Form/FormModal";
+import FormTrigger from "@/components/Misc/Form/FormTrigger";
+import { TextField } from "@/components/Misc/Form/FormFields";
 
 interface Props {
     eventId: number;

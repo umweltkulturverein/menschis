@@ -139,6 +139,7 @@
         "searchDays": "Search days…",
         "noDays": "No matching days",
         "internalOnly": "Internal shifts only",
+        "openOnly": "Open shifts only",
         "reset": "Reset",
         "startTime": "Start time",
         "remove": "Remove {label}"

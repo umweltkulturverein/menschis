@@ -162,21 +162,7 @@ export async function UpdateShiftEntryRow(
         .executeTakeFirst();
 }
 
-
-
-export async function GetEntriesByEvent(
-    eventId: number,
-): Promise<ShiftEntry[]> {
-    return await db
-        .selectFrom("shiftEntry")
-        .innerJoin("shift", "shift.id", "shiftEntry.shift")
-        .innerJoin("shiftKind", "shiftKind.id", "shift.shiftKind")
-        .where("shiftKind.eventId", "=", eventId)
-        .selectAll("shiftEntry")
-        .execute();
-}
-
-export async function GetEntriesByShifts(
+export async function GetShiftEntriesByShifts(
     shiftIds: number[],
 ): Promise<ShiftEntry[]> {
     if (shiftIds.length === 0) return [];
