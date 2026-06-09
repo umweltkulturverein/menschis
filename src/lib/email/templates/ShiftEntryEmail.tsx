@@ -3,7 +3,7 @@ import type { getTranslations } from "next-intl/server";
 import type { EventItem } from "@/types/event";
 import type { EventDay } from "@/types/eventDay";
 import type { Shift, ShiftEntry, ShiftKind } from "@/types/shift";
-import { type Locale, dateLocale } from "@/i18n/config";
+import { type Locale, DATE_LOCALE } from "@/i18n/config";
 
 type EmailTranslator = Awaited<ReturnType<typeof getTranslations<"Emails">>>;
 
@@ -19,7 +19,7 @@ type Props = {
 };
 
 function formatDate(date: Date, locale: Locale): string {
-    return new Date(date).toLocaleDateString(dateLocale[locale], {
+    return new Date(date).toLocaleDateString(DATE_LOCALE[locale], {
         weekday: "long",
         day: "2-digit",
         month: "long",
@@ -28,7 +28,7 @@ function formatDate(date: Date, locale: Locale): string {
 }
 
 function formatTime(date: Date, locale: Locale): string {
-    return new Date(date).toLocaleTimeString(dateLocale[locale], {
+    return new Date(date).toLocaleTimeString(DATE_LOCALE[locale], {
         hour: "2-digit",
         minute: "2-digit",
     });

@@ -21,8 +21,9 @@ export default async function EventBanner({ event, editable }: Props) {
     return (
         <div className="relative w-full h-50 bg-gradient-to-br from-ci-green-200 to-ci-green-300 dark:from-ci-green-600 dark:to-ci-green-500 flex items-end group">
             {editable && (
-                <div className="absolute top-4 right-4 z-20">
+                <div className="absolute top-4 right-4 z-20 flex gap-2">
                     <EventForm event={event} edit />
+                    <EventForm event={event} duplicate />
                 </div>
             )}
             <div className="absolute inset-0 flex items-center justify-center opacity-20">

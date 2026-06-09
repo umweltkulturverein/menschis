@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { setUserLocale } from "@/i18n/locale-actions";
-import { locales, localeNames, type Locale } from "@/i18n/config";
+import { LOCALES, LOCALE_NAMES, type Locale } from "@/i18n/config";
 
 export default function LanguageSwitcher() {
     const locale = useLocale() as Locale;
@@ -88,7 +88,7 @@ export default function LanguageSwitcher() {
                     role="listbox"
                     className="absolute right-0 mt-1.5 min-w-36 overflow-hidden rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-ci-blue-700 shadow-xl shadow-black/10 py-1 z-50"
                 >
-                    {locales.map((l) => (
+                    {LOCALES.map((l) => (
                         <li key={l}>
                             <button
                                 type="button"
@@ -101,7 +101,7 @@ export default function LanguageSwitcher() {
                                         : "text-gray-600 dark:text-gray-300"
                                 }`}
                             >
-                                {localeNames[l]}
+                                {LOCALE_NAMES[l]}
                                 {l === locale && (
                                     <span className="text-ci-green-400">✓</span>
                                 )}

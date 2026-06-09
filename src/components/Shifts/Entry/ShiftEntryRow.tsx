@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { ClientShiftEntry, isOwnEntry } from "@/types/shift";
+import PencilIcon from "@/components/icons/PencilIcon";
 
 interface Props {
     entry: ClientShiftEntry;
@@ -108,19 +109,7 @@ export default function ShiftEntryRow({
                                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                                 title={t("edit")}
                             >
-                                <svg
-                                    className="w-3 h-3"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H7v-3a2 2 0 01.586-1.414z"
-                                    />
-                                </svg>
+                                <PencilIcon className="w-3 h-3" />
                             </button>
                             <button
                                 onClick={() => onDelete(ownEntry.id, ownEntry.name)}

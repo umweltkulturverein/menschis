@@ -7,6 +7,7 @@ export interface ShiftKindTable {
     description: string | null;
     icon: string | null;
     color: string;
+    allAccess: boolean;
     authorizationMessage: string | null;
     authorizationMagicLinkToken: string | null;
 }

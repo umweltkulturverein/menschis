@@ -9,13 +9,14 @@ import EventBanner from "@/components/Events/EventBanner";
 import ShiftFilterBar from "@/components/Shifts/ShiftFilterBar";
 import { Suspense } from "react";
 import ShiftSummary from "@/components/Shifts/ShiftSummary";
+import PencilIcon from "@/components/icons/PencilIcon";
 import Link from "next/link";
 import {
   isAdminUser,
   isInternalUser,
   requireInternalUser,
 } from "@/lib/auth/permissions";
-import { computeTimeAxis, parseFilters } from "@/lib/shifts/filters";
+import { computeTimeAxis, computeBaseDays, parseFilters } from "@/lib/shifts/filters";
 import { getTranslations } from "next-intl/server";
 
 export default async function EventPage({
@@ -44,7 +45,8 @@ export default async function EventPage({
     GetShiftDatetimesByEvent(event.id, authError),
   ]);
   const t = await getTranslations();
-  const timeAxis = computeTimeAxis(shiftTimes);
+  const baseDays = computeBaseDays(shiftTimes);
+  const timeAxis = computeTimeAxis(shiftTimes, baseDays);
   const visibleDays = filters.dayIds.length
     ? days.filter((d) => filters.dayIds.includes(d.id))
     : days;
@@ -61,26 +63,14 @@ export default async function EventPage({
         </>
       )}
       <EventBanner event={event} editable={isAdminUser(session)} />
-      <div className="max-w-6xl mx-auto px-6 pt-8">
+      <div className="max-w-9xl mx-auto px-6 pt-8">
         {isAdminUser(session) && (
           <div className="flex justify-end mb-4">
             <Link
               href={`/events/${eventId}/edit`}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-ci-blue-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-sm hover:shadow transition-all cursor-pointer"
             >
-              <svg
-                className="w-3.5 h-3.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H7v-3a2 2 0 01.586-1.414z"
-                />
-              </svg>
+              <PencilIcon className="w-3.5 h-3.5" />
               {t("Events.edit")}
             </Link>
           </div>
@@ -110,6 +100,7 @@ export default async function EventPage({
                     eventDayId={day.id}
                     authError={authError}
                     filters={filters}
+                    baseDays={baseDays}
                   />
                 </div>
               ))
@@ -119,6 +110,7 @@ export default async function EventPage({
                   authError={authError}
                   eventId={event.id}
                   filters={filters}
+                  baseDays={baseDays}
                 />
               </div>
             )}

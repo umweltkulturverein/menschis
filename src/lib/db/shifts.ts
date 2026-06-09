@@ -1,5 +1,11 @@
 import { db } from "@/db";
-import type { Shift, NewShift, ShiftKind, NewShiftKind } from "@/types/shift";
+import type {
+    Shift,
+    NewShift,
+    UpdateShift,
+    ShiftKind,
+    NewShiftKind,
+} from "@/types/shift";
 import type { ShiftFilters } from "@/lib/shifts/filters";
 import { NextResponse } from "next/server";
 
@@ -36,6 +42,17 @@ export async function GetShiftsByEvent(
         if (filters.kindIds.length) {
             query = query.where("shift.shiftKind", "in", filters.kindIds);
         }
+        if (filters.openOnly) {
+            query = query.where((eb) =>
+                eb(
+                    eb.selectFrom("shiftEntry")
+                        .select(eb.fn.countAll().as("c"))
+                        .whereRef("shiftEntry.shift", "=", "shift.id"),
+                    "<",
+                    eb.ref("shift.slots"),
+                ),
+            );
+        }
         // Only narrows; the authError gate above still applies for outsiders.
         if (filters.internalOnly && !authError) {
             query = query.where("shift.internal", "=", true);
@@ -52,12 +69,12 @@ export async function GetShiftsByEvent(
 export async function GetShiftDatetimesByEvent(
     eventId: number,
     authError?: NextResponse<unknown> | null,
-): Promise<{ startDatetime: Date; endDatetime: Date }[]> {
+): Promise<{ startDatetime: Date; eventDayId: number | null }[]> {
     let query = db
         .selectFrom("shift")
         .innerJoin("shiftKind", "shiftKind.id", "shift.shiftKind")
         .where("shiftKind.eventId", "=", eventId)
-        .select(["shift.startDatetime", "shift.endDatetime"]);
+        .select(["shift.startDatetime", "shift.eventDayId"]);
 
     if (authError) query = query.where("shift.internal", "=", false);
 
@@ -88,6 +105,18 @@ export async function CreateShift(shift: NewShift): Promise<Shift> {
     return await db
         .insertInto("shift")
         .values(shift)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+}
+
+export async function UpdateShiftById(
+    id: number,
+    shift: UpdateShift,
+): Promise<Shift> {
+    return await db
+        .updateTable("shift")
+        .set(shift)
+        .where("id", "=", id)
         .returningAll()
         .executeTakeFirstOrThrow();
 }

@@ -19,6 +19,7 @@ export async function PATCH(
     title?: string;
     description?: string | null;
     icon?: string | null;
+    allAccess?: boolean;
     color?: string;
     authorizationMessage?: string | null;
   } = {};
@@ -27,6 +28,7 @@ export async function PATCH(
     patch.description = body.description || null;
   if (body.icon !== undefined) patch.icon = body.icon || null;
   if (body.color !== undefined) patch.color = body.color;
+  if (body.allAccess !== undefined) patch.allAccess = body.allAccess;
   if (body.authorizationMessage !== undefined)
     patch.authorizationMessage = body.authorizationMessage || null;
 

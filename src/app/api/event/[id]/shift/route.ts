@@ -5,9 +5,10 @@ import { requireAdminUser } from "@/lib/auth/permissions";
 import {
   GetShiftsByEvent,
   CreateShift,
+  UpdateShiftById,
   DeleteShiftById,
 } from "@/lib/db/shifts";
-import type { NewShift } from "@/types/shift";
+import type { NewShift, UpdateShift } from "@/types/shift";
 
 export async function GET(
   _req: Request,
@@ -53,4 +54,27 @@ export async function POST(
 
   const created = await CreateShift(shift);
   return NextResponse.json(created, { status: 201 });
+}
+
+export async function PATCH(req: Request) {
+  const session = await getServerSession(authOptions);
+  const authError = requireAdminUser(session);
+  if (authError) return authError;
+
+  const body = await req.json();
+  const shiftId = Number(body.id);
+  if (isNaN(shiftId))
+    return NextResponse.json("Shiftid not Valid", { status: 400 });
+
+  const shift: UpdateShift = {
+    startDatetime: new Date(body.startDatetime),
+    eventDayId: body.eventDayId ? Number(body.eventDayId) : null,
+    slots: Number(body.slots),
+    endDatetime: new Date(body.endDatetime),
+    internal: body.internal ?? false,
+    shiftKind: Number(body.shiftKindId),
+  };
+
+  const updated = await UpdateShiftById(shiftId, shift);
+  return NextResponse.json(updated);
 }

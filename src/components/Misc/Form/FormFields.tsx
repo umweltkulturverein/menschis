@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { inputClass, labelClass } from "@/components/Misc/FormModal";
+import { inputClass, labelClass } from "@/components/Misc/Form/FormModal";
 
 interface FieldShellProps {
     label: string;

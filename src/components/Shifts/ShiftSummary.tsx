@@ -3,11 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { authOptions } from "@/lib/auth/nextauth";
 import { GetShiftsByEvent } from "@/lib/db/shifts";
 import { GetShiftKindsByEvent } from "@/lib/db/shiftKinds";
-import { GetEntriesByShifts } from "@/lib/db/shiftEntries";
+import { GetShiftEntriesByShifts } from "@/lib/db/shiftEntries";
 import { GetPersonBySub } from "@/lib/db/persons";
 import ShiftPanel from "./ShiftPanel";
 import { NextResponse } from "next/server";
 import {
+    BaseDays,
     EMPTY_FILTERS,
     ShiftFilters,
     shiftInTimeWindow,
@@ -18,11 +19,13 @@ export default async function ShiftSummary({
     eventDayId,
     authError,
     filters = EMPTY_FILTERS,
+    baseDays,
 }: {
     eventId: number;
     eventDayId?: number;
     authError: NextResponse<unknown> | null;
     filters?: ShiftFilters;
+    baseDays: BaseDays;
 }) {
     const session = await getServerSession(authOptions);
     const [allShifts, kinds] = await Promise.all([
@@ -33,7 +36,7 @@ export default async function ShiftSummary({
     // Start-time window is applied here: it aggregates across days, so it can't
     // live in the SQL query alongside the eventDay grouping.
     const shifts = allShifts.filter((s) =>
-        shiftInTimeWindow(s, filters.fromMin, filters.toMin),
+        shiftInTimeWindow(s, filters.fromMinute, filters.toMinute, baseDays),
     );
 
     if (shifts.length === 0) {
@@ -47,7 +50,7 @@ export default async function ShiftSummary({
 
     const shiftIds = shifts.map((s) => s.id);
     const [allEntries, currentPerson] = await Promise.all([
-        GetEntriesByShifts(shiftIds),
+        GetShiftEntriesByShifts(shiftIds),
         session?.user?.id
             ? GetPersonBySub(session.user.id)
             : Promise.resolve(undefined),

@@ -6,7 +6,7 @@ import type { EventItem } from "@/types/event";
 import type { EventDay } from "@/types/eventDay";
 import type { Shift, ShiftEntry, ShiftKind } from "@/types/shift";
 import { EnsureLoginToken, type Person } from "@/lib/db/persons";
-import { defaultLocale, dateLocale, type Locale } from "@/i18n/config";
+import { DEFAULT_LOCALE, DATE_LOCALE, type Locale } from "@/i18n/config";
 import { MagicLinkEmail } from "./templates/MagicLinkEmail";
 import { ShiftEntryEmail } from "./templates/ShiftEntryEmail";
 
@@ -19,11 +19,11 @@ async function emailLocale(): Promise<{
     locale: Locale;
     t: Awaited<ReturnType<typeof getTranslations<"Emails">>>;
 }> {
-    let locale: Locale = defaultLocale;
+    let locale: Locale = DEFAULT_LOCALE;
     try {
         locale = (await getLocale()) as Locale;
     } catch {
-        locale = defaultLocale;
+        locale = DEFAULT_LOCALE;
     }
     const t = await getTranslations({ locale, namespace: "Emails" });
     return { locale, t };
@@ -126,7 +126,7 @@ export async function sendMagicLink(
 function formatShiftRange(shift: Shift, locale: Locale, clock: string): string {
     const start = new Date(shift.startDatetime);
     const end = new Date(shift.endDatetime);
-    const tag = dateLocale[locale];
+    const tag = DATE_LOCALE[locale];
     const dateFmt: Intl.DateTimeFormatOptions = {
         weekday: "long",
         day: "2-digit",

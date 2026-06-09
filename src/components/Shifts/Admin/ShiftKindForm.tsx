@@ -4,22 +4,24 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { ShiftKind } from "@/types/shift";
-import FormModal from "@/components/Misc/FormModal";
-import FormTrigger from "@/components/Misc/FormTrigger";
+import FormModal from "@/components/Misc/Form/FormModal";
+import FormTrigger from "@/components/Misc/Form/FormTrigger";
 import {
+    CheckboxField,
     ColorField,
     TextareaField,
     TextField,
-} from "@/components/Misc/FormFields";
+} from "@/components/Misc/Form/FormFields";
 
 
 interface Props {
     eventId: number;
     kind?: ShiftKind;
     edit?: boolean;
+    duplicate?: boolean;
 }
 
-export default function ShiftKindForm({ eventId, kind, edit }: Props) {
+export default function ShiftKindForm({ eventId, kind, edit, duplicate }: Props) {
     const router = useRouter();
     const t = useTranslations("ShiftKindForm");
     const tf = useTranslations("Forms");
@@ -40,13 +42,14 @@ export default function ShiftKindForm({ eventId, kind, edit }: Props) {
             color: fd.get("color") as string,
             authorizationMessage:
                 (fd.get("authorizationMessage") as string) || null,
+            allAccess: fd.get("allAccess") === "on",
         };
 
-        const url = kind
+        const url = edit && kind
             ? `/api/event/${eventId}/shiftkind/${kind.id}`
             : `/api/event/${eventId}/shiftkind`;
         const res = await fetch(url, {
-            method: kind ? "PATCH" : "POST",
+            method: edit ? "PATCH" : "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
@@ -86,13 +89,20 @@ export default function ShiftKindForm({ eventId, kind, edit }: Props) {
         <>
             <FormTrigger
                 edit={edit}
+                duplicate={duplicate}
                 label={t("new")}
                 onClick={() => setOpen(true)}
             />
             <FormModal
                 open={open}
                 onClose={() => setOpen(false)}
-                title={edit ? t("editTitle") : t("newTitle")}
+                title={
+                    edit
+                        ? t("editTitle")
+                        : duplicate
+                          ? t("duplicateTitle")
+                          : t("newTitle")
+                }
                 submitting={submitting}
                 submitLabel={edit ? tf("save") : t("create")}
                 onSubmit={handleSubmit}
@@ -131,6 +141,11 @@ export default function ShiftKindForm({ eventId, kind, edit }: Props) {
                     name="authorizationMessage"
                     label={t("authMessage")}
                     defaultValue={kind?.authorizationMessage ?? ""}
+                />
+                <CheckboxField
+                    name="allAccess"
+                    label={t("allAccess")}
+                    defaultChecked={kind?.allAccess}
                 />
             </FormModal>
         </>

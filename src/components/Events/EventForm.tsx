@@ -4,17 +4,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { EventItem } from "@/types/event";
-import FormModal from "@/components/Misc/FormModal";
-import FormTrigger from "@/components/Misc/FormTrigger";
+import FormModal from "@/components/Misc/Form/FormModal";
+import FormTrigger from "@/components/Misc/Form/FormTrigger";
 import {
     CheckboxField,
     TextareaField,
     TextField,
-} from "@/components/Misc/FormFields";
+} from "@/components/Misc/Form/FormFields";
 
 interface Props {
     event?: EventItem;
     edit?: boolean;
+    duplicate?: boolean;
 }
 
 function toLocalInput(date: Date | string | undefined): string | undefined {
@@ -22,7 +23,7 @@ function toLocalInput(date: Date | string | undefined): string | undefined {
     return new Date(date).toISOString().slice(0, 16);
 }
 
-export default function EventForm({ event, edit }: Props) {
+export default function EventForm({ event, edit, duplicate }: Props) {
     const router = useRouter();
     const t = useTranslations("EventForm");
     const tf = useTranslations("Forms");
@@ -48,9 +49,9 @@ export default function EventForm({ event, edit }: Props) {
             location: fd.get("location") as string,
         };
 
-        const url = event ? `/api/event/${event.id}` : `/api/event`;
+        const url = edit && event ? `/api/event/${event.id}` : `/api/event`;
         const res = await fetch(url, {
-            method: event ? "PATCH" : "POST",
+            method: edit ? "PATCH" : "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
@@ -88,13 +89,20 @@ export default function EventForm({ event, edit }: Props) {
         <>
             <FormTrigger
                 edit={edit}
+                duplicate={duplicate}
                 label={t("new")}
                 onClick={() => setOpen(true)}
             />
             <FormModal
                 open={open}
                 onClose={() => setOpen(false)}
-                title={edit ? t("editTitle") : t("newTitle")}
+                title={
+                    edit
+                        ? t("editTitle")
+                        : duplicate
+                          ? t("duplicateTitle")
+                          : t("newTitle")
+                }
                 submitting={submitting}
                 submitLabel={edit ? tf("save") : t("create")}
                 onSubmit={handleSubmit}
@@ -119,7 +127,7 @@ export default function EventForm({ event, edit }: Props) {
                 <TextField
                     name="shopEventId"
                     label={t("shopEventId")}
-                    defaultValue={event?.shopEventId ?? ""}
+                    defaultValue={duplicate ? "" : event?.shopEventId ?? ""}
                 />
 
                 <TextareaField

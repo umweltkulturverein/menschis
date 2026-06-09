@@ -39,7 +39,7 @@ export default async function EventEditPage({
   ]);
 
   const base = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
-  const loginUrl = `${base}/api/auth/signin/oidc?callbackUrl=${encodeURIComponent(`/events/${eventId}`)}`;
+  const loginUrl = `${base}/api/auth/signin/oidc?callbackUrl=${encodeURIComponent(`/events/${eventId}`)}?internal=1`;
 
   const t = await getTranslations("EventEdit");
 
@@ -130,8 +130,9 @@ export default async function EventEditPage({
                   key={kind.id}
                   className="relative group rounded-lg overflow-hidden shadow-md bg-white dark:bg-ci-blue-700"
                 >
-                  <div className="z-20 absolute inset-0 flex items-center justify-center">
+                  <div className="z-20 absolute inset-0 flex items-center justify-center gap-2">
                     <ShiftKindForm eventId={event.id} kind={kind} edit />
+                    <ShiftKindForm eventId={event.id} kind={kind} duplicate />
                   </div>
                   <div className="group-hover:brightness-75">
                     <div
@@ -187,13 +188,20 @@ export default async function EventEditPage({
                     key={shift.id}
                     className="relative min-h-full min-w-full group"
                   >
-                    <div className="z-10 absolute inset-0 flex items-center justify-center">
+                    <div className="z-10 absolute inset-0 flex items-center justify-center gap-2">
                       <ShiftForm
                         eventId={event.id}
                         shiftKinds={shiftKinds}
                         days={eventDays}
                         shift={shift}
                         edit
+                      />
+                      <ShiftForm
+                        eventId={event.id}
+                        shiftKinds={shiftKinds}
+                        days={eventDays}
+                        shift={shift}
+                        duplicate
                       />
                     </div>
                     <div className="flex group-hover:brightness-75  items-center gap-4 p-4 rounded-lg bg-white dark:bg-ci-blue-700 shadow-sm">
