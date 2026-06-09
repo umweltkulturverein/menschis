@@ -39,7 +39,7 @@ export default async function EventEditPage({
   ]);
 
   const base = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
-  const loginUrl = `${base}/api/auth/signin/oidc?callbackUrl=${encodeURIComponent(`/events/${eventId}`)}`;
+  const loginUrl = `${base}/api/auth/signin/oidc?callbackUrl=${encodeURIComponent(`/events/${eventId}`)}?internal=1`;
 
   const t = await getTranslations("EventEdit");
 
