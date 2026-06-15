@@ -14,7 +14,7 @@ There is no public login button. Authentication happens in two ways:
 1. Guest fills in the shift entry form (name, email required, phone optional, notes optional).
 2. `POST /api/shift/[shiftId]/entry`
 3. Server calls `FindOrCreatePersonByEmail`: finds an existing person by email or creates one with `sub = "email:<address>"` and a generated `loginToken` UUID.
-4. A magic link email is sent via `sendMagicLink` in `src/lib/email.ts`.
+4. A magic link email is sent via `sendMagicLink` in `src/lib/email/email.ts`.
 5. The link includes a `redirect` query param derived from the `Referer` header so the user lands back on the event page after signing in.
 6. After submitting, user is informed about the email
 
@@ -40,7 +40,7 @@ The `loginToken` is a random UUID stored in `person.loginToken`. It never expire
 
 ## Person & loginToken
 
-- SSO users get a `loginToken` generated on every sign-in via the `signIn` callback in `src/lib/auth.ts`. Uses `COALESCE` so existing users get one on next login without overwriting an already-set token.
+- SSO users get a `loginToken` generated on every sign-in via the `signIn` callback in `src/lib/auth/nextauth.ts`. Uses `COALESCE` so existing users get one on next login without overwriting an already-set token.
 - Guest users get one generated in `FindOrCreatePersonByEmail` in `src/lib/db/persons.ts`.
 - `EnsureLoginToken(personId)` backfills any user who was created before the migration.
 
@@ -51,7 +51,7 @@ The `loginToken` is a random UUID stored in `person.loginToken`. It never expire
 Guest persons have `sub` prefixed with `"email:"`. SSO persons have a bare OIDC sub.
 
 ```ts
-// src/lib/permissions.ts
+// src/lib/auth/permissions.ts
 isInternalUser(session)       // true for SSO users only
 isAdminUser(session)          // true for users with admin group
 requireInternalUser/requireAdminUser(session)  // returns 401/403 NextResponse or null
@@ -59,7 +59,7 @@ requireInternalUser/requireAdminUser(session)  // returns 401/403 NextResponse o
 
 `requireAdminUser` is applied to all admin/edit API routes:
 - `POST /api/event`
-- `PATCH /api/event/[id]/edit`
+- `PATCH /api/event/[id]`
 - `POST /api/event/[id]/shiftkind`
 - `POST /api/event/[id]/shift`
 
@@ -70,7 +70,7 @@ The edit page itself redirects guests to the event overview instead of showing a
 
 ## Email Sending
 
-not yet implemented
+Implemented via nodemailer over SMTP (`SMTP_*` env vars). `sendMagicLink` and `sendShiftEntryEmail` live in `src/lib/email/email.ts`; templates in `src/lib/email/templates/`.
 
 
 ## Internal Shift Entry Link (Edit Page)

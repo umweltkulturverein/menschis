@@ -67,12 +67,19 @@ export default function ShiftFilterBar({
         else next.delete(FILTER_KEYS.open);
         commit(next);
     }
+    function setRestricted(on: boolean) {
+        const next = new URLSearchParams(sp);
+        if (on) next.set(FILTER_KEYS.restricted, "1");
+        else next.delete(FILTER_KEYS.restricted);
+        commit(next);
+    }
 
     const hasFilters =
         filters.kindIds.length > 0 ||
         filters.dayIds.length > 0 ||
         filters.internalOnly ||
         filters.openOnly ||
+        filters.restrictedOnly ||
         filters.fromMinute !== null ||
         filters.toMinute !== null;
 
@@ -83,6 +90,7 @@ export default function ShiftFilterBar({
         filters.dayIds.length +
         (filters.internalOnly ? 1 : 0) +
         (filters.openOnly ? 1 : 0) +
+        (filters.restrictedOnly ? 1 : 0) +
         (filters.fromMinute !== null || filters.toMinute !== null ? 1 : 0);
 
     return (
@@ -134,6 +142,7 @@ export default function ShiftFilterBar({
         >
             <SearchSelect
                 multiple
+                className="w-80 shrink-0"
                 options={kinds.map((k) => ({
                     id: k.id,
                     label: k.title,
@@ -152,6 +161,7 @@ export default function ShiftFilterBar({
                     <Divider />
                     <SearchSelect
                         multiple
+                        className="w-48 shrink-0"
                         options={days.map((d) => ({
                             id: d.id,
                             label: d.dayTitle,
@@ -198,6 +208,16 @@ export default function ShiftFilterBar({
                         label={t("openOnly")}
                     />
                 </div>
+            {filters.restrictedOnly && (
+                <div className="flex shrink-0 items-center gap-x-3">
+                    <Divider />
+                    <Switch
+                        checked={filters.restrictedOnly}
+                        onChange={setRestricted}
+                        label={t("restrictedOnly")}
+                    />
+                </div>
+            )}
             {showInternal && (
                 <div className="flex shrink-0 items-center gap-x-3">
                     <Divider />

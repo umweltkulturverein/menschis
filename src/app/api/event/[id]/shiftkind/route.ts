@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/nextauth";
 import { requireAdminUser } from "@/lib/auth/permissions";
 import { GetShiftKindsByEvent, CreateShiftKind } from "@/lib/db/shifts";
+import { generateMagicLinkToken } from "@/lib/db/shiftKinds";
 import type { NewShiftKind } from "@/types/shift";
 
 export async function GET(
@@ -25,14 +26,19 @@ export async function POST(
   const { id } = await params;
   const body = await req.json();
 
+  const authorizationMessage = body.authorizationMessage || null;
+
   const kind: NewShiftKind = {
     eventId: Number(id),
     title: body.title,
     description: body.description ?? null,
     icon: body.icon ?? null,
     color: body.color,
-    authorizationMessage: body.authorizationMessage ?? null,
-    authorizationMagicLinkToken: body.authorizationMagicLinkToken ?? null,
+    authorizationMessage,
+    // Generated up front so a restricted kind always has a shareable link.
+    authorizationMagicLinkToken: authorizationMessage
+      ? generateMagicLinkToken()
+      : null,
     allAccess: body.allAccess ?? false,
   };
 

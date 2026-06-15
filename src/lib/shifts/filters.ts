@@ -7,6 +7,7 @@ export const FILTER_KEYS = {
     day: "day",
     from: "from",
     to: "to",
+    restricted: "restricted",
 } as const;
 
 export interface ShiftFilters {
@@ -14,6 +15,9 @@ export interface ShiftFilters {
     internalOnly: boolean;
 
     openOnly: boolean;
+
+    /** Only shifts whose kind has an authorization message (restricted access). */
+    restrictedOnly: boolean;
 
     dayIds: number[];
 
@@ -26,6 +30,7 @@ export const EMPTY_FILTERS: ShiftFilters = {
     kindIds: [],
     internalOnly: false,
     openOnly: false,
+    restrictedOnly: false,
     dayIds: [],
     fromMinute: null,
     toMinute: null,
@@ -53,6 +58,7 @@ export function parseFilters(
         kindIds: nums(FILTER_KEYS.kind),
         internalOnly: get(FILTER_KEYS.internal) === "1",
         openOnly: get(FILTER_KEYS.open) === "1",
+        restrictedOnly: get(FILTER_KEYS.restricted) === "1",
         dayIds: nums(FILTER_KEYS.day),
         fromMinute: num(FILTER_KEYS.from),
         toMinute: num(FILTER_KEYS.to),

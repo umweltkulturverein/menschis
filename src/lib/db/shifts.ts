@@ -57,6 +57,13 @@ export async function GetShiftsByEvent(
         if (filters.internalOnly && !authError) {
             query = query.where("shift.internal", "=", true);
         }
+        if (filters.restrictedOnly) {
+            query = query.where(
+                "shiftKind.authorizationMessage",
+                "is not",
+                null,
+            );
+        }
         // The time-of-day window is applied in JS (see shiftInTimeWindow), since
         // it aggregates across days and must unwrap past midnight.
     }

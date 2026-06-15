@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { encode } from "next-auth/jwt";
-import {GetPersonByLoginToken, GetPersonBySub} from "@/lib/db/persons";
-import {getServerSession} from "next-auth";
-import {authOptions} from "@/lib/auth/nextauth";
-import {db} from "@/db";
-
+import { encode, getToken } from "next-auth/jwt";
+import { db } from "@/db";
 
 async function validateAuthorizedShifts(shiftId: number, shiftSecret: string): Promise<boolean> {
     if (Number.isNaN(shiftId)|| shiftSecret === "") return false;
@@ -17,8 +13,13 @@ async function validateAuthorizedShifts(shiftId: number, shiftSecret: string): P
 }
 
 export async function GET(req: NextRequest) {
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    // Decode the caller's existing session so we can extend it rather than
+    // replace it — keeps their identity (sub) and roles intact.
+    const token = await getToken({
+        req,
+        secret: process.env.NEXTAUTH_SECRET!,
+    });
+    if (!token) {
         return NextResponse.json(
             { error: "Not Logged in" },
             { status: 401 },
@@ -26,7 +27,6 @@ export async function GET(req: NextRequest) {
     }
 
     const shiftAccessPermissions = req.nextUrl.searchParams.get("shiftaccess");
-    let Permissions: Record<number, string> = {};
     if (!shiftAccessPermissions) {
         return NextResponse.json(
             { error: "Not a Valid Request. shiftaccess unset" },
@@ -43,7 +43,10 @@ export async function GET(req: NextRequest) {
             { status: 422 },
         );
     }
-    Permissions = { [shiftId]: shiftSecret };
+
+    // Merge the new grant into whatever access the session already holds.
+    const existingAccess = (token.shiftAccess as Record<number, string>) ?? {};
+    const shiftAccess = { ...existingAccess, [shiftId]: shiftSecret };
 
     const useSecureCookies =
         process.env.NEXTAUTH_URL?.startsWith("https://") ?? false;
@@ -52,12 +55,7 @@ export async function GET(req: NextRequest) {
         : "next-auth.session-token";
 
     const sessionToken = await encode({
-        token: {
-            name: session.user.name,
-            email: session.user.email,
-            sub: session.user.sub ?? "",
-            shiftAccess: Permissions,
-        },
+        token: { ...token, shiftAccess },
         secret: process.env.NEXTAUTH_SECRET!,
         maxAge: 30 * 24 * 60 * 60, // 30 Days
     });

@@ -45,12 +45,28 @@ export type ShiftEntry = Selectable<ShiftEntryTable>;
 export type NewShiftEntry = Insertable<ShiftEntryTable>;
 export type UpdateShiftEntry = Updateable<ShiftEntryTable>;
 
-// Only the fields the owner may see on the client
+// Only the fields the owner may see/edit on their own entry
 export type OwnShiftEntry = Pick<ShiftEntry, "id" | "name" | "notes" | "person">;
+// Internal viewers see a co-worker's name and notes on internal shifts, read-only
+export type NamedShiftEntry = { id: number; name: string; notes: string };
 // What other users' entries expose to the client: just that a slot is taken
 export type PublicShiftEntry = { id: number };
-export type ClientShiftEntry = OwnShiftEntry | PublicShiftEntry;
+export type ClientShiftEntry =
+    | OwnShiftEntry
+    | NamedShiftEntry
+    | PublicShiftEntry;
 
+/** The viewer's own entry — the only one that is editable (carries `person`). */
 export function isOwnEntry(entry: ClientShiftEntry): entry is OwnShiftEntry {
-    return "name" in entry;
+    return "person" in entry;
+}
+
+/** Name to display for an entry, when one is visible to the viewer. */
+export function entryName(entry: ClientShiftEntry): string | null {
+    return "name" in entry ? entry.name : null;
+}
+
+/** Notes to display for an entry, when visible to the viewer. */
+export function entryNotes(entry: ClientShiftEntry): string | null {
+    return "notes" in entry ? entry.notes : null;
 }

@@ -56,24 +56,36 @@ export default async function ShiftSummary({
             : Promise.resolve(undefined),
     ]);
 
+    const shiftAccess = session?.user?.shiftAccess ?? {};
+
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {shifts.map((shift) => (
-                <ShiftPanel
-                    key={shift.id}
-                    shift={shift}
-                    kind={kinds.find((k) => k.id === shift.shiftKind)}
-                    initialEntries={allEntries.filter(
-                        (e) => e.shift === shift.id,
-                    )}
-                    currentPersonId={currentPerson?.id ?? null}
-                    prefill={{
-                        name: currentPerson?.name ?? "",
-                        email: currentPerson?.email ?? "",
-                        phone: currentPerson?.phone ?? "",
-                    }}
-                />
-            ))}
+            {shifts.map((shift) => {
+                const kind = kinds.find((k) => k.id === shift.shiftKind);
+                // Magic-link holder: their session carries the kind's current
+                // token, so the authorization gate is lifted for this kind.
+                const authorized =
+                    !!kind?.authorizationMagicLinkToken &&
+                    shiftAccess[kind.id] === kind.authorizationMagicLinkToken;
+                return (
+                    <ShiftPanel
+                        key={shift.id}
+                        shift={shift}
+                        kind={kind}
+                        authorized={authorized}
+                        viewerInternal={!authError}
+                        initialEntries={allEntries.filter(
+                            (e) => e.shift === shift.id,
+                        )}
+                        currentPersonId={currentPerson?.id ?? null}
+                        prefill={{
+                            name: currentPerson?.name ?? "",
+                            email: currentPerson?.email ?? "",
+                            phone: currentPerson?.phone ?? "",
+                        }}
+                    />
+                );
+            })}
         </div>
     );
 }

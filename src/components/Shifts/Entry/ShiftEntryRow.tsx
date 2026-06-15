@@ -1,7 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ClientShiftEntry, isOwnEntry } from "@/types/shift";
+import {
+    ClientShiftEntry,
+    isOwnEntry,
+    entryName,
+    entryNotes,
+} from "@/types/shift";
 import PencilIcon from "@/components/icons/PencilIcon";
 
 interface Props {
@@ -27,6 +32,8 @@ export default function ShiftEntryRow({
 }: Props) {
     const t = useTranslations("Entry");
     const ownEntry = isOwnEntry(entry) ? entry : null;
+    const displayName = entryName(entry);
+    const displayNotes = entryNotes(entry);
     const isEditing = editing?.id === entry.id;
 
     return (
@@ -88,11 +95,11 @@ export default function ShiftEntryRow({
                 <>
                     <div className="flex-1 min-w-0">
                         <span className="text-xs text-gray-600 dark:text-gray-300 truncate block">
-                            {ownEntry ? ownEntry.name || t("registered") : t("registered")}
+                            {displayName || t("registered")}
                         </span>
-                        {ownEntry?.notes && (
+                        {displayNotes && (
                             <span className="text-xs text-gray-400 dark:text-gray-500 truncate block">
-                                {ownEntry.notes}
+                                {displayNotes}
                             </span>
                         )}
                     </div>

@@ -15,6 +15,7 @@ import ShiftEntryForm from "./ShiftEntryForm";
 interface Props {
     shift: Shift;
     kind: ShiftKind | undefined;
+    authorized?: boolean;
     initialEntries: ClientShiftEntry[];
     prefill: { name: string; email: string; phone: string };
     turnsitleSiteKey: string | undefined;
@@ -26,6 +27,7 @@ type EditState = { id: number; name: string; notes: string };
 export default function ShiftEntries({
     shift,
     kind,
+    authorized,
     initialEntries,
     prefill,
     turnsitleSiteKey
@@ -42,6 +44,9 @@ export default function ShiftEntries({
 
     const myEntries = entries.filter(isOwnEntry);
     const isFull = entries.length >= shift.slots;
+    // Restricted by an authorization message, unless the viewer holds the
+    // matching magic-link access.
+    const locked = !!kind?.authorizationMessage && !authorized;
 
     async function handleSignUp(form: EntryForm) {
         const wasGuest = !session || session.user.email !== form.email;
@@ -201,7 +206,7 @@ export default function ShiftEntries({
             )}
 
             {/* Sign-up button */}
-            {!signUpForm && !isFull && !kind?.authorizationMessage && (
+            {!signUpForm && !isFull && !locked && (
                 <div className="px-4 pb-4 pt-2">
                     <button
                         onClick={() => {
@@ -227,7 +232,7 @@ export default function ShiftEntries({
             )}
 
             {/* Sign-up form */}
-            {signUpForm && !kind?.authorizationMessage && (
+            {signUpForm && !locked && (
                 <ShiftEntryForm
                     form={signUpForm}
                     submitting={submitting}

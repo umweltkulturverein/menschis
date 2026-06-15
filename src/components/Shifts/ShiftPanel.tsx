@@ -6,6 +6,8 @@ import { getTranslations } from "next-intl/server";
 interface Props {
     shift: Shift;
     kind: ShiftKind | undefined;
+    authorized?: boolean;
+    viewerInternal?: boolean;
     initialEntries: ShiftEntry[];
     currentPersonId: number | null;
     prefill: { name: string; email: string; phone: string };
@@ -14,6 +16,8 @@ interface Props {
 export default async function ShiftPanel({
     shift,
     kind,
+    authorized,
+    viewerInternal,
     initialEntries,
     currentPersonId,
     prefill,
@@ -21,9 +25,16 @@ export default async function ShiftPanel({
     const t = await getTranslations("Shifts");
 
     const clientEntries: ClientShiftEntry[] = initialEntries.map((e) => {
-        return e.person === currentPersonId
-            ? { id: e.id, name: e.name, notes: e.notes, person: e.person }
-            : { id: e.id };
+        // Own entry: editable, includes notes.
+        if (e.person === currentPersonId) {
+            return { id: e.id, name: e.name, notes: e.notes, person: e.person };
+        }
+        // Internal viewers see co-workers' names + notes on internal shifts (read-only).
+        if (viewerInternal && shift.internal) {
+            return { id: e.id, name: e.name, notes: e.notes };
+        }
+        // Everyone else just sees that the slot is taken.
+        return { id: e.id };
     });
         return (
         <div className="relative group flex flex-col rounded-lg overflow-hidden shadow-md bg-white dark:bg-ci-blue-700">
@@ -70,7 +81,7 @@ export default async function ShiftPanel({
             <hr className="mx-4" />
 
             <div className="relative flex-1">
-                {kind?.authorizationMessage && (
+                {kind?.authorizationMessage && !authorized && (
                     <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center bg-black/40 backdrop-blur-sm">
                         <div className="text-white text-xs text-center font-medium px-4 prose prose-invert prose-xs prose-p:m-0 prose-a:text-green-300">
                             <Markdown>{kind.authorizationMessage}</Markdown>
@@ -80,6 +91,7 @@ export default async function ShiftPanel({
                 <ShiftEntries
                     shift={shift}
                     kind={kind}
+                    authorized={authorized}
                     initialEntries={clientEntries}
                     prefill={prefill}
                     turnsitleSiteKey={process.env.TURNSTILE_SITE_KEY}

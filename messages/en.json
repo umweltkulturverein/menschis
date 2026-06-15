@@ -114,7 +114,12 @@
         "authMessage": "Authorization message (Markdown)",
         "saveFailed": "Failed to save shift kind.",
         "deleteFailed": "Failed to delete shift kind.",
-        "deleteConfirm": "Delete shift kind “{title}”? All shifts of this kind and their entries will also be deleted."
+        "deleteConfirm": "Delete shift kind “{title}”? All shifts of this kind and their entries will also be deleted.",
+        "magicLink": "Restricted access link",
+        "magicLinkHint": "Share this link to grant access to this kind's restricted shifts. It opens the event filtered to restricted shifts only.",
+        "rotate": "Rotate",
+        "rotateConfirm": "Generate a new link? The current link will stop working.",
+        "rotateFailed": "Failed to rotate the link."
     },
     "ShiftForm": {
         "new": "+ New Shift",
@@ -135,7 +140,9 @@
         "start": "Start",
         "end": "End",
         "internalShift": "Internal shift",
-        "saveFailed": "Failed to save shift."
+        "saveFailed": "Failed to save shift.",
+        "deleteFailed": "Failed to delete shift.",
+        "deleteConfirm": "Delete this shift? All entries will also be deleted."
     },
     "ShiftFilter": {
         "filter": "Filter",
@@ -145,6 +152,7 @@
         "noDays": "No matching days",
         "internalOnly": "Internal shifts only",
         "openOnly": "Open shifts only",
+        "restrictedOnly": "Only Shifts with Restricted Access",
         "reset": "Reset",
         "startTime": "Start time",
         "remove": "Remove {label}"

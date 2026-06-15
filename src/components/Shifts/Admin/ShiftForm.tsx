@@ -95,6 +95,23 @@ export default function ShiftForm({
         router.refresh();
     }
 
+    async function handleDelete() {
+        if (!shift) return;
+        const confirmed = window.confirm(t("deleteConfirm"));
+        if (!confirmed) return;
+        setSubmitting(true);
+        const res = await fetch(`/api/event/${shift.id}/shift`, {
+            method: "DELETE",
+        });
+        setSubmitting(false);
+        if (!res.ok) {
+            setError(t("deleteFailed"));
+            return;
+        }
+        setOpen(false);
+        router.refresh();
+    }
+
     const startDefault = shift?.startDatetime
         ? new Date(shift.startDatetime).toISOString().slice(0, 16)
         : eventStartDate
@@ -133,6 +150,7 @@ export default function ShiftForm({
                 submitting={submitting}
                 submitLabel={edit ? tf("save") : t("create")}
                 onSubmit={handleSubmit}
+                onDelete={edit && shift ? handleDelete : undefined}
                 error={error}
             >
                 <div>
