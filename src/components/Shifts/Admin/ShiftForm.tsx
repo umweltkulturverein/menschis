@@ -11,6 +11,14 @@ import SearchSelect from "@/components/Misc/SearchSelect";
 import { CheckboxField, TextField } from "@/components/Misc/Form/FormFields";
 import { StringToColour } from "@/lib/misc/color";
 
+// local wall-clock for datetime-local inputs (toISOString would emit UTC)
+function toLocalInput(value: Date | string): string {
+    const d = new Date(value);
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16);
+}
+
 interface Props {
     eventId: number;
     shiftKinds: ShiftKind[];
@@ -42,6 +50,17 @@ export default function ShiftForm({
     const [eventDayId, setEventDayId] = useState<number | null>(
         shift?.eventDayId ?? null,
     );
+
+    // The controlled selects live in this always-mounted component, so their
+    // state survives across opens. Re-sync from the shift prop whenever the
+    // modal opens so edit/duplicate always reflect *this* shift, never leftover
+    // state from a previous interaction.
+    function openModal() {
+        setShiftKindId(shift?.shiftKind ?? null);
+        setEventDayId(shift?.eventDayId ?? null);
+        setError(null);
+        setOpen(true);
+    }
 
     const kindOptions = shiftKinds.map((k) => ({
         id: k.id,
@@ -113,14 +132,14 @@ export default function ShiftForm({
     }
 
     const startDefault = shift?.startDatetime
-        ? new Date(shift.startDatetime).toISOString().slice(0, 16)
+        ? toLocalInput(shift.startDatetime)
         : eventStartDate
-          ? `${new Date(eventStartDate).toISOString().slice(0, 10)}T00:00`
+          ? `${toLocalInput(eventStartDate).slice(0, 10)}T00:00`
           : undefined;
     const endDefault = shift?.endDatetime
-        ? new Date(shift.endDatetime).toISOString().slice(0, 16)
+        ? toLocalInput(shift.endDatetime)
         : eventStartDate
-          ? `${new Date(eventStartDate).toISOString().slice(0, 10)}T00:00`
+          ? `${toLocalInput(eventStartDate).slice(0, 10)}T00:00`
           : undefined;
 
     return (
@@ -135,7 +154,7 @@ export default function ShiftForm({
                         ? t("createKindFirst")
                         : undefined
                 }
-                onClick={() => setOpen(true)}
+                onClick={openModal}
             />
             <FormModal
                 open={open}

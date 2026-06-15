@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { encode, getToken } from "next-auth/jwt";
+import { encode } from "next-auth/jwt";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth/nextauth";
 import { db } from "@/db";
 
 async function validateAuthorizedShifts(shiftId: number, shiftSecret: string): Promise<boolean> {
@@ -13,13 +15,8 @@ async function validateAuthorizedShifts(shiftId: number, shiftSecret: string): P
 }
 
 export async function GET(req: NextRequest) {
-    // Decode the caller's existing session so we can extend it rather than
-    // replace it — keeps their identity (sub) and roles intact.
-    const token = await getToken({
-        req,
-        secret: process.env.NEXTAUTH_SECRET!,
-    });
-    if (!token) {
+    const session = await getServerSession(authOptions);
+    if (!session) {
         return NextResponse.json(
             { error: "Not Logged in" },
             { status: 401 },
@@ -44,9 +41,9 @@ export async function GET(req: NextRequest) {
         );
     }
 
-    // Merge the new grant into whatever access the session already holds.
-    const existingAccess = (token.shiftAccess as Record<number, string>) ?? {};
-    const shiftAccess = { ...existingAccess, [shiftId]: shiftSecret };
+    // Add the new grant to whatever access the session already holds, keeping
+    // identity and roles intact.
+    const shiftAccess = { ...session.user.shiftAccess, [shiftId]: shiftSecret };
 
     const useSecureCookies =
         process.env.NEXTAUTH_URL?.startsWith("https://") ?? false;
@@ -55,7 +52,13 @@ export async function GET(req: NextRequest) {
         : "next-auth.session-token";
 
     const sessionToken = await encode({
-        token: { ...token, shiftAccess },
+        token: {
+            name: session.user.name,
+            email: session.user.email,
+            sub: session.user.id,
+            roles: session.user.roles,
+            shiftAccess,
+        },
         secret: process.env.NEXTAUTH_SECRET!,
         maxAge: 30 * 24 * 60 * 60, // 30 Days
     });
