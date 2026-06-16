@@ -67,7 +67,7 @@ const fieldClass =
     "flex min-h-9 w-full items-center gap-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-ci-blue-800/60 px-2.5 py-1.5 focus-within:ring-2 focus-within:ring-ci-green-300/60 focus-within:border-ci-green-300 transition-shadow cursor-pointer";
 
 const listClass =
-    "absolute z-30 mt-1.5 w-full min-w-64 max-h-64 overflow-auto rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-ci-blue-700 shadow-xl shadow-black/10 py-1";
+    "absolute z-30 mt-1.5 w-full max-h-64 overflow-auto rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-ci-blue-700 shadow-xl shadow-black/10 py-1";
 
 /**
  * Searchable select with optional colour dots and icons. Shared by the shift
@@ -98,6 +98,7 @@ export default function SearchSelect(props: Props) {
             <button
                 type="button"
                 onClick={onClick}
+                title={o.label}
                 className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-left text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-white/5"
             >
                 {o.color && (
@@ -127,6 +128,7 @@ export default function SearchSelect(props: Props) {
                     {selectedOptions.map((o) => (
                         <span
                             key={o.id}
+                            title={o.label}
                             className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 dark:bg-white/10 pl-1.5 pr-1 py-0.5 text-xs text-gray-700 dark:text-gray-100"
                         >
                             {o.color && <Dot color={o.color} />}
@@ -188,7 +190,10 @@ export default function SearchSelect(props: Props) {
             {name && <input type="hidden" name={name} value={value ?? ""} />}
             <div onClick={() => setOpen((o) => !o)} className={fieldClass}>
                 {selectedOption ? (
-                    <span className="flex flex-1 items-center gap-1.5 text-sm text-gray-800 dark:text-white truncate">
+                    <span
+                        title={selectedOption.label}
+                        className="flex flex-1 items-center gap-1.5 text-sm text-gray-800 dark:text-white truncate"
+                    >
                         {selectedOption.color && (
                             <Dot color={selectedOption.color} />
                         )}

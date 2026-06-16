@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { encode } from "next-auth/jwt";
-import {GetPersonByLoginToken, GetPersonBySub} from "@/lib/db/persons";
-import {getServerSession} from "next-auth";
-import {authOptions} from "@/lib/auth/nextauth";
-import {db} from "@/db";
-
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth/nextauth";
+import { db } from "@/db";
 
 async function validateAuthorizedShifts(shiftId: number, shiftSecret: string): Promise<boolean> {
     if (Number.isNaN(shiftId)|| shiftSecret === "") return false;
@@ -26,7 +24,6 @@ export async function GET(req: NextRequest) {
     }
 
     const shiftAccessPermissions = req.nextUrl.searchParams.get("shiftaccess");
-    let Permissions: Record<number, string> = {};
     if (!shiftAccessPermissions) {
         return NextResponse.json(
             { error: "Not a Valid Request. shiftaccess unset" },
@@ -43,7 +40,10 @@ export async function GET(req: NextRequest) {
             { status: 422 },
         );
     }
-    Permissions = { [shiftId]: shiftSecret };
+
+    // Add the new grant to whatever access the session already holds, keeping
+    // identity and roles intact.
+    const shiftAccess = { ...session.user.shiftAccess, [shiftId]: shiftSecret };
 
     const useSecureCookies =
         process.env.NEXTAUTH_URL?.startsWith("https://") ?? false;
@@ -55,8 +55,9 @@ export async function GET(req: NextRequest) {
         token: {
             name: session.user.name,
             email: session.user.email,
-            sub: session.user.sub ?? "",
-            shiftAccess: Permissions,
+            sub: session.user.id,
+            roles: session.user.roles,
+            shiftAccess,
         },
         secret: process.env.NEXTAUTH_SECRET!,
         maxAge: 30 * 24 * 60 * 60, // 30 Days

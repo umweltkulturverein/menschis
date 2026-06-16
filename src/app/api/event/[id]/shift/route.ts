@@ -29,7 +29,8 @@ export async function DELETE(
   if (authError) return authError;
   if (isNaN(shiftId))
     return NextResponse.json("Shiftid not Valid", { status: 400 });
-  DeleteShiftById(shiftId);
+  await DeleteShiftById(shiftId);
+  return new NextResponse(null, { status: 204 });
 }
 
 export async function POST(

@@ -114,7 +114,12 @@
         "authMessage": "Freischaltungs-Nachricht (Markdown)",
         "saveFailed": "Schichtart konnte nicht gespeichert werden.",
         "deleteFailed": "Schichtart konnte nicht gelöscht werden.",
-        "deleteConfirm": "Schichtart „{title}“ löschen? Alle Schichten dieser Art und ihre Einträge werden ebenfalls gelöscht."
+        "deleteConfirm": "Schichtart „{title}“ löschen? Alle Schichten dieser Art und ihre Einträge werden ebenfalls gelöscht.",
+        "magicLink": "Zugangsbeschränkter Link",
+        "magicLinkHint": "Teile diesen Link, um Zugang zu den zugangsbeschränkten Schichten dieser Art zu gewähren. Er öffnet das Event gefiltert auf zugangsbeschränkte Schichten.",
+        "rotate": "Neu generieren",
+        "rotateConfirm": "Neuen Link generieren? Der aktuelle Link funktioniert dann nicht mehr.",
+        "rotateFailed": "Link konnte nicht neu generiert werden."
     },
     "ShiftForm": {
         "new": "+ Neue Schicht",
@@ -135,7 +140,9 @@
         "start": "Start",
         "end": "Ende",
         "internalShift": "Interne Schicht",
-        "saveFailed": "Schicht konnte nicht gespeichert werden."
+        "saveFailed": "Schicht konnte nicht gespeichert werden.",
+        "deleteFailed": "Schicht konnte nicht gelöscht werden.",
+        "deleteConfirm": "Diese Schicht löschen? Alle Einträge werden ebenfalls gelöscht."
     },
     "ShiftFilter": {
         "filter": "Filter",
@@ -145,6 +152,7 @@
         "noDays": "Keine passenden Tage",
         "internalOnly": "Nur interne Schichten",
         "openOnly": "Nur freie Schichten",
+        "restrictedOnly": "Nur zugangsbeschränkte Schichten anzeigen",
         "reset": "Zurücksetzen",
         "startTime": "Startzeit",
         "remove": "{label} entfernen"

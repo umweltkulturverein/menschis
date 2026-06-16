@@ -9,15 +9,14 @@ Internal Users are Helpers that have an Account in the Nextcloud Instance. They 
 Magic Link Shift Registration Validation:
 - Cloudflare Captcha to Register
 - After applying for a shift show no confirmation and rather a yellow warning saying confirm your email first to keep the shift entry
-- Shift entrys will expire after 30m if the email is not verified
+- Shift entrys will expire after 2h if the email is not verified
 -> Reason: Without Registration Shift Planning Teams need a verified communication endpoint for sending important informations out
 
 ## Data Structure
 - Event
   - **Title**: String
   - Description: String
-  - StartBookingTimeExternal: DateTime // External People get Access after Internal Helpers had the Chance to register. 
-  - StartBookingTimeInternal: DateTime
+  - StartBookingDateTime: DateTime // Booking opens; planners/internal users can see shifts before this.
   - StartDate: DateTime
   - EndDate: DateTime
   - Location: String
@@ -38,20 +37,22 @@ Magic Link Shift Registration Validation:
   - Description: String
   - Icon: NextIcon
   - Color: String
+  - AllAccess: Boolean // Issues a ticket for every EventDay instead of only the shift's day
   - DefaultLocation: GeoPoint
 - ShiftEntry
   - **Shift**: Relation to Shift
-  - **Helper**: Relation to User
+  - **Person**: Relation to Person
   - Notes: String
   - CreatedAt: DateTime
   - UpdatedAt: DateTime
-- User
+- Person
   - ID: Serial
-  - Sub: (Imported from SUB when SSO)
+  - Sub: (Imported from SUB when SSO; `email:<address>` for guests)
   - Name: String
   - Email: String
   - Phone: String
-  - EmailAuthTokens: []String
+  - LoginToken: String // magic-link token; see magiclinks.md
+  - Roles: []String
   - Entries: Relation to ShiftEntry
 
 

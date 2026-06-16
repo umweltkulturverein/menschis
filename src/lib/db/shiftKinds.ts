@@ -1,6 +1,12 @@
 import { NewShiftKind, ShiftKind, UpdateShiftKind } from "@/types/shift";
 import { db } from "@/db";
 
+/** Token shared via the restricted-access magic link. UUID fits the
+ *  `authorization_magic_link_token varchar(50)` column. */
+export function generateMagicLinkToken(): string {
+    return crypto.randomUUID();
+}
+
 export async function CreateShiftKind(kind: NewShiftKind): Promise<ShiftKind> {
     return await db
         .insertInto("shiftKind")
