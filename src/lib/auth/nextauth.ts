@@ -63,9 +63,6 @@ export const authOptions: NextAuthOptions = {
       if (token.roles !== undefined) {
         session.user.roles = token.roles as string[] | null;
       }
-      if (token.shiftAccess) {
-        session.user.shiftAccess = token.shiftAccess as Record<number, string>;
-      }
       return session;
     },
     async signIn({ user, profile }) {

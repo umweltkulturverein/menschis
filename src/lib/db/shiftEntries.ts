@@ -1,7 +1,5 @@
-import {Shift, ShiftEntry, UpdateShiftEntry} from "@/types/shift";
+import { ShiftEntry, UpdateShiftEntry } from "@/types/shift";
 import { db } from "@/db";
-import { NextResponse } from "next/server";
-import ShiftEntries from "@/components/Shifts/Entry/ShiftEntries";
 
 // Time an anonymous sign-up has to be confirmed (via first login) before it is
 // cancelled and removed by the expiry sweeper.
@@ -28,22 +26,10 @@ export async function CreateShiftEntry(
     name: string,
     order: string | null,
     notes: string,
-    authError: NextResponse<unknown> | null,
     verified: boolean,
-): Promise<ShiftEntry | undefined> {
+): Promise<ShiftEntry> {
     const now = new Date();
 
-    if (authError) {
-        // check if user tries to entry into internal shift even tho user is not internal
-        const internal = await db
-            .selectFrom("shift")
-            .select("internal")
-            .where("id", "=", shiftId)
-            .execute();
-        if (internal[0].internal) {
-            return undefined;
-        }
-    }
     return await db
         .insertInto("shiftEntry")
         .values({

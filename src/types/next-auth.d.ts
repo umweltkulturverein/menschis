@@ -9,7 +9,6 @@ declare module "next-auth" {
       image?: string | null;
       roles?: string[] | null;
       sub?: string | null;
-      shiftAccess?: Record<number, string>; // shiftKindID + Token
     };
   }
 }

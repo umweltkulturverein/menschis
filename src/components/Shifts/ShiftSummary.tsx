@@ -5,6 +5,7 @@ import { GetShiftsByEvent } from "@/lib/db/shifts";
 import { GetShiftKindsByEvent } from "@/lib/db/shiftKinds";
 import { GetShiftEntriesByShifts } from "@/lib/db/shiftEntries";
 import { GetPersonBySub } from "@/lib/db/persons";
+import { readShiftAccess } from "@/lib/auth/shiftAccess";
 import ShiftPanel from "./ShiftPanel";
 import { NextResponse } from "next/server";
 import {
@@ -49,14 +50,13 @@ export default async function ShiftSummary({
     }
 
     const shiftIds = shifts.map((s) => s.id);
-    const [allEntries, currentPerson] = await Promise.all([
+    const [allEntries, currentPerson, shiftAccess] = await Promise.all([
         GetShiftEntriesByShifts(shiftIds),
         session?.user?.id
             ? GetPersonBySub(session.user.id)
             : Promise.resolve(undefined),
+        readShiftAccess(),
     ]);
-
-    const shiftAccess = session?.user?.shiftAccess ?? {};
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
