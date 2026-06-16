@@ -12,7 +12,7 @@ export const SHIFT_ACCESS_COOKIE = useSecureCookies
   ? "__Secure-shift-access"
   : "shift-access";
 
-const MAX_AGE = 30 * 24 * 60 * 60; // 30 Days
+const MAX_AGE = 90 * 24 * 60 * 60; // 90 Days
 
 export const shiftAccessCookieOptions = {
   httpOnly: true,

@@ -36,8 +36,7 @@ export async function GET(req: NextRequest) {
         );
     }
 
-    // Grant is kept in its own cookie, independent of the login session: a
-    // magic-link holder gains shift access whether or not they are logged in.
+    // magic-link user gains shift access cookie, independent of the login session and cookie
     const existing = await readShiftAccess();
     const shiftAccess = { ...existing, [shiftId]: shiftSecret };
     const sessionToken = await encodeShiftAccess(shiftAccess);
