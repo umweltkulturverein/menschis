@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     const redirectParam = req.nextUrl.searchParams.get("redirect");
     const redirectPath =
         redirectParam && redirectParam.startsWith("/") ? redirectParam : "/";
-    const redirectUrl = new URL(redirectPath, req.nextUrl.origin);
+    const redirectUrl = new URL(redirectPath, process.env.NEXTAUTH_URL);
     const response = NextResponse.redirect(redirectUrl);
     response.cookies.set(SHIFT_ACCESS_COOKIE, sessionToken, shiftAccessCookieOptions);
 
