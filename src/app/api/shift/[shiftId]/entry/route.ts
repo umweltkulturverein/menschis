@@ -114,10 +114,8 @@ async function validateSignUp(args: {
   const authorizedError =  await validateAuthorizedShift(kind);
     if (authorizedError) return  authorizedError;
 
-  // 5. Internal shifts are not open to external sign-ups.
-  return validateInternalShift(shift);
-
-
+  // 5. Internal shifts are only open to internal users.
+  return validateInternalShift(shift, session);
 }
 
 function validateContactDetails(
@@ -146,8 +144,11 @@ async function validateCaptcha(
   return undefined;
 }
 
-function validateInternalShift(shift: Shift): NextResponse | undefined {
-  if (shift.internal) {
+function validateInternalShift(
+  shift: Shift,
+  session: Session | null,
+): NextResponse | undefined {
+  if (shift.internal && !isInternalUser(session)) {
     return NextResponse.json(
       { error: "You cannot register for this shift" },
       { status: 403 },
