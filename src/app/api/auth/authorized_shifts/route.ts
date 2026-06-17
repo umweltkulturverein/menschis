@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { encode } from "next-auth/jwt";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/nextauth";
 import { db } from "@/db";
+import {
+    SHIFT_ACCESS_COOKIE,
+    encodeShiftAccess,
+    readShiftAccess,
+    shiftAccessCookieOptions,
+} from "@/lib/auth/shiftAccess";
 
 async function validateAuthorizedShifts(shiftId: number, shiftSecret: string): Promise<boolean> {
     if (Number.isNaN(shiftId)|| shiftSecret === "") return false;
@@ -15,19 +18,11 @@ async function validateAuthorizedShifts(shiftId: number, shiftSecret: string): P
 }
 
 export async function GET(req: NextRequest) {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-        return NextResponse.json(
-            { error: "Not Logged in" },
-            { status: 401 },
-    );
-    }
-
     const shiftAccessPermissions = req.nextUrl.searchParams.get("shiftaccess");
     if (!shiftAccessPermissions) {
         return NextResponse.json(
             { error: "Not a Valid Request. shiftaccess unset" },
-            { status: 401 },
+            { status: 400 },
         );
     }
     const perms = shiftAccessPermissions.split(":");
@@ -41,40 +36,17 @@ export async function GET(req: NextRequest) {
         );
     }
 
-    // Add the new grant to whatever access the session already holds, keeping
-    // identity and roles intact.
-    const shiftAccess = { ...session.user.shiftAccess, [shiftId]: shiftSecret };
-
-    const useSecureCookies =
-        process.env.NEXTAUTH_URL?.startsWith("https://") ?? false;
-    const cookieName = useSecureCookies
-        ? "__Secure-next-auth.session-token"
-        : "next-auth.session-token";
-
-    const sessionToken = await encode({
-        token: {
-            name: session.user.name,
-            email: session.user.email,
-            sub: session.user.id,
-            roles: session.user.roles,
-            shiftAccess,
-        },
-        secret: process.env.NEXTAUTH_SECRET!,
-        maxAge: 30 * 24 * 60 * 60, // 30 Days
-    });
+    // magic-link user gains shift access cookie, independent of the login session and cookie
+    const existing = await readShiftAccess();
+    const shiftAccess = { ...existing, [shiftId]: shiftSecret };
+    const sessionToken = await encodeShiftAccess(shiftAccess);
 
     const redirectParam = req.nextUrl.searchParams.get("redirect");
     const redirectPath =
         redirectParam && redirectParam.startsWith("/") ? redirectParam : "/";
-    const redirectUrl = new URL(redirectPath, req.nextUrl.origin);
+    const redirectUrl = new URL(redirectPath, process.env.NEXTAUTH_URL);
     const response = NextResponse.redirect(redirectUrl);
-    response.cookies.set(cookieName, sessionToken, {
-        httpOnly: true,
-        secure: useSecureCookies,
-        sameSite: "lax",
-        path: "/",
-        maxAge: 30 * 24 * 60 * 60, // 30 Days
-    });
+    response.cookies.set(SHIFT_ACCESS_COOKIE, sessionToken, shiftAccessCookieOptions);
 
     return response;
 }

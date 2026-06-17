@@ -24,7 +24,6 @@ export async function GET(req: NextRequest) {
             name: person.name,
             email: person.email,
             sub: person.sub,
-            shiftAccess: {},
         },
         secret: process.env.NEXTAUTH_SECRET!,
         maxAge: 30 * 24 * 60 * 60, // 30 Days
