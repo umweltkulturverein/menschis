@@ -47,6 +47,7 @@ export const authOptions: NextAuthOptions = {
   ],
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
+  debug: true,
   callbacks: {
     async jwt({ token, user, profile }) {
       if (user && "roles" in user) {
@@ -80,6 +81,11 @@ export const authOptions: NextAuthOptions = {
       const phone = rawProfile.phone_number ?? null;
       const loginToken = crypto.randomUUID();
       if (!email || email == "") {
+        console.warn("[auth] denying sign-in: no email claim", {
+          sub,
+          name,
+          email,
+        });
         return false;
       }
       await db
