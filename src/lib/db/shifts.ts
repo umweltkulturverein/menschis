@@ -88,6 +88,55 @@ export async function GetShiftDatetimesByEvent(
     return await query.execute();
 }
 
+/** Headline counts for the admin dashboard, across the whole event. Deliberately
+ *  ignores the filter bar: these are the totals for the event, not for whatever
+ *  slice is currently on screen. */
+export interface EventShiftStats {
+    /** Every slot the event offers, summed over all shifts. */
+    slots: number;
+    booked: number;
+    checkedIn: number;
+    unverified: number;
+}
+
+export async function GetEventShiftStats(
+    eventId: number,
+): Promise<EventShiftStats> {
+    const [shifts, entries] = await Promise.all([
+        db
+            .selectFrom("shift")
+            .innerJoin("shiftKind", "shiftKind.id", "shift.shiftKind")
+            .where("shiftKind.eventId", "=", eventId)
+            .select((eb) => eb.fn.sum<number>("shift.slots").as("slots"))
+            .executeTakeFirst(),
+        db
+            .selectFrom("shiftEntry")
+            .innerJoin("shift", "shift.id", "shiftEntry.shift")
+            .innerJoin("shiftKind", "shiftKind.id", "shift.shiftKind")
+            .where("shiftKind.eventId", "=", eventId)
+            .select((eb) => [
+                eb.fn.countAll<number>().as("booked"),
+                eb.fn
+                    .countAll<number>()
+                    .filterWhere("shiftEntry.checkedInAt", "is not", null)
+                    .as("checkedIn"),
+                eb.fn
+                    .countAll<number>()
+                    .filterWhere("shiftEntry.verified", "=", false)
+                    .as("unverified"),
+            ])
+            .executeTakeFirst(),
+    ]);
+
+    // sum() is null when the event has no shifts at all.
+    return {
+        slots: Number(shifts?.slots ?? 0),
+        booked: Number(entries?.booked ?? 0),
+        checkedIn: Number(entries?.checkedIn ?? 0),
+        unverified: Number(entries?.unverified ?? 0),
+    };
+}
+
 export async function GetShiftKindsByEvent(
     eventId: number,
 ): Promise<ShiftKind[]> {

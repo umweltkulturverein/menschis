@@ -22,6 +22,17 @@ export async function DELETE(
         );
     }
     const shiftentry = await GetShiftEntry(entryId, person.id);
+
+    // Once an admin has checked the person in on site, the sign-up is a record
+    // of what happened and the owner can no longer withdraw it. Checked first,
+    // so no ticket order is cancelled on a refused delete.
+    if (shiftentry?.checkedInAt) {
+        return NextResponse.json(
+            { error: "Entry is already checked in" },
+            { status: 409 },
+        );
+    }
+
     const event = await GetEventByShiftEntryId(entryId);
 
     if (shiftentry?.order && event?.shopEventId !== undefined) {

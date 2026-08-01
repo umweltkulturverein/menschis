@@ -1,6 +1,7 @@
 "use client";
 
 import { inputClass, labelClass } from "@/components/Misc/Form/FormModal";
+import FormActions from "@/components/Misc/Form/FormActions";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
@@ -123,26 +124,18 @@ export default function ShiftEntryForm({
 
       {error && <p className="text-xs text-red-500">{error}</p>}
 
-      <div className="flex gap-2">
-        <button
-          onClick={onCancel}
-          className="flex-1 text-sm px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-ci-blue-600"
-        >
-          {t("cancel")}
-        </button>
-        <button
-          onClick={onConfirm}
-          disabled={
-            submitting ||
-            !form.name.trim() ||
-            !emailValid ||
-            (showCaptcha && !form.captchaChallenge)
-          }
-          className="flex-1 text-sm px-3 py-1.5 rounded-md bg-green-500 hover:bg-green-600 text-white font-medium disabled:opacity-50"
-        >
-          {submitting ? "..." : t("confirm")}
-        </button>
-      </div>
+      <FormActions
+        cancelLabel={t("cancel")}
+        confirmLabel={t("confirm")}
+        submitting={submitting}
+        disabled={
+          !form.name.trim() ||
+          !emailValid ||
+          (showCaptcha && !form.captchaChallenge)
+        }
+        onCancel={onCancel}
+        onConfirm={onConfirm}
+      />
       {showCaptcha && (
         <div className="flex mt-8 justify-center items-center captcha">
           <div

@@ -22,11 +22,21 @@ export async function GetPersonByLoginToken(
         .executeTakeFirst();
 }
 
+/** A phone field left empty means "not provided", not "clear it" — the sign-up
+ *  form sends "" rather than null, which `??` would happily store, and an OIDC
+ *  profile may carry no phone claim at all. */
+export function normalizePhone(
+    phone: string | null | undefined,
+): string | null {
+    return phone?.trim() || null;
+}
+
 export async function FindOrCreatePersonByEmail(
     email: string,
     name: string,
     phone: string | null,
 ): Promise<Person> {
+    const newPhone = normalizePhone(phone);
     const existing = await db
         .selectFrom("person")
         .selectAll()
@@ -36,7 +46,7 @@ export async function FindOrCreatePersonByEmail(
     if (existing) {
         return await db
             .updateTable("person")
-            .set({ name, phone: phone ?? existing.phone })
+            .set({ name, phone: newPhone ?? existing.phone })
             .where("id", "=", existing.id)
             .returningAll()
             .executeTakeFirstOrThrow();
@@ -49,10 +59,28 @@ export async function FindOrCreatePersonByEmail(
             sub: `email:${email}`,
             name,
             email,
-            phone,
+            phone: newPhone,
             loginToken,
             roles: null,
         })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+}
+
+/** Keep the account's phone in step with what a signed-in user typed into the
+ *  sign-up form. Only ever fills one in — leaving the field blank must not wipe
+ *  a number the person gave us earlier. */
+export async function UpdatePersonPhone(
+    person: Person,
+    phone: string | null,
+): Promise<Person> {
+    const newPhone = normalizePhone(phone);
+    if (!newPhone || newPhone === person.phone) return person;
+
+    return await db
+        .updateTable("person")
+        .set({ phone: newPhone })
+        .where("id", "=", person.id)
         .returningAll()
         .executeTakeFirstOrThrow();
 }

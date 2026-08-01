@@ -1,4 +1,4 @@
-import { ShiftEntry, UpdateShiftEntry } from "@/types/shift";
+import { ShiftEntry, ShiftEntryWithPerson, UpdateShiftEntry } from "@/types/shift";
 import { db } from "@/db";
 
 // Time an anonymous sign-up has to be confirmed (via first login) before it is
@@ -111,6 +111,8 @@ export async function GetExpiredPendingEntries(
         .innerJoin("event", "event.id", "shiftKind.eventId")
         .where("shiftEntry.verified", "=", false)
         .where("shiftEntry.createdAt", "<", cutoff)
+        // Checkin is a thing only admins can do, so they overrule the cleaning.
+        .where("shiftEntry.checkedInAt", "is", null)
         .select([
             "shiftEntry.id as id",
             "shiftEntry.order as order",
@@ -148,6 +150,18 @@ export async function UpdateShiftEntryRow(
         .executeTakeFirst();
 }
 
+export async function UpdateShiftEntryAdminFields(
+    entryId: number,
+    patch: Pick<UpdateShiftEntry, "checkedInAt" | "adminNote">,
+): Promise<ShiftEntry | undefined> {
+    return await db
+        .updateTable("shiftEntry")
+        .set({ ...patch, updatedAt: new Date() })
+        .where("id", "=", entryId)
+        .returningAll()
+        .executeTakeFirst();
+}
+
 export async function GetShiftEntriesByShifts(
     shiftIds: number[],
 ): Promise<ShiftEntry[]> {
@@ -157,5 +171,22 @@ export async function GetShiftEntriesByShifts(
         .selectFrom("shiftEntry")
         .selectAll()
         .where("shift", "in", shiftIds)
+        .execute();
+}
+
+export async function GetShiftEntriesWithPersonByShifts(
+    shiftIds: number[],
+): Promise<ShiftEntryWithPerson[]> {
+    if (shiftIds.length === 0) return [];
+
+    return await db
+        .selectFrom("shiftEntry")
+        .innerJoin("person", "person.id", "shiftEntry.person")
+        .where("shiftEntry.shift", "in", shiftIds)
+        .selectAll("shiftEntry")
+        .select([
+            "person.email as personEmail",
+            "person.phone as personPhone",
+        ])
         .execute();
 }

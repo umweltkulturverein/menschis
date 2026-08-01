@@ -1,15 +1,21 @@
-import { Shift, ShiftKind, ShiftEntry, ClientShiftEntry } from "@/types/shift";
+import {
+    Shift,
+    ShiftKind,
+    ShiftEntry,
+    ShiftEntryWithPerson,
+    ClientShiftEntry,
+} from "@/types/shift";
 import Markdown from "react-markdown";
 import ShiftEntries from "./Entry/ShiftEntries";
 import { getTranslations } from "next-intl/server";
+import { EntryViewer, projectEntry } from "@/lib/shifts/entryView";
 
 interface Props {
     shift: Shift;
     kind: ShiftKind | undefined;
     authorized?: boolean;
-    viewerInternal?: boolean;
-    initialEntries: ShiftEntry[];
-    currentPersonId: number | null;
+    viewer: EntryViewer;
+    initialEntries: (ShiftEntry | ShiftEntryWithPerson)[];
     prefill: { name: string; email: string; phone: string };
 }
 
@@ -17,25 +23,18 @@ export default async function ShiftPanel({
     shift,
     kind,
     authorized,
-    viewerInternal,
+    viewer,
     initialEntries,
-    currentPersonId,
     prefill,
 }: Props) {
     const t = await getTranslations("Shifts");
 
-    const clientEntries: ClientShiftEntry[] = initialEntries.map((e) => {
-        // Own entry: editable, includes notes.
-        if (e.person === currentPersonId) {
-            return { id: e.id, name: e.name, notes: e.notes, person: e.person };
-        }
-        // Internal viewers see co-workers' names + notes on internal shifts (read-only).
-        if (viewerInternal && shift.internal) {
-            return { id: e.id, name: e.name, notes: e.notes };
-        }
-        // Everyone else just sees that the slot is taken.
-        return { id: e.id };
-    });
+    // Server-side boundary: only what the viewer may see crosses into the client.
+    const clientEntries: ClientShiftEntry[] = initialEntries.map((e) =>
+        projectEntry(e, shift.internal, viewer),
+    );
+    // Check Shift Starttime Serverside
+    const shiftStarted = new Date(shift.startDatetime) <= new Date();
         return (
         <div className="relative group flex flex-col rounded-lg overflow-hidden shadow-md bg-white dark:bg-ci-blue-700">
             {/* Header */}
@@ -93,6 +92,7 @@ export default async function ShiftPanel({
                     kind={kind}
                     authorized={authorized}
                     initialEntries={clientEntries}
+                    shiftStarted={shiftStarted}
                     prefill={prefill}
                     turnsitleSiteKey={process.env.TURNSTILE_SITE_KEY}
                 />

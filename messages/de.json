@@ -33,7 +33,12 @@
         "start": "Start:",
         "end": "Ende:",
         "bookingOpens": "Anmeldung öffnet {date}",
-        "edit": "Bearbeiten"
+        "edit": "Bearbeiten",
+        "dashboard": "Dashboard",
+        "overview": "Übersicht",
+        "statBooked": "Gebucht",
+        "statCheckedIn": "Eingecheckt",
+        "statUnverified": "Unbestätigt"
     },
     "Shifts": {
         "loading": "Schichten werden geladen…",
@@ -181,7 +186,18 @@
         "pendingTitle": "Schichten bestätigen",
         "pendingDescription": "Du wurdest für die folgenden Schichten eingetragen. Bitte bestätige sie, sonst werden sie automatisch storniert.",
         "decline": "Ablehnen",
-        "accept": "Annehmen"
+        "accept": "Annehmen",
+        "pending": "Ausstehend",
+        "checkIn": "Einchecken",
+        "checkedIn": "Eingecheckt",
+        "undoCheckIn": "Check-in rückgängig machen",
+        "adminNote": "Admin-Notiz",
+        "addAdminNote": "Notiz hinzufügen",
+        "editAdminNote": "Notiz bearbeiten",
+        "adminNotePlaceholder": "Nur für Admins sichtbar",
+        "checkedInLocked": "Du wurdest für diese Schicht bereits eingecheckt und kannst dich nicht mehr austragen.",
+        "noPhone": "Keine Nummer hinterlegt",
+        "notCheckedIn": "Schicht läuft bereits, noch nicht eingecheckt"
     },
     "Emails": {
         "footer": "Gesendet von Menschis · Schichtplanung für Festivals",

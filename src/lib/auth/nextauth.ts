@@ -1,5 +1,6 @@
 import type { NextAuthOptions } from "next-auth";
 import { db } from "@/db";
+import { normalizePhone } from "@/lib/db/persons";
 
 const rolesClaim = process.env.OIDC_ROLES_CLAIM ?? "groups";
 
@@ -78,7 +79,9 @@ export const authOptions: NextAuthOptions = {
       const name = user.name ?? sub;
       const roles = extractRoles(rawProfile);
       const email = user.email;
-      const phone = rawProfile.phone_number ?? null;
+      // The OIDC profile often carries no phone claim. That means "unknown",
+      // not "the person has no number" — see the coalesce in the upsert below.
+      const phone = normalizePhone(rawProfile.phone_number);
       const loginToken = crypto.randomUUID();
       if (!email || email == "") {
         console.warn("[auth] denying sign-in: no email claim", {
@@ -102,7 +105,9 @@ export const authOptions: NextAuthOptions = {
           oc.column("sub").doUpdateSet((eb) => ({
             name,
             email,
-            phone,
+            // Only overwrite when the provider actually sent a number, so
+            // signing out and back in cannot wipe one the person entered here.
+            phone: eb.fn.coalesce(eb.val(phone), eb.ref("person.phone")),
             roles,
             loginToken: eb.fn.coalesce(
               eb.ref("person.loginToken"),

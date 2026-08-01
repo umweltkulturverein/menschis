@@ -6,6 +6,7 @@ import { CreateShiftEntry } from "@/lib/db/shiftEntries";
 import {
   FindOrCreatePersonByEmail,
   GetPersonBySub,
+  UpdatePersonPhone,
   type Person,
 } from "@/lib/db/persons";
 import { sendMagicLink, sendShiftEntryEmail } from "@/lib/email/email";
@@ -228,10 +229,12 @@ async function personInit(
   phone: string,
 ): Promise<Person> {
   if (id) {
-    // User that already has an authenticated session
+    // User that already has an authenticated session. The form still carries a
+    // phone field, so store what they typed — otherwise a signed-in sign-up
+    // leaves the account without the number the dashboard shows to admins.
     const person = await GetPersonBySub(id);
     if (!person) throw new Error(`No person found for sub: ${id}`);
-    return person;
+    return await UpdatePersonPhone(person, phone);
   }
   const p = await FindOrCreatePersonByEmail(email, name ?? "", phone ?? null);
   const referer = req.headers.get("referer");

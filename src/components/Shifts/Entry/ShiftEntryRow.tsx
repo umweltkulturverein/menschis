@@ -6,38 +6,59 @@ import {
     isOwnEntry,
     entryName,
     entryNotes,
+    entryAdminFields,
 } from "@/types/shift";
 import PencilIcon from "@/components/icons/PencilIcon";
+import ShiftEntryAdminControls from "./ShiftEntryAdminControls";
 
 interface Props {
     entry: ClientShiftEntry;
     editing: { id: number; name: string; notes: string } | null;
     submitting: boolean;
+    adminBusy: boolean;
+    shiftStarted: boolean;
     onEdit: (patch: { id: number; name: string; notes: string }) => void;
     onEditChange: (patch: { id: number; name: string; notes: string }) => void;
     onEditCancel: () => void;
     onEditConfirm: () => void;
     onDelete: (id: number, name: string) => void;
+    onToggleCheckIn: (id: number, checkedIn: boolean) => void;
+    onAdminNote: (id: number, note: string) => void;
 }
 
 export default function ShiftEntryRow({
     entry,
     editing,
     submitting,
+    adminBusy,
+    shiftStarted,
     onEdit,
     onEditChange,
     onEditCancel,
     onEditConfirm,
     onDelete,
+    onToggleCheckIn,
+    onAdminNote,
 }: Props) {
     const t = useTranslations("Entry");
     const ownEntry = isOwnEntry(entry) ? entry : null;
     const displayName = entryName(entry);
     const displayNotes = entryNotes(entry);
+    const admin = entryAdminFields(entry);
     const isEditing = editing?.id === entry.id;
+    // The shift has begun and nobody ticked this person off — only admins can
+    // tell, since check-in state never reaches any other viewer.
+    const noShow = !!admin && !admin.checkedIn && shiftStarted;
 
     return (
-        <div className="flex items-center gap-2 rounded-md bg-gray-50 dark:bg-ci-blue-600 px-2.5 py-1.5">
+        <div
+            title={noShow ? t("notCheckedIn") : undefined}
+            className={`flex gap-2 rounded-md px-2.5 py-1.5 ${admin ? "items-start" : "items-center"} ${
+                admin?.checkedIn
+                    ? "bg-green-50 dark:bg-green-950"
+                    : "bg-gray-50 dark:bg-ci-blue-600"
+            } ${noShow ? "ring-1 ring-red-400 dark:ring-red-500" : ""}`}
+        >
             <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-ci-blue-500 flex items-center justify-center shrink-0">
                 <svg
                     className="w-3.5 h-3.5 text-gray-500 dark:text-gray-300"
@@ -101,6 +122,53 @@ export default function ShiftEntryRow({
                             <span className="text-xs text-gray-400 dark:text-gray-500 truncate block">
                                 {displayNotes}
                             </span>
+                        )}
+                        {admin && (
+                            <div className="mt-1 flex flex-col gap-0.5 text-[11px] leading-tight text-gray-500 dark:text-gray-400">
+                                {/* Always rendered, so a person who never gave
+                                    a number reads as "none on file" rather
+                                    than as a row that failed to load. */}
+                                {admin.phone ? (
+                                    <a
+                                        href={`tel:${admin.phone}`}
+                                        className="truncate hover:underline"
+                                    >
+                                        📞 {admin.phone}
+                                    </a>
+                                ) : (
+                                    <span className="truncate text-gray-400 dark:text-gray-500">
+                                        📞 {t("noPhone")}
+                                    </span>
+                                )}
+                                {admin.email && (
+                                    <a
+                                        href={`mailto:${admin.email}`}
+                                        className="truncate hover:underline"
+                                    >
+                                        ✉️ {admin.email}
+                                    </a>
+                                )}
+                                <span className="truncate">
+                                    🕒 {admin.signedUpAt}
+                                </span>
+                                {!admin.verified && (
+                                    <span className="w-fit rounded-full bg-amber-100 px-1.5 text-amber-700 dark:bg-amber-900 dark:text-amber-200">
+                                        {t("pending")}
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                        {admin && (
+                            <ShiftEntryAdminControls
+                                admin={admin}
+                                busy={adminBusy}
+                                onToggleCheckIn={() =>
+                                    onToggleCheckIn(entry.id, !admin.checkedIn)
+                                }
+                                onSaveNote={(note) =>
+                                    onAdminNote(entry.id, note)
+                                }
+                            />
                         )}
                     </div>
                     {ownEntry && (
