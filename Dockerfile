@@ -44,7 +44,7 @@ RUN chown nextjs:bun .next
 COPY --from=builder --chown=nextjs:bun /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:bun /app/.next/static ./.next/static
 
-RUN bun add kysely
+COPY --from=deps --chown=nextjs:bun /app/node_modules/kysely ./node_modules/kysely
 
 USER nextjs
 

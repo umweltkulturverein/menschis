@@ -1,4 +1,4 @@
-import { Migrator, FileMigrationProvider } from "kysely";
+import { Migrator, FileMigrationProvider } from "kysely/migration";
 import { readdir } from "fs/promises";
 import path from "path";
 import { db } from "../db";
