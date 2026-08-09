@@ -16,7 +16,7 @@ export function adminEntryState(entry: ShiftEntry): AdminEntryState {
             ? NaturalDateTime(new Date(entry.checkedInAt))
             : null,
         adminNote: entry.adminNote ?? "",
-        verified: entry.verified,
+        verified: entry.verified ?? false,
     };
 }
 
