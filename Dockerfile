@@ -1,4 +1,4 @@
-FROM oven/bun AS base
+FROM oven/bun:1.3.7 AS base
 
 # Install dependencies only when needed
 FROM base AS deps
