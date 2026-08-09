@@ -32,9 +32,13 @@ export async function PATCH(
 
     // Only the fields actually sent are written, so toggling the check-in does
     // not clobber a note another admin is editing at the same time.
-    const patch: Pick<UpdateShiftEntry, "checkedInAt" | "adminNote"> = {};
+    const patch: Pick<
+        UpdateShiftEntry,
+        "checkedInAt" | "adminNote" | "verified"
+    > = {};
     if (typeof checkedIn === "boolean") {
         patch.checkedInAt = checkedIn ? new Date() : null;
+        if (checkedIn) patch.verified = true;
     }
     if (typeof adminNote === "string") {
         patch.adminNote = adminNote.trim() || null;

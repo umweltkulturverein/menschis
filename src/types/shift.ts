@@ -69,7 +69,6 @@ export type AdminEntryFields = {
     phone: string | null;
     /** Sign-up time, pre-formatted on the server so the client cannot drift. */
     signedUpAt: string;
-    verified: boolean;
 } & AdminEntryState;
 
 /** The admin-writable half of an entry: what the dashboard can change and what
@@ -80,6 +79,7 @@ export type AdminEntryState = {
     /** Check-in time, pre-formatted on the server; null when not checked in. */
     checkedInAt: string | null;
     adminNote: string;
+    verified: boolean;
 };
 /** Admins see every entry in full; `person` is still only set on their own,
  *  which keeps the edit/delete controls owner-bound. */

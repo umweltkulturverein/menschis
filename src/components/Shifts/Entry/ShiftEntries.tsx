@@ -23,7 +23,7 @@ interface Props {
 }
 
 type EntryForm = { name: string; email: string; phone: string; notes: string };
-type EditState = { id: number; name: string; notes: string };
+type EditState = { id: number; form: EntryForm };
 
 export default function ShiftEntries({
     shift,
@@ -110,14 +110,14 @@ export default function ShiftEntries({
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        name: editing.name,
-                        notes: editing.notes,
+                        name: editing.form.name,
+                        notes: editing.form.notes,
+                        phone: editing.form.phone,
                     }),
                 },
             );
             if (res.ok) {
                 const data = await res.json();
-                // Merge rather than replace, so admin-only fields on the row survive.
                 setEntries((prev) =>
                     prev.map((e) =>
                         e.id === data.id
@@ -125,7 +125,7 @@ export default function ShiftEntries({
                                   ...e,
                                   name: data.name,
                                   notes: data.notes,
-                                  person: data.person,
+                                  ...("phone" in e ? { phone: data.phone } : {}),
                               }
                             : e,
                     ),
@@ -163,6 +163,7 @@ export default function ShiftEntries({
                                   checkedIn: data.checkedIn,
                                   checkedInAt: data.checkedInAt,
                                   adminNote: data.adminNote,
+                                  verified: data.verified,
                               }
                             : e,
                     ),
@@ -191,14 +192,20 @@ export default function ShiftEntries({
                         <ShiftEntryRow
                             key={entry.id}
                             entry={entry}
-                            editing={editing}
-                            submitting={submitting}
+                            isEditing={editing?.id === entry.id}
                             adminBusy={adminBusy === entry.id}
                             shiftStarted={shiftStarted}
-                            onEdit={setEditing}
-                            onEditChange={setEditing}
-                            onEditCancel={() => setEditing(null)}
-                            onEditConfirm={handleEditConfirm}
+                            onEdit={(p) =>
+                                setEditing({
+                                    id: p.id,
+                                    form: {
+                                        name: p.name,
+                                        email: "",
+                                        phone: p.phone || prefill.phone,
+                                        notes: p.notes,
+                                    },
+                                })
+                            }
                             onDelete={handleDelete}
                             onToggleCheckIn={(id, checkedIn) =>
                                 patchAdminFields(id, { checkedIn })
@@ -276,8 +283,20 @@ export default function ShiftEntries({
                 </div>
             )}
 
+            {editing && (
+                <ShiftEntryForm
+                    form={editing.form}
+                    submitting={submitting}
+                    edit
+                    turnstileSiteKey={turnsitleSiteKey}
+                    onChange={(form) => setEditing({ ...editing, form })}
+                    onCancel={() => setEditing(null)}
+                    onConfirm={handleEditConfirm}
+                />
+            )}
+
             {/* Sign-up button */}
-            {!signUpForm && !isFull && !locked && (
+            {!signUpForm && !editing && !isFull && !locked && (
                 <div className="px-4 pb-4 pt-2">
                     <button
                         onClick={() => {

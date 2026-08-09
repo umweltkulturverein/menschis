@@ -80,7 +80,7 @@ export default async function ShiftPanel({
             <hr className="mx-4" />
 
             <div className="relative flex-1">
-                {kind?.authorizationMessage && !authorized && (
+                {kind?.authorizationMessage && !authorized && !viewer.admin && (
                     <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center bg-black/40 backdrop-blur-sm">
                         <div className="text-white text-xs text-center font-medium px-4 prose prose-invert prose-xs prose-p:m-0 prose-a:text-green-300">
                             <Markdown>{kind.authorizationMessage}</Markdown>

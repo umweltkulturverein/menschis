@@ -16,6 +16,7 @@ export function adminEntryState(entry: ShiftEntry): AdminEntryState {
             ? NaturalDateTime(new Date(entry.checkedInAt))
             : null,
         adminNote: entry.adminNote ?? "",
+        verified: entry.verified,
     };
 }
 
@@ -54,7 +55,6 @@ export function projectEntry(
                 ("personPhone" in entry ? entry.personPhone?.trim() : null) ||
                 null,
             signedUpAt: NaturalDateTime(new Date(entry.createdAt)),
-            verified: entry.verified ?? false,
             ...adminEntryState(entry),
         };
     }

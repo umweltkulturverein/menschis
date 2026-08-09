@@ -18,6 +18,7 @@ interface Props {
   form: EntryForm;
   submitting: boolean;
   error?: string | null;
+  edit?: boolean;
   onChange: (form: EntryForm) => void;
   onCancel: () => void;
   onConfirm: () => void;
@@ -40,19 +41,21 @@ export default function ShiftEntryForm({
   form,
   submitting,
   error,
+  edit,
   onChange,
   onCancel,
   onConfirm,
   turnstileSiteKey,
 }: Props) {
   const t = useTranslations("Entry");
+  const tf = useTranslations("Forms");
   const trimmedEmail = form.email.trim();
   const emailValid = EMAIL_REGEX.test(trimmedEmail);
-  const showEmailError = trimmedEmail.length > 0 && !emailValid;
+  const showEmailError = !edit && trimmedEmail.length > 0 && !emailValid;
   const widgetRef = useRef<HTMLDivElement>(null);
   const formRef = useRef(form);
   const { data: session } = useSession();
-  const showCaptcha = !!turnstileSiteKey && !session;
+  const showCaptcha = !edit && !!turnstileSiteKey && !session;
   const onChangeRef = useRef(onChange);
   formRef.current = form;
   onChangeRef.current = onChange;
@@ -73,7 +76,13 @@ export default function ShiftEntryForm({
     }
   }, [turnstileSiteKey]);
   return (
-    <div className="px-4 pb-4 pt-2 space-y-3">
+    <div
+      className={
+        edit
+          ? "mx-4 mt-2 mb-4 p-3 space-y-3 rounded-md border border-yellow-400 bg-yellow-50 dark:bg-yellow-950/40"
+          : "px-4 pb-4 pt-2 space-y-3"
+      }
+    >
       <div>
         <label className={labelClass}>{t("name")} *</label>
         <input
@@ -84,23 +93,27 @@ export default function ShiftEntryForm({
           className={inputClass}
         />
       </div>
-      <div>
-        <label className={labelClass}>{t("email")} *</label>
-        <input
-          type="email"
-          value={form.email}
-          onChange={(e) => onChange({ ...form, email: e.target.value })}
-          placeholder={t("email")}
-          required
-          aria-invalid={showEmailError}
-          className={inputClass}
-        />
-        {showEmailError ? (
-          <p className="mt-1 text-xs text-red-500">
-            {t("emailInvalid")}
-          </p>
-        ) : null}
-      </div>
+      {!edit && (
+        <>
+          <div>
+            <label className={labelClass}>{t("email")} *</label>
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => onChange({ ...form, email: e.target.value })}
+              placeholder={t("email")}
+              required
+              aria-invalid={showEmailError}
+              className={inputClass}
+            />
+            {showEmailError ? (
+              <p className="mt-1 text-xs text-red-500">
+                {t("emailInvalid")}
+              </p>
+            ) : null}
+          </div>
+        </>
+      )}
       <div>
         <label className={labelClass}>{t("phone")}</label>
         <input
@@ -126,11 +139,11 @@ export default function ShiftEntryForm({
 
       <FormActions
         cancelLabel={t("cancel")}
-        confirmLabel={t("confirm")}
+        confirmLabel={edit ? tf("save") : t("confirm")}
         submitting={submitting}
         disabled={
           !form.name.trim() ||
-          !emailValid ||
+          (!edit && !emailValid) ||
           (showCaptcha && !form.captchaChallenge)
         }
         onCancel={onCancel}

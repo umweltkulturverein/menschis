@@ -36,7 +36,8 @@
         "edit": "Edit",
         "dashboard": "Dashboard",
         "overview": "Overview",
-        "statBooked": "Booked",
+        "statBookedExternal": "Booked external",
+        "statBookedInternal": "Booked internal",
         "statCheckedIn": "Checked in",
         "statUnverified": "Unverified"
     },

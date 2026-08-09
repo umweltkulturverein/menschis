@@ -12,6 +12,14 @@ export async function GetPersonBySub(sub: string): Promise<Person | undefined> {
         .executeTakeFirst();
 }
 
+export async function GetPersonById(id: number): Promise<Person | undefined> {
+    return await db
+        .selectFrom("person")
+        .selectAll()
+        .where("id", "=", id)
+        .executeTakeFirst();
+}
+
 export async function GetPersonByLoginToken(
     token: string,
 ): Promise<Person | undefined> {

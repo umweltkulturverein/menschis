@@ -36,7 +36,8 @@
         "edit": "Bearbeiten",
         "dashboard": "Dashboard",
         "overview": "Übersicht",
-        "statBooked": "Gebucht",
+        "statBookedExternal": "Extern belegt",
+        "statBookedInternal": "Intern belegt",
         "statCheckedIn": "Eingecheckt",
         "statUnverified": "Unbestätigt"
     },

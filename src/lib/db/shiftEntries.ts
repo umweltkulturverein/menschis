@@ -7,13 +7,11 @@ export const VERIFY_WINDOW_MS = 2 * 60 * 60 * 1000;
 
 export async function DeleteShiftEntry(
     entryId: number,
-    personId: number,
+    personId: number | null,
 ): Promise<void> {
-    await db
-        .deleteFrom("shiftEntry")
-        .where("id", "=", entryId)
-        .where("person", "=", personId)
-        .execute();
+    let query = db.deleteFrom("shiftEntry").where("id", "=", entryId);
+    if (personId !== null) query = query.where("person", "=", personId);
+    await query.execute();
 }
 
 export async function DeleteShiftEntryById(entryId: number): Promise<void> {
@@ -123,36 +121,33 @@ export async function GetExpiredPendingEntries(
 
 export async function GetShiftEntry(
     entryId: number,
-    personId: number,
+    personId: number | null,
 ): Promise<ShiftEntry | undefined> {
-    return await db
+    let query = db
         .selectFrom("shiftEntry")
         .selectAll()
-        .where("id", "=", entryId)
-        .where("person", "=", personId)
-        .executeTakeFirst();
+        .where("id", "=", entryId);
+    if (personId !== null) query = query.where("person", "=", personId);
+    return await query.executeTakeFirst();
 }
-
-
 
 export async function UpdateShiftEntryRow(
     entryId: number,
-    personId: number,
+    personId: number | null,
     patch: UpdateShiftEntry,
 ): Promise<ShiftEntry | undefined> {
     patch.updatedAt = new Date();
-    return await db
+    let query = db
         .updateTable("shiftEntry")
         .set(patch)
-        .where("id", "=", entryId)
-        .where("person", "=", personId)
-        .returningAll()
-        .executeTakeFirst();
+        .where("id", "=", entryId);
+    if (personId !== null) query = query.where("person", "=", personId);
+    return await query.returningAll().executeTakeFirst();
 }
 
 export async function UpdateShiftEntryAdminFields(
     entryId: number,
-    patch: Pick<UpdateShiftEntry, "checkedInAt" | "adminNote">,
+    patch: Pick<UpdateShiftEntry, "checkedInAt" | "adminNote" | "verified">,
 ): Promise<ShiftEntry | undefined> {
     return await db
         .updateTable("shiftEntry")

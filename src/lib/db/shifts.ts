@@ -91,9 +91,14 @@ export async function GetShiftDatetimesByEvent(
 /** Headline counts for the admin dashboard, across the whole event. Deliberately
  *  ignores the filter bar: these are the totals for the event, not for whatever
  *  slice is currently on screen. */
-export interface EventShiftStats {
-    /** Every slot the event offers, summed over all shifts. */
+export interface ShiftSegmentStats {
     slots: number;
+    booked: number;
+}
+
+export interface EventShiftStats {
+    internal: ShiftSegmentStats;
+    external: ShiftSegmentStats;
     booked: number;
     checkedIn: number;
     unverified: number;
@@ -107,7 +112,16 @@ export async function GetEventShiftStats(
             .selectFrom("shift")
             .innerJoin("shiftKind", "shiftKind.id", "shift.shiftKind")
             .where("shiftKind.eventId", "=", eventId)
-            .select((eb) => eb.fn.sum<number>("shift.slots").as("slots"))
+            .select((eb) => [
+                eb.fn
+                    .sum<number>("shift.slots")
+                    .filterWhere("shift.internal", "=", true)
+                    .as("internalSlots"),
+                eb.fn
+                    .sum<number>("shift.slots")
+                    .filterWhere("shift.internal", "=", false)
+                    .as("externalSlots"),
+            ])
             .executeTakeFirst(),
         db
             .selectFrom("shiftEntry")
@@ -115,7 +129,14 @@ export async function GetEventShiftStats(
             .innerJoin("shiftKind", "shiftKind.id", "shift.shiftKind")
             .where("shiftKind.eventId", "=", eventId)
             .select((eb) => [
-                eb.fn.countAll<number>().as("booked"),
+                eb.fn
+                    .countAll<number>()
+                    .filterWhere("shift.internal", "=", true)
+                    .as("internalBooked"),
+                eb.fn
+                    .countAll<number>()
+                    .filterWhere("shift.internal", "=", false)
+                    .as("externalBooked"),
                 eb.fn
                     .countAll<number>()
                     .filterWhere("shiftEntry.checkedInAt", "is not", null)
@@ -128,10 +149,18 @@ export async function GetEventShiftStats(
             .executeTakeFirst(),
     ]);
 
-    // sum() is null when the event has no shifts at all.
+    const internalBooked = Number(entries?.internalBooked ?? 0);
+    const externalBooked = Number(entries?.externalBooked ?? 0);
     return {
-        slots: Number(shifts?.slots ?? 0),
-        booked: Number(entries?.booked ?? 0),
+        internal: {
+            slots: Number(shifts?.internalSlots ?? 0),
+            booked: internalBooked,
+        },
+        external: {
+            slots: Number(shifts?.externalSlots ?? 0),
+            booked: externalBooked,
+        },
+        booked: internalBooked + externalBooked,
         checkedIn: Number(entries?.checkedIn ?? 0),
         unverified: Number(entries?.unverified ?? 0),
     };
