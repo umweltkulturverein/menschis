@@ -33,7 +33,13 @@
         "start": "Start:",
         "end": "End:",
         "bookingOpens": "Booking opens {date}",
-        "edit": "Edit"
+        "edit": "Edit",
+        "dashboard": "Dashboard",
+        "overview": "Overview",
+        "statBookedExternal": "Booked external",
+        "statBookedInternal": "Booked internal",
+        "statCheckedIn": "Checked in",
+        "statUnverified": "Unverified"
     },
     "Shifts": {
         "loading": "Loading shifts…",
@@ -181,7 +187,18 @@
         "pendingTitle": "Confirm shifts",
         "pendingDescription": "You have been signed up for the following shifts. Please confirm them, otherwise they will be cancelled automatically.",
         "decline": "Decline",
-        "accept": "Accept"
+        "accept": "Accept",
+        "pending": "Pending",
+        "checkIn": "Check in",
+        "checkedIn": "Checked in",
+        "undoCheckIn": "Undo check-in",
+        "adminNote": "Admin note",
+        "addAdminNote": "Add note",
+        "editAdminNote": "Edit note",
+        "adminNotePlaceholder": "Only visible to admins",
+        "checkedInLocked": "You have already been checked in for this shift and can no longer sign off.",
+        "noPhone": "No number provided",
+        "notCheckedIn": "Shift has started, not checked in yet"
     },
     "Emails": {
         "footer": "Sent by Menschis · Shift planning for festivals",

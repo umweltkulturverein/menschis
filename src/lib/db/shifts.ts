@@ -88,6 +88,84 @@ export async function GetShiftDatetimesByEvent(
     return await query.execute();
 }
 
+/** Headline counts for the admin dashboard, across the whole event. Deliberately
+ *  ignores the filter bar: these are the totals for the event, not for whatever
+ *  slice is currently on screen. */
+export interface ShiftSegmentStats {
+    slots: number;
+    booked: number;
+}
+
+export interface EventShiftStats {
+    internal: ShiftSegmentStats;
+    external: ShiftSegmentStats;
+    booked: number;
+    checkedIn: number;
+    unverified: number;
+}
+
+export async function GetEventShiftStats(
+    eventId: number,
+): Promise<EventShiftStats> {
+    const [shifts, entries] = await Promise.all([
+        db
+            .selectFrom("shift")
+            .innerJoin("shiftKind", "shiftKind.id", "shift.shiftKind")
+            .where("shiftKind.eventId", "=", eventId)
+            .select((eb) => [
+                eb.fn
+                    .sum<number>("shift.slots")
+                    .filterWhere("shift.internal", "=", true)
+                    .as("internalSlots"),
+                eb.fn
+                    .sum<number>("shift.slots")
+                    .filterWhere("shift.internal", "=", false)
+                    .as("externalSlots"),
+            ])
+            .executeTakeFirst(),
+        db
+            .selectFrom("shiftEntry")
+            .innerJoin("shift", "shift.id", "shiftEntry.shift")
+            .innerJoin("shiftKind", "shiftKind.id", "shift.shiftKind")
+            .where("shiftKind.eventId", "=", eventId)
+            .select((eb) => [
+                eb.fn
+                    .countAll<number>()
+                    .filterWhere("shift.internal", "=", true)
+                    .as("internalBooked"),
+                eb.fn
+                    .countAll<number>()
+                    .filterWhere("shift.internal", "=", false)
+                    .as("externalBooked"),
+                eb.fn
+                    .countAll<number>()
+                    .filterWhere("shiftEntry.checkedInAt", "is not", null)
+                    .as("checkedIn"),
+                eb.fn
+                    .countAll<number>()
+                    .filterWhere("shiftEntry.verified", "=", false)
+                    .as("unverified"),
+            ])
+            .executeTakeFirst(),
+    ]);
+
+    const internalBooked = Number(entries?.internalBooked ?? 0);
+    const externalBooked = Number(entries?.externalBooked ?? 0);
+    return {
+        internal: {
+            slots: Number(shifts?.internalSlots ?? 0),
+            booked: internalBooked,
+        },
+        external: {
+            slots: Number(shifts?.externalSlots ?? 0),
+            booked: externalBooked,
+        },
+        booked: internalBooked + externalBooked,
+        checkedIn: Number(entries?.checkedIn ?? 0),
+        unverified: Number(entries?.unverified ?? 0),
+    };
+}
+
 export async function GetShiftKindsByEvent(
     eventId: number,
 ): Promise<ShiftKind[]> {

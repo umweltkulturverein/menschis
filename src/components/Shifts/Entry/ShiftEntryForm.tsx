@@ -1,6 +1,7 @@
 "use client";
 
 import { inputClass, labelClass } from "@/components/Misc/Form/FormModal";
+import FormActions from "@/components/Misc/Form/FormActions";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
@@ -17,6 +18,7 @@ interface Props {
   form: EntryForm;
   submitting: boolean;
   error?: string | null;
+  edit?: boolean;
   onChange: (form: EntryForm) => void;
   onCancel: () => void;
   onConfirm: () => void;
@@ -39,19 +41,21 @@ export default function ShiftEntryForm({
   form,
   submitting,
   error,
+  edit,
   onChange,
   onCancel,
   onConfirm,
   turnstileSiteKey,
 }: Props) {
   const t = useTranslations("Entry");
+  const tf = useTranslations("Forms");
   const trimmedEmail = form.email.trim();
   const emailValid = EMAIL_REGEX.test(trimmedEmail);
-  const showEmailError = trimmedEmail.length > 0 && !emailValid;
+  const showEmailError = !edit && trimmedEmail.length > 0 && !emailValid;
   const widgetRef = useRef<HTMLDivElement>(null);
   const formRef = useRef(form);
   const { data: session } = useSession();
-  const showCaptcha = !!turnstileSiteKey && !session;
+  const showCaptcha = !edit && !!turnstileSiteKey && !session;
   const onChangeRef = useRef(onChange);
   formRef.current = form;
   onChangeRef.current = onChange;
@@ -72,7 +76,13 @@ export default function ShiftEntryForm({
     }
   }, [turnstileSiteKey]);
   return (
-    <div className="px-4 pb-4 pt-2 space-y-3">
+    <div
+      className={
+        edit
+          ? "mx-4 mt-2 mb-4 p-3 space-y-3 rounded-md border border-yellow-400 bg-yellow-50 dark:bg-yellow-950/40"
+          : "px-4 pb-4 pt-2 space-y-3"
+      }
+    >
       <div>
         <label className={labelClass}>{t("name")} *</label>
         <input
@@ -83,23 +93,27 @@ export default function ShiftEntryForm({
           className={inputClass}
         />
       </div>
-      <div>
-        <label className={labelClass}>{t("email")} *</label>
-        <input
-          type="email"
-          value={form.email}
-          onChange={(e) => onChange({ ...form, email: e.target.value })}
-          placeholder={t("email")}
-          required
-          aria-invalid={showEmailError}
-          className={inputClass}
-        />
-        {showEmailError ? (
-          <p className="mt-1 text-xs text-red-500">
-            {t("emailInvalid")}
-          </p>
-        ) : null}
-      </div>
+      {!edit && (
+        <>
+          <div>
+            <label className={labelClass}>{t("email")} *</label>
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => onChange({ ...form, email: e.target.value })}
+              placeholder={t("email")}
+              required
+              aria-invalid={showEmailError}
+              className={inputClass}
+            />
+            {showEmailError ? (
+              <p className="mt-1 text-xs text-red-500">
+                {t("emailInvalid")}
+              </p>
+            ) : null}
+          </div>
+        </>
+      )}
       <div>
         <label className={labelClass}>{t("phone")}</label>
         <input
@@ -123,26 +137,18 @@ export default function ShiftEntryForm({
 
       {error && <p className="text-xs text-red-500">{error}</p>}
 
-      <div className="flex gap-2">
-        <button
-          onClick={onCancel}
-          className="flex-1 text-sm px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-ci-blue-600"
-        >
-          {t("cancel")}
-        </button>
-        <button
-          onClick={onConfirm}
-          disabled={
-            submitting ||
-            !form.name.trim() ||
-            !emailValid ||
-            (showCaptcha && !form.captchaChallenge)
-          }
-          className="flex-1 text-sm px-3 py-1.5 rounded-md bg-green-500 hover:bg-green-600 text-white font-medium disabled:opacity-50"
-        >
-          {submitting ? "..." : t("confirm")}
-        </button>
-      </div>
+      <FormActions
+        cancelLabel={t("cancel")}
+        confirmLabel={edit ? tf("save") : t("confirm")}
+        submitting={submitting}
+        disabled={
+          !form.name.trim() ||
+          (!edit && !emailValid) ||
+          (showCaptcha && !form.captchaChallenge)
+        }
+        onCancel={onCancel}
+        onConfirm={onConfirm}
+      />
       {showCaptcha && (
         <div className="flex mt-8 justify-center items-center captcha">
           <div

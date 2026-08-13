@@ -3,9 +3,13 @@ import { getTranslations } from "next-intl/server";
 import { authOptions } from "@/lib/auth/nextauth";
 import { GetShiftsByEvent } from "@/lib/db/shifts";
 import { GetShiftKindsByEvent } from "@/lib/db/shiftKinds";
-import { GetShiftEntriesByShifts } from "@/lib/db/shiftEntries";
+import {
+    GetShiftEntriesByShifts,
+    GetShiftEntriesWithPersonByShifts,
+} from "@/lib/db/shiftEntries";
 import { GetPersonBySub } from "@/lib/db/persons";
 import { readShiftAccess } from "@/lib/auth/shiftAccess";
+import { isAdminUser } from "@/lib/auth/permissions";
 import ShiftPanel from "./ShiftPanel";
 import { NextResponse } from "next/server";
 import {
@@ -14,6 +18,7 @@ import {
     ShiftFilters,
     shiftInTimeWindow,
 } from "@/lib/shifts/filters";
+import { EntryViewer } from "@/lib/shifts/entryView";
 
 export default async function ShiftSummary({
     eventId,
@@ -21,12 +26,14 @@ export default async function ShiftSummary({
     authError,
     filters = EMPTY_FILTERS,
     baseDays,
+    adminView = false,
 }: {
     eventId: number;
     eventDayId?: number;
     authError: NextResponse<unknown> | null;
     filters?: ShiftFilters;
     baseDays: BaseDays;
+    adminView?: boolean;
 }) {
     const session = await getServerSession(authOptions);
     const [allShifts, kinds] = await Promise.all([
@@ -49,14 +56,23 @@ export default async function ShiftSummary({
         );
     }
 
+    const admin = adminView && isAdminUser(session);
     const shiftIds = shifts.map((s) => s.id);
     const [allEntries, currentPerson, shiftAccess] = await Promise.all([
-        GetShiftEntriesByShifts(shiftIds),
+        admin
+            ? GetShiftEntriesWithPersonByShifts(shiftIds)
+            : GetShiftEntriesByShifts(shiftIds),
         session?.user?.id
             ? GetPersonBySub(session.user.id)
             : Promise.resolve(undefined),
         readShiftAccess(),
     ]);
+
+    const viewer: EntryViewer = {
+        currentPersonId: currentPerson?.id ?? null,
+        internal: !authError,
+        admin,
+    };
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -73,11 +89,10 @@ export default async function ShiftSummary({
                         shift={shift}
                         kind={kind}
                         authorized={authorized}
-                        viewerInternal={!authError}
+                        viewer={viewer}
                         initialEntries={allEntries.filter(
                             (e) => e.shift === shift.id,
                         )}
-                        currentPersonId={currentPerson?.id ?? null}
                         prefill={{
                             name: currentPerson?.name ?? "",
                             email: currentPerson?.email ?? "",

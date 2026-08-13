@@ -1,4 +1,4 @@
-import { ShiftEntry, UpdateShiftEntry } from "@/types/shift";
+import { ShiftEntry, ShiftEntryWithPerson, UpdateShiftEntry } from "@/types/shift";
 import { db } from "@/db";
 
 // Time an anonymous sign-up has to be confirmed (via first login) before it is
@@ -7,13 +7,11 @@ export const VERIFY_WINDOW_MS = 2 * 60 * 60 * 1000;
 
 export async function DeleteShiftEntry(
     entryId: number,
-    personId: number,
+    personId: number | null,
 ): Promise<void> {
-    await db
-        .deleteFrom("shiftEntry")
-        .where("id", "=", entryId)
-        .where("person", "=", personId)
-        .execute();
+    let query = db.deleteFrom("shiftEntry").where("id", "=", entryId);
+    if (personId !== null) query = query.where("person", "=", personId);
+    await query.execute();
 }
 
 export async function DeleteShiftEntryById(entryId: number): Promise<void> {
@@ -111,6 +109,8 @@ export async function GetExpiredPendingEntries(
         .innerJoin("event", "event.id", "shiftKind.eventId")
         .where("shiftEntry.verified", "=", false)
         .where("shiftEntry.createdAt", "<", cutoff)
+        // Checkin is a thing only admins can do, so they overrule the cleaning.
+        .where("shiftEntry.checkedInAt", "is", null)
         .select([
             "shiftEntry.id as id",
             "shiftEntry.order as order",
@@ -121,29 +121,38 @@ export async function GetExpiredPendingEntries(
 
 export async function GetShiftEntry(
     entryId: number,
-    personId: number,
+    personId: number | null,
 ): Promise<ShiftEntry | undefined> {
-    return await db
+    let query = db
         .selectFrom("shiftEntry")
         .selectAll()
-        .where("id", "=", entryId)
-        .where("person", "=", personId)
-        .executeTakeFirst();
+        .where("id", "=", entryId);
+    if (personId !== null) query = query.where("person", "=", personId);
+    return await query.executeTakeFirst();
 }
-
-
 
 export async function UpdateShiftEntryRow(
     entryId: number,
-    personId: number,
+    personId: number | null,
     patch: UpdateShiftEntry,
 ): Promise<ShiftEntry | undefined> {
     patch.updatedAt = new Date();
-    return await db
+    let query = db
         .updateTable("shiftEntry")
         .set(patch)
+        .where("id", "=", entryId);
+    if (personId !== null) query = query.where("person", "=", personId);
+    return await query.returningAll().executeTakeFirst();
+}
+
+export async function UpdateShiftEntryAdminFields(
+    entryId: number,
+    patch: Pick<UpdateShiftEntry, "checkedInAt" | "adminNote" | "verified">,
+): Promise<ShiftEntry | undefined> {
+    return await db
+        .updateTable("shiftEntry")
+        .set({ ...patch, updatedAt: new Date() })
         .where("id", "=", entryId)
-        .where("person", "=", personId)
         .returningAll()
         .executeTakeFirst();
 }
@@ -157,5 +166,22 @@ export async function GetShiftEntriesByShifts(
         .selectFrom("shiftEntry")
         .selectAll()
         .where("shift", "in", shiftIds)
+        .execute();
+}
+
+export async function GetShiftEntriesWithPersonByShifts(
+    shiftIds: number[],
+): Promise<ShiftEntryWithPerson[]> {
+    if (shiftIds.length === 0) return [];
+
+    return await db
+        .selectFrom("shiftEntry")
+        .innerJoin("person", "person.id", "shiftEntry.person")
+        .where("shiftEntry.shift", "in", shiftIds)
+        .selectAll("shiftEntry")
+        .select([
+            "person.email as personEmail",
+            "person.phone as personPhone",
+        ])
         .execute();
 }

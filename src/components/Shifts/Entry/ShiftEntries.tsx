@@ -17,18 +17,20 @@ interface Props {
     kind: ShiftKind | undefined;
     authorized?: boolean;
     initialEntries: ClientShiftEntry[];
+    shiftStarted: boolean;
     prefill: { name: string; email: string; phone: string };
     turnsitleSiteKey: string | undefined;
 }
 
 type EntryForm = { name: string; email: string; phone: string; notes: string };
-type EditState = { id: number; name: string; notes: string };
+type EditState = { id: number; form: EntryForm };
 
 export default function ShiftEntries({
     shift,
     kind,
     authorized,
     initialEntries,
+    shiftStarted,
     prefill,
     turnsitleSiteKey
 }: Props) {
@@ -41,6 +43,8 @@ export default function ShiftEntries({
     const [error, setError] = useState<string | null>(null);
     const [guestSubmitted, setGuestSubmitted] = useState(false);
     const [lastForm, setLastForm] = useState<EntryForm | null>(null);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
+    const [adminBusy, setAdminBusy] = useState<number | null>(null);
 
     const myEntries = entries.filter(isOwnEntry);
     const isFull = entries.length >= shift.slots;
@@ -81,9 +85,18 @@ export default function ShiftEntries({
 
     async function handleDelete(entryId: number, name: string) {
         if (!window.confirm(t("deleteConfirm", { name }))) return;
-        await fetch(`/api/shift/${shift.id}/entry/${entryId}`, {
+        setDeleteError(null);
+        const res = await fetch(`/api/shift/${shift.id}/entry/${entryId}`, {
             method: "DELETE",
         });
+        // The check-in state is admin-only, so the client cannot know upfront
+        // that deleting your own entry is locked — the server says so on the attempt.
+        if (!res.ok) {
+            setDeleteError(
+                res.status === 409 ? t("checkedInLocked") : t("errorOccurred"),
+            );
+            return;
+        }
         setEntries((prev) => prev.filter((e) => e.id !== entryId));
     }
 
@@ -97,21 +110,25 @@ export default function ShiftEntries({
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        name: editing.name,
-                        notes: editing.notes,
+                        name: editing.form.name,
+                        notes: editing.form.notes,
+                        phone: editing.form.phone,
                     }),
                 },
             );
             if (res.ok) {
                 const data = await res.json();
-                const updated: OwnShiftEntry = {
-                    id: data.id,
-                    name: data.name,
-                    notes: data.notes,
-                    person: data.person,
-                };
                 setEntries((prev) =>
-                    prev.map((e) => (e.id === updated.id ? updated : e)),
+                    prev.map((e) =>
+                        e.id === data.id
+                            ? {
+                                  ...e,
+                                  name: data.name,
+                                  notes: data.notes,
+                                  ...("phone" in e ? { phone: data.phone } : {}),
+                              }
+                            : e,
+                    ),
                 );
                 setEditing(null);
             }
@@ -119,6 +136,44 @@ export default function ShiftEntries({
             setSubmitting(false);
         }
     }
+
+    // Admin-only fields. The route is admin-gated and echoes the stored state
+    // back formatted, so the row shows what was actually written.
+    async function patchAdminFields(
+        entryId: number,
+        body: { checkedIn: boolean } | { adminNote: string },
+    ) {
+        setAdminBusy(entryId);
+        try {
+            const res = await fetch(
+                `/api/shift/${shift.id}/entry/${entryId}/admin`,
+                {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                },
+            );
+            if (res.ok) {
+                const data = await res.json();
+                setEntries((prev) =>
+                    prev.map((e) =>
+                        e.id === data.id
+                            ? {
+                                  ...e,
+                                  checkedIn: data.checkedIn,
+                                  checkedInAt: data.checkedInAt,
+                                  adminNote: data.adminNote,
+                                  verified: data.verified,
+                              }
+                            : e,
+                    ),
+                );
+            }
+        } finally {
+            setAdminBusy(null);
+        }
+    }
+
     return (
         <>
             {/* Entry list */}
@@ -137,13 +192,27 @@ export default function ShiftEntries({
                         <ShiftEntryRow
                             key={entry.id}
                             entry={entry}
-                            editing={editing}
-                            submitting={submitting}
-                            onEdit={setEditing}
-                            onEditChange={setEditing}
-                            onEditCancel={() => setEditing(null)}
-                            onEditConfirm={handleEditConfirm}
+                            isEditing={editing?.id === entry.id}
+                            adminBusy={adminBusy === entry.id}
+                            shiftStarted={shiftStarted}
+                            onEdit={(p) =>
+                                setEditing({
+                                    id: p.id,
+                                    form: {
+                                        name: p.name,
+                                        email: "",
+                                        phone: p.phone || prefill.phone,
+                                        notes: p.notes,
+                                    },
+                                })
+                            }
                             onDelete={handleDelete}
+                            onToggleCheckIn={(id, checkedIn) =>
+                                patchAdminFields(id, { checkedIn })
+                            }
+                            onAdminNote={(id, adminNote) =>
+                                patchAdminFields(id, { adminNote })
+                            }
                         />
                     ))}
 
@@ -175,6 +244,15 @@ export default function ShiftEntries({
                         </div>
                     ))}
                 </div>
+
+                {deleteError && (
+                    <p
+                        role="alert"
+                        className="mt-2 rounded-md border border-red-300 bg-red-50 px-2.5 py-1.5 text-xs text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300"
+                    >
+                        {deleteError}
+                    </p>
+                )}
             </div>
 
             {/* Guest submitted banner */}
@@ -205,8 +283,20 @@ export default function ShiftEntries({
                 </div>
             )}
 
+            {editing && (
+                <ShiftEntryForm
+                    form={editing.form}
+                    submitting={submitting}
+                    edit
+                    turnstileSiteKey={turnsitleSiteKey}
+                    onChange={(form) => setEditing({ ...editing, form })}
+                    onCancel={() => setEditing(null)}
+                    onConfirm={handleEditConfirm}
+                />
+            )}
+
             {/* Sign-up button */}
-            {!signUpForm && !isFull && !locked && (
+            {!signUpForm && !editing && !isFull && !locked && (
                 <div className="px-4 pb-4 pt-2">
                     <button
                         onClick={() => {
