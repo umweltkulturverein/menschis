@@ -43,7 +43,6 @@ export async function POST(
     email,
     captchaChallenge,
     session,
-    isSignedInUser,
   });
   if (validationError) return validationError;
 
@@ -89,10 +88,8 @@ async function validateSignUp(args: {
   email: string;
   captchaChallenge: string;
   session: Session | null;
-  isSignedInUser: boolean;
 }): Promise<NextResponse | undefined> {
-  const { shiftId, name, email, captchaChallenge, session, isSignedInUser } =
-    args;
+  const { shiftId, name, email, captchaChallenge, session } = args;
 
   // 1. Slots must still be available.
   const slotsError = await validateSlotsFull(shiftId);
@@ -102,8 +99,10 @@ async function validateSignUp(args: {
   const detailsError = validateContactDetails(name, email);
   if (detailsError) return detailsError;
 
-  // 3. Guests (not registering as themselves) must pass the captcha.
-  if (!isSignedInUser) {
+  // 3. Anonymous visitors must pass the captcha. A valid session is proof
+  // enough, also when signing someone else up — the client hides the widget
+  // for every signed-in user, so demanding a token here would always fail.
+  if (!session?.user?.id) {
     const captchaError = await validateCaptcha(captchaChallenge);
     if (captchaError) return captchaError;
   }
