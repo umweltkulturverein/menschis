@@ -81,11 +81,21 @@ export default async function ShiftPanel({
 
             <div className="relative flex-1">
                 {kind?.authorizationMessage && !authorized && !viewer.admin && (
-                    <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                        <div className="text-white text-xs text-center font-medium px-4 prose prose-invert prose-xs prose-p:m-0 prose-a:text-green-300">
-                            <Markdown>{kind.authorizationMessage}</Markdown>
-                        </div>
-                    </div>
+                    <>
+                        <input
+                            type="checkbox"
+                            id={`shift-auth-${shift.id}`}
+                            className="peer sr-only"
+                        />
+                        <label
+                            htmlFor={`shift-auth-${shift.id}`}
+                            className="absolute inset-0 z-10 cursor-pointer opacity-0 peer-checked:opacity-100 peer-focus-visible:opacity-100 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity flex items-center justify-center bg-black/40 backdrop-blur-sm"
+                        >
+                            <div className="text-white text-xs text-center font-medium px-4 prose prose-invert prose-xs prose-p:m-0 prose-a:text-green-300">
+                                <Markdown>{kind.authorizationMessage}</Markdown>
+                            </div>
+                        </label>
+                    </>
                 )}
                 <ShiftEntries
                     shift={shift}
