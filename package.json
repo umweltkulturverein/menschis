@@ -13,7 +13,7 @@
     "next": "^16.3.0",
     "next-auth": "^4.24.15",
     "next-intl": "^4.13.5",
-    "nodemailer": "^7.0.13",
+    "nodemailer": "^10.3.1",
     "pg": "^8.23.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -28,7 +28,7 @@
     "@types/react-dom": "^19.2.4",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9.39.5",
-    "eslint-config-next": "16.3.0",
+    "eslint-config-next": "^15.5.29",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3"
   }
