@@ -1,6 +1,6 @@
 import {
     Shift,
-    ShiftKind,
+    PublicShiftKind,
     ShiftEntry,
     ShiftEntryWithPerson,
     ClientShiftEntry,
@@ -12,7 +12,7 @@ import { EntryViewer, projectEntry } from "@/lib/shifts/entryView";
 
 interface Props {
     shift: Shift;
-    kind: ShiftKind | undefined;
+    kind: PublicShiftKind | undefined;
     authorized?: boolean;
     viewer: EntryViewer;
     initialEntries: (ShiftEntry | ShiftEntryWithPerson)[];

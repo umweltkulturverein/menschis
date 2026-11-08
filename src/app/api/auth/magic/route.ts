@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { encode } from "next-auth/jwt";
 import { GetPersonByLoginToken } from "@/lib/db/persons";
+import { safeRedirectUrl } from "@/lib/auth/redirect";
 
 export async function GET(req: NextRequest) {
     const token = req.nextUrl.searchParams.get("token");
@@ -29,11 +30,9 @@ export async function GET(req: NextRequest) {
         maxAge: 30 * 24 * 60 * 60, // 30 Days
     });
 
-    const redirectParam = req.nextUrl.searchParams.get("redirect");
-    const redirectPath =
-        redirectParam && redirectParam.startsWith("/") ? redirectParam : "/";
-    const redirectUrl = new URL(redirectPath, process.env.NEXTAUTH_URL);
-    const response = NextResponse.redirect(redirectUrl);
+    const response = NextResponse.redirect(
+        safeRedirectUrl(req.nextUrl.searchParams.get("redirect")),
+    );
     response.cookies.set(cookieName, sessionToken, {
         httpOnly: true,
         secure: useSecureCookies,

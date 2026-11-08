@@ -6,6 +6,7 @@ import {
     readShiftAccess,
     shiftAccessCookieOptions,
 } from "@/lib/auth/shiftAccess";
+import { safeRedirectUrl } from "@/lib/auth/redirect";
 
 async function validateAuthorizedShifts(shiftId: number, shiftSecret: string): Promise<boolean> {
     if (Number.isNaN(shiftId)|| shiftSecret === "") return false;
@@ -41,11 +42,9 @@ export async function GET(req: NextRequest) {
     const shiftAccess = { ...existing, [shiftId]: shiftSecret };
     const sessionToken = await encodeShiftAccess(shiftAccess);
 
-    const redirectParam = req.nextUrl.searchParams.get("redirect");
-    const redirectPath =
-        redirectParam && redirectParam.startsWith("/") ? redirectParam : "/";
-    const redirectUrl = new URL(redirectPath, process.env.NEXTAUTH_URL);
-    const response = NextResponse.redirect(redirectUrl);
+    const response = NextResponse.redirect(
+        safeRedirectUrl(req.nextUrl.searchParams.get("redirect")),
+    );
     response.cookies.set(SHIFT_ACCESS_COOKIE, sessionToken, shiftAccessCookieOptions);
 
     return response;
