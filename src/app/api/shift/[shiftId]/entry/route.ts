@@ -19,6 +19,7 @@ import { GetShiftById } from "@/lib/db/shifts";
 import { GetShiftKindById } from "@/lib/db/shiftKinds";
 import { IssueOrder } from "@/lib/ticket/main";
 import { ValidateTurnstile } from "@/lib/auth/captcha";
+import { sameOriginPath } from "@/lib/auth/redirect";
 import type { Shift, ShiftEntry, ShiftKind } from "@/types/shift";
 
 export async function POST(
@@ -236,8 +237,7 @@ async function personInit(
     return await UpdatePersonPhone(person, phone);
   }
   const p = await FindOrCreatePersonByEmail(email, name ?? "", phone ?? null);
-  const referer = req.headers.get("referer");
-  const redirectPath = referer ? new URL(referer).pathname : undefined;
+  const redirectPath = sameOriginPath(req.headers.get("referer"));
   await sendMagicLink(email, p.loginToken!, redirectPath);
   return p;
 }
