@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import {
     Shift,
-    ShiftKind,
+    PublicShiftKind,
     ClientShiftEntry,
     OwnShiftEntry,
     isOwnEntry,
@@ -14,7 +14,7 @@ import ShiftEntryForm from "./ShiftEntryForm";
 
 interface Props {
     shift: Shift;
-    kind: ShiftKind | undefined;
+    kind: PublicShiftKind | undefined;
     authorized?: boolean;
     initialEntries: ClientShiftEntry[];
     shiftStarted: boolean;

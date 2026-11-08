@@ -2,7 +2,10 @@ import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
 import { authOptions } from "@/lib/auth/nextauth";
 import { GetShiftsByEvent } from "@/lib/db/shifts";
-import { GetShiftKindsByEvent } from "@/lib/db/shiftKinds";
+import {
+    GetShiftKindsByEvent,
+    toPublicShiftKind,
+} from "@/lib/db/shiftKinds";
 import {
     GetShiftEntriesByShifts,
     GetShiftEntriesWithPersonByShifts,
@@ -87,7 +90,7 @@ export default async function ShiftSummary({
                     <ShiftPanel
                         key={shift.id}
                         shift={shift}
-                        kind={kind}
+                        kind={kind && toPublicShiftKind(kind)}
                         authorized={authorized}
                         viewer={viewer}
                         initialEntries={allEntries.filter(

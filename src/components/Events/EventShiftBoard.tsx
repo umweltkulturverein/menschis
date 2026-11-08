@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth/nextauth";
 import { redirect, RedirectType } from "next/navigation";
 import { GetEvent } from "@/lib/db/events";
 import { GetEventDays } from "@/lib/db/eventDays";
-import { GetShiftKindsByEvent } from "@/lib/db/shiftKinds";
+import { GetPublicShiftKindsByEvent } from "@/lib/db/shiftKinds";
 import { GetShiftDatetimesByEvent } from "@/lib/db/shifts";
 import EventBanner from "@/components/Events/EventBanner";
 import EventStats from "@/components/Events/EventStats";
@@ -50,7 +50,7 @@ export default async function EventShiftBoard({
     });
     const [days, kinds, shiftTimes] = await Promise.all([
         GetEventDays(event.id),
-        GetShiftKindsByEvent(event.id),
+        GetPublicShiftKindsByEvent(event.id),
         GetShiftDatetimesByEvent(event.id, authError),
     ]);
     const t = await getTranslations();

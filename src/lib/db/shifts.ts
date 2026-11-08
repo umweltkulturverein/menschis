@@ -166,16 +166,6 @@ export async function GetEventShiftStats(
     };
 }
 
-export async function GetShiftKindsByEvent(
-    eventId: number,
-): Promise<ShiftKind[]> {
-    return await db
-        .selectFrom("shiftKind")
-        .selectAll()
-        .where("eventId", "=", eventId)
-        .execute();
-}
-
 export async function CreateShiftKind(
     kind: NewShiftKind,
 ): Promise<ShiftKind> {

@@ -13,6 +13,7 @@ export interface ShiftKindTable {
 }
 
 export type ShiftKind = Selectable<ShiftKindTable>;
+export type PublicShiftKind = Omit<ShiftKind, "authorizationMagicLinkToken">;
 export type NewShiftKind = Insertable<ShiftKindTable>;
 export type UpdateShiftKind = Updateable<ShiftKindTable>;
 

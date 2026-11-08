@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ShiftKind } from "@/types/shift";
+import { PublicShiftKind } from "@/types/shift";
 import { EventDay } from "@/types/eventDay";
 import { FILTER_KEYS, formatMinute, parseFilters } from "@/lib/shifts/filters";
 import {StringToColour} from "@/lib/misc/color";
@@ -12,7 +12,7 @@ import SearchSelect from "@/components/Misc/SearchSelect";
 const STEP = 30; // minutes
 
 interface Props {
-    kinds: ShiftKind[];
+    kinds: PublicShiftKind[];
     days: EventDay[];
     bounds: { minMinute: number; maxMinute: number } | null;
     showInternal: boolean;

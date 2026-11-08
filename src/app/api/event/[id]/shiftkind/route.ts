@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/nextauth";
 import { requireAdminUser } from "@/lib/auth/permissions";
-import { GetShiftKindsByEvent, CreateShiftKind } from "@/lib/db/shifts";
-import { generateMagicLinkToken } from "@/lib/db/shiftKinds";
+import { CreateShiftKind } from "@/lib/db/shifts";
+import {
+  generateMagicLinkToken,
+  GetPublicShiftKindsByEvent,
+} from "@/lib/db/shiftKinds";
 import type { NewShiftKind } from "@/types/shift";
 
 export async function GET(
@@ -11,7 +14,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const kinds = await GetShiftKindsByEvent(Number(id));
+  const kinds = await GetPublicShiftKindsByEvent(Number(id));
   return NextResponse.json(kinds);
 }
 
