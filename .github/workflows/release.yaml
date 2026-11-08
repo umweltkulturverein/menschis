@@ -16,7 +16,7 @@ jobs:
         with:
           persist-credentials: false
           extra_plugins: |
-            conventional-changelog-conventionalcommits
+            conventional-changelog-conventionalcommits@9
             @semantic-release/git
             @semantic-release/exec
             @semantic-release/changelog
